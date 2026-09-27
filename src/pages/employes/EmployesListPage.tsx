@@ -98,7 +98,7 @@ export function EmployesListPage() {
       {!grouperParDepartement && <td className="table-cell text-[#4B4F5A]">{emp.nomDepartement || '—'}</td>}
       <td className="table-cell text-[#4B4F5A]">{formatDate(emp.dateEmbauche)}</td>
       <td className="table-cell">
-        <Badge tone={emp.aUnCompte ? 'success' : 'neutral'}>{emp.aUnCompte ? 'Lié' : 'Aucun'}</Badge>
+        <Badge tone={emp.aunCompte ? 'success' : 'neutral'}>{emp.aunCompte ? 'Lié' : 'Aucun'}</Badge>
       </td>
       <td className="table-cell">
         <div className="flex justify-end gap-1">
@@ -125,6 +125,12 @@ export function EmployesListPage() {
       </td>
     </tr>
   )
+
+  console.log('employés:', employes.map(e => ({ 
+  id: e.id, 
+  nom: `${e.prenom} ${e.nom}`, 
+  aunCompte: e.aunCompte 
+})))
 
   return (
     <div className="flex flex-col gap-5">

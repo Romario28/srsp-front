@@ -26,7 +26,7 @@ export interface EmployeResponse {
   idDepartement: number | null
   nomDepartement: string | null
   dateEmbauche: string | null
-  aUnCompte: boolean
+  aunCompte: boolean
   estChef: boolean          // chef officiel de son département
   idManager: number | null
   nomManager: string | null // dérivé automatiquement (voir HierarchieService côté backend)
