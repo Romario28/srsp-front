@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { @apply antialiased; }
+  body { @apply bg-canvas text-[#1C2030] font-sans; }
+  h1, h2, h3, h4 { @apply font-display; }
+  a:focus-visible, button:focus-visible, input:focus-visible,
+  select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@layer components {
+  .table-cell { @apply px-4 py-3 text-sm; }
+  .table-head-cell { @apply px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-[#6B7180]; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
