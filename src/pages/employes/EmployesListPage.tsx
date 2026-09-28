@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Plus, Search, Pencil, Trash2, Crown, Layers } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useFetch } from '@/hooks/useFetch'
@@ -11,6 +12,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { EmployeFormModal } from './EmployeFormModal'
 import type { EmployeResponse } from '@/types/employe'
@@ -34,6 +36,8 @@ export function EmployesListPage() {
     employe: null,
   })
   const [deleteTarget, setDeleteTarget] = useState<EmployeResponse | null>(null)
+  // AJOUTÉ — employé dont la suppression est bloquée par un compte utilisateur actif.
+  const [compteBloque, setCompteBloque] = useState<EmployeResponse | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -96,24 +100,43 @@ export function EmployesListPage() {
       </td>
       <td className="table-cell text-[#4B4F5A]">{emp.poste || '—'}</td>
       {!grouperParDepartement && <td className="table-cell text-[#4B4F5A]">{emp.nomDepartement || '—'}</td>}
+      {/* AJOUTÉ — supérieur hiérarchique, dérivé de la structure (jamais saisi à la main). */}
+      <td
+        className="table-cell text-[#4B4F5A]"
+        title="Calculé automatiquement d'après la structure du département"
+      >
+        {emp.nomManager ?? '—'}
+      </td>
       <td className="table-cell text-[#4B4F5A]">{formatDate(emp.dateEmbauche)}</td>
       <td className="table-cell">
         <Badge tone={emp.aunCompte ? 'success' : 'neutral'}>{emp.aunCompte ? 'Lié' : 'Aucun'}</Badge>
       </td>
       <td className="table-cell">
         <div className="flex justify-end gap-1">
-          <button
-            onClick={() => setFormState({ open: true, employe: emp })}
-            aria-label={`Modifier ${emp.prenom} ${emp.nom}`}
-            className="rounded-md p-1.5 text-[#6B7180] hover:bg-accent-light hover:text-accent-dark"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
+          {/* MODIFIÉ — création/modification d'employés réservées à l'administrateur
+              (décision validée) : le bouton disparaît pour les non-admins, le backend
+              reste le garde-fou. */}
+          {admin && (
+            <button
+              onClick={() => setFormState({ open: true, employe: emp })}
+              aria-label={`Modifier ${emp.prenom} ${emp.nom}`}
+              className="rounded-md p-1.5 text-[#6B7180] hover:bg-accent-light hover:text-accent-dark"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
           {admin && (
             <button
               onClick={() => {
                 setDeleteError(null)
-                setDeleteTarget(emp)
+                // AJOUTÉ — un employé lié à un compte utilisateur ne peut pas être
+                // supprimé tant que ce compte existe : on explique le blocage au lieu
+                // de subir l'erreur du backend.
+                if (emp.aunCompte) {
+                  setCompteBloque(emp)
+                } else {
+                  setDeleteTarget(emp)
+                }
               }}
               aria-label={`Supprimer ${emp.prenom} ${emp.nom}`}
               className="rounded-md p-1.5 text-[#6B7180] hover:bg-danger-light hover:text-danger"
@@ -126,11 +149,7 @@ export function EmployesListPage() {
     </tr>
   )
 
-  console.log('employés:', employes.map(e => ({ 
-  id: e.id, 
-  nom: `${e.prenom} ${e.nom}`, 
-  aunCompte: e.aunCompte 
-})))
+  // MODIFIÉ — suppression d'un console.log de debug oublié.
 
   return (
     <div className="flex flex-col gap-5">
@@ -142,9 +161,12 @@ export function EmployesListPage() {
             {(page?.totalElements ?? 0) > 1 ? 's' : ''} depuis votre position dans l'organigramme
           </p>
         </div>
-        <Button icon={<Plus className="h-4 w-4" />} onClick={() => setFormState({ open: true, employe: null })}>
-          Nouvel employé
-        </Button>
+        {/* MODIFIÉ — la création d'employés est réservée à l'administrateur. */}
+        {admin && (
+          <Button icon={<Plus className="h-4 w-4" />} onClick={() => setFormState({ open: true, employe: null })}>
+            Nouvel employé
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -185,6 +207,15 @@ export function EmployesListPage() {
         </button>
       </div>
 
+      {/* AJOUTÉ — l'API renvoie une page fixe sans pagination serveur (évolution B4) :
+          on prévient quand la liste est tronquée au lieu de laisser croire à une vue complète. */}
+      {(page?.totalElements ?? 0) > (page?.content?.length ?? 0) && (
+        <div className="rounded-lg border border-warning/40 bg-warning-light px-4 py-2.5 text-[12.5px] text-ink">
+          Liste tronquée : seuls les <strong>{page?.content?.length}</strong> premiers employés sur{' '}
+          <strong>{page?.totalElements}</strong> sont affichés. (Pagination et recherche serveur à prévoir côté API.)
+        </div>
+      )}
+
       {error && <ErrorBanner message={error} />}
 
       {isLoading ? (
@@ -207,6 +238,8 @@ export function EmployesListPage() {
                 <th className="table-head-cell">Nom</th>
                 <th className="table-head-cell">Poste</th>
                 {!grouperParDepartement && <th className="table-head-cell">Département</th>}
+                {/* AJOUTÉ — supérieur hiérarchique (dérivé de la structure). */}
+                <th className="table-head-cell">Supérieur</th>
                 <th className="table-head-cell">Embauche</th>
                 <th className="table-head-cell">Compte</th>
                 <th className="table-head-cell text-right">Actions</th>
@@ -216,7 +249,8 @@ export function EmployesListPage() {
               groupes.map(([nomDepartement, membres]) => (
                 <tbody key={nomDepartement} className="divide-y divide-[#EAEBF0]">
                   <tr className="bg-[#FAFAFB]">
-                    <td colSpan={6} className="px-4 py-2 text-[12px] font-semibold text-ink">
+                    {/* MODIFIÉ — colSpan ajusté à la nouvelle colonne « Supérieur ». */}
+                    <td colSpan={grouperParDepartement ? 7 : 8} className="px-4 py-2 text-[12px] font-semibold text-ink">
                       {nomDepartement}
                       <span className="ml-2 font-normal text-[#9CA0AC]">
                         {membres.length} employé{membres.length > 1 ? 's' : ''}
@@ -252,6 +286,27 @@ export function EmployesListPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      {/* AJOUTÉ — blocage explicite : employé lié à un compte utilisateur actif. */}
+      <Modal
+        isOpen={!!compteBloque}
+        onClose={() => setCompteBloque(null)}
+        title="Suppression impossible — compte utilisateur actif"
+      >
+        <p className="text-[13.5px] leading-relaxed text-[#4B4F5A]">
+          <span className="font-medium text-ink">
+            {compteBloque?.prenom} {compteBloque?.nom}
+          </span>{' '}
+          possède un compte utilisateur. Désactivez d'abord son compte dans « Comptes
+          utilisateurs », puis revenez le supprimer.
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Link to="/utilisateurs">
+            <Button variant="secondary">Voir les comptes</Button>
+          </Link>
+          <Button onClick={() => setCompteBloque(null)}>Fermer</Button>
+        </div>
+      </Modal>
     </div>
   )
 }

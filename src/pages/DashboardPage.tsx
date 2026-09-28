@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useFetch } from '@/hooks/useFetch'
 import { employesApi } from '@/api/employes'
 import { departementsApi } from '@/api/departements'
+import { porteesDelegueesApi } from '@/api/porteesDeleguees'
 import { utilisateursApi } from '@/api/utilisateurs'
 import { auditApi } from '@/api/audit'
 import { isAdmin } from '@/utils/roles'
@@ -18,6 +19,17 @@ export function DashboardPage() {
   const departements = useFetch(() => departementsApi.getAll())
   const utilisateurs = useFetch(() => (admin ? utilisateursApi.getAll(0, 1) : Promise.resolve(null)), [admin])
   const audit = useFetch(() => (admin ? auditApi.getAll() : Promise.resolve([])), [admin])
+
+  // AJOUTÉ — vrai compte des délégations actives de l'utilisateur (remplace le
+  // 0 factice : une délégation à venir n'est pas comptée comme active).
+  const delegations = useFetch(
+    () => (admin || !user ? Promise.resolve([]) : porteesDelegueesApi.getPourUtilisateur(user.id)),
+    [admin, user?.id]
+  )
+  const aujourdhui = new Date().toISOString().slice(0, 10)
+  const delegationsActives = (delegations.data ?? []).filter(
+    (d) => d.active && d.dateDebut <= aujourdhui && (!d.dateFin || d.dateFin >= aujourdhui)
+  ).length
 
   const isLoading = employes.isLoading || departements.isLoading
 
@@ -52,7 +64,8 @@ export function DashboardPage() {
               </>
             )}
             {!admin && (
-              <StatCard icon={KeyRound} label="Mes délégations" value={0} to="/delegations" sub="voir le détail" />
+              /* MODIFIÉ — compte réel au lieu du 0 factice. */
+              <StatCard icon={KeyRound} label="Mes délégations" value={delegationsActives} to="/delegations" sub="actives aujourd'hui · voir le détail" />
             )}
           </div>
 

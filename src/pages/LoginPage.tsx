@@ -16,6 +16,11 @@ const DEMO_ACCOUNTS = [
   { email: 'hanta.rabe@entreprise.mg', password: 'Delegue123!', label: '« RH local » (délégation DFI)' },
 ]
 
+// MODIFIÉ — les comptes de démonstration (mots de passe compris) ne s'affichent qu'en
+// environnement de démo : `npm run dev` par défaut, ou VITE_DEMO_HINTS=on pour un build
+// de démonstration. En production (absent ou « off »), l'écran est un formulaire nu.
+const showDemo = import.meta.env.DEV || import.meta.env.VITE_DEMO_HINTS === 'on'
+
 export function LoginPage() {
   const { login, isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
@@ -114,23 +119,25 @@ export function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-8 rounded-xl border border-[#E4E6EB] bg-white p-4">
-            <p className="text-[12px] font-medium text-ink">Comptes de démonstration</p>
-            <p className="mt-0.5 text-[11.5px] text-[#6B7180]">
-              Un par scénario de visibilité — cliquez pour pré-remplir.
-            </p>
-            <div className="mt-3 flex flex-col gap-1.5">
-              {DEMO_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.email} type="button" onClick={() => fillDemo(acc)}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-[#E4E6EB] px-3 py-2 text-left text-[12.5px] hover:border-accent hover:bg-accent-light"
-                >
-                  <span className="truncate font-mono text-[#4B4F5A]">{acc.email}</span>
-                  <span className="flex-shrink-0 text-[11px] font-medium text-accent-dark">{acc.label}</span>
-                </button>
-              ))}
+          {showDemo && (
+            <div className="mt-8 rounded-xl border border-[#E4E6EB] bg-white p-4">
+              <p className="text-[12px] font-medium text-ink">Comptes de démonstration</p>
+              <p className="mt-0.5 text-[11.5px] text-[#6B7180]">
+                Un par scénario de visibilité — cliquez pour pré-remplir.
+              </p>
+              <div className="mt-3 flex flex-col gap-1.5">
+                {DEMO_ACCOUNTS.map((acc) => (
+                  <button
+                    key={acc.email} type="button" onClick={() => fillDemo(acc)}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-[#E4E6EB] px-3 py-2 text-left text-[12.5px] hover:border-accent hover:bg-accent-light"
+                  >
+                    <span className="truncate font-mono text-[#4B4F5A]">{acc.email}</span>
+                    <span className="flex-shrink-0 text-[11px] font-medium text-accent-dark">{acc.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

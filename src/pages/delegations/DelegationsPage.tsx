@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useFetch } from '@/hooks/useFetch'
 import { porteesDelegueesApi } from '@/api/porteesDeleguees'
 import { extractErrorMessage } from '@/api/client'
+import { isAdmin } from '@/utils/roles'
 import { formatDate } from '@/utils/date'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
@@ -18,17 +19,19 @@ import type { PorteeDelegueeDTO } from '@/types/porteeDeleguee'
 /**
  * Il n'existe pas d'endpoint "toutes les délégations" côté backend — uniquement
  * GET /portees-deleguees/utilisateur/{id}. Cette page tourne donc autour d'un
- * utilisateur cible : la vôtre par défaut (?userId absent), ou une autre en
- * changeant l'ID dans le champ de recherche — c'est aussi comme ça qu'on arrive
- * ici depuis la fiche d'un compte dans Utilisateurs.
+ * utilisateur cible : la vôtre par défaut, ou — pour un ADMIN uniquement — un
+ * autre en le cherchant par ID, ou via le lien depuis Comptes utilisateurs.
  */
 export function DelegationsPage() {
   const { user } = useAuth()
+  // MODIFIÉ — la consultation des délégations d'un autre utilisateur est réservée à
+  // l'admin : un non-admin consulte uniquement les siennes, même si ?userId= est dans l'URL.
+  const admin = isAdmin(user?.roles)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const urlUserId = searchParams.get('userId')
-  const targetId = urlUserId ? Number(urlUserId) : (user?.id ?? null)
-  const [searchInput, setSearchInput] = useState(urlUserId ?? '')
+  const targetId = admin && urlUserId ? Number(urlUserId) : (user?.id ?? null)
+  const [searchInput, setSearchInput] = useState(admin ? (urlUserId ?? '') : '')
 
   const { data: delegations, isLoading, error, reload } = useFetch(
     () => (targetId != null ? porteesDelegueesApi.getPourUtilisateur(targetId) : Promise.resolve([])),
@@ -59,7 +62,9 @@ export function DelegationsPage() {
     setIsRevoking(true)
     setRevokeError(null)
     try {
-      await porteesDelegueesApi.revoquer(revokeTarget.id, revokeTarget.idUtilisateur)
+      // MODIFIÉ — le backend n'attend plus de paramètre bénéficiaire : seul l'ID de
+      // la délégation est envoyé.
+      await porteesDelegueesApi.revoquer(revokeTarget.id)
       setRevokeTarget(null)
       reload()
     } catch (err) {
@@ -83,25 +88,29 @@ export function DelegationsPage() {
         </Button>
       </div>
 
-      <div className="flex items-end gap-2">
-        <div className="relative w-56">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA0AC]" />
-          <input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && goToUser()}
-            type="number"
-            placeholder="ID utilisateur…"
-            className="h-10 w-full rounded-lg border border-[#DADCE3] bg-white pl-9 pr-3 text-sm text-ink placeholder:text-[#9CA0AC] focus:border-accent"
-          />
+      {/* MODIFIÉ — la recherche par ID (consulter les délégations d'un autre utilisateur)
+          n'est proposée qu'à l'administrateur. */}
+      {admin && (
+        <div className="flex items-end gap-2">
+          <div className="relative w-56">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA0AC]" />
+            <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && goToUser()}
+              type="number"
+              placeholder="ID utilisateur…"
+              className="h-10 w-full rounded-lg border border-[#DADCE3] bg-white pl-9 pr-3 text-sm text-ink placeholder:text-[#9CA0AC] focus:border-accent"
+            />
+          </div>
+          <Button variant="secondary" size="sm" onClick={goToUser}>Voir</Button>
+          {!isSelf && (
+            <Button variant="ghost" size="sm" icon={<RotateCcw className="h-3.5 w-3.5" />} onClick={resetToSelf}>
+              Revenir à moi-même
+            </Button>
+          )}
         </div>
-        <Button variant="secondary" size="sm" onClick={goToUser}>Voir</Button>
-        {!isSelf && (
-          <Button variant="ghost" size="sm" icon={<RotateCcw className="h-3.5 w-3.5" />} onClick={resetToSelf}>
-            Revenir à moi-même
-          </Button>
-        )}
-      </div>
+      )}
 
       {error && <ErrorBanner message={error} />}
 
@@ -133,7 +142,10 @@ export function DelegationsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#EAEBF0]">
-              {delegations.map((d) => (
+              {delegations.map((d) => {
+                // AJOUTÉ — statut dérivé des dates (voir statutDelegation plus bas).
+                const statut = statutDelegation(d, today)
+                return (
                 <tr key={d.id} className="hover:bg-[#FAFAFB]">
                   <td className="table-cell font-medium text-ink">{d.emailUtilisateur}</td>
                   <td className="table-cell text-[#4B4F5A]">{d.nomDepartement}</td>
@@ -147,7 +159,8 @@ export function DelegationsPage() {
                   </td>
                   <td className="table-cell text-[#4B4F5A]">{d.accordePar}</td>
                   <td className="table-cell">
-                    <Badge tone={d.active ? 'success' : 'neutral'}>{d.active ? 'Active' : 'Inactive'}</Badge>
+                    {/* MODIFIÉ — À venir / Active / Terminée au lieu du seul Active/Inactive. */}
+                    <Badge tone={statut.tone}>{statut.label}</Badge>
                   </td>
                   <td className="table-cell">
                     {estRevocable(d) && (
@@ -163,7 +176,8 @@ export function DelegationsPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -192,4 +206,16 @@ export function DelegationsPage() {
       />
     </div>
   )
+}
+
+// AJOUTÉ — statut dérivé des dates : la donnée backend reste un booléen « active »,
+// on l'affine côté écran (À venir = active dont le début est futur, Active = effective
+// aujourd'hui, Terminée = inactive). Distinguer « annulée » de « clôturée » exigerait
+// une donnée réelle du backend (évolution B2) — aucune invention ici.
+function statutDelegation(
+  d: PorteeDelegueeDTO,
+  today: string
+): { label: string; tone: 'accent' | 'success' | 'neutral' } {
+  if (!d.active) return { label: 'Terminée', tone: 'neutral' }
+  return d.dateDebut > today ? { label: 'À venir', tone: 'accent' } : { label: 'Active', tone: 'success' }
 }

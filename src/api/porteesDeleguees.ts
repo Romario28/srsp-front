@@ -13,6 +13,7 @@ export const porteesDelegueesApi = {
   accorder: (payload: CreatePorteeDelegueeRequest) =>
     apiClient.post<PorteeDelegueeDTO>('/portees-deleguees', payload).then((r) => r.data),
 
-  revoquer: (id: number, idUtilisateur: number) =>
-    apiClient.delete<void>(`/portees-deleguees/${id}`, { params: { idUtilisateur } }),
+  // MODIFIÉ — le backend n'attend plus l'identifiant du bénéficiaire à la révocation :
+  // seul l'ID de la délégation suffit.
+  revoquer: (id: number) => apiClient.delete<void>(`/portees-deleguees/${id}`),
 }

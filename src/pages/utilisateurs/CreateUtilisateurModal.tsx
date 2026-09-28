@@ -40,7 +40,10 @@ export function CreateUtilisateurModal({ isOpen, onClose, onSaved }: CreateUtili
     // pas seulement ceux du sous-arbre de l'admin (qui est... tout, de toute façon).
     employesApi
       .getAll(0, 200)
-      .then((page) => setEmployesSansCompte(page.content.filter((e) => !e.aUnCompte)))
+      // MODIFIÉ — le champ s'appelle « aunCompte » dans EmployeResponse : le filtre
+      // testait « aUnCompte » (undefined) et faisait apparaître TOUS les employés
+      // comme disponibles dans le sélecteur.
+      .then((page) => setEmployesSansCompte(page.content.filter((e) => !e.aunCompte)))
       .catch(() => {})
   }, [isOpen])
 
@@ -90,6 +93,15 @@ export function CreateUtilisateurModal({ isOpen, onClose, onSaved }: CreateUtili
             </option>
           ))}
         </Select>
+
+        {/* AJOUTÉ — lisibilité : combien d'employés sans compte sont réellement proposés. */}
+        <span className="-mt-2 text-[12px] text-[#6B7180]">
+          {employesSansCompte.length === 0
+            ? 'Aucun employé sans compte dans la liste visible — le compte restera non rattaché.'
+            : `${employesSansCompte.length} employé${employesSansCompte.length > 1 ? 's' : ''} sans compte proposé${
+                employesSansCompte.length > 1 ? 's' : ''
+              } (200 premiers — pagination serveur à venir).`}
+        </span>
 
         <div className="flex flex-col gap-1.5">
           <span className="text-[13px] font-medium text-ink">

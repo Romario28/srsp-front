@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Crown, Network, FolderTree } from 'lucide-react'
+import { Plus, Crown, Network, FolderTree, ArrowLeftRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useFetch } from '@/hooks/useFetch'
 import { departementsApi } from '@/api/departements'
@@ -12,6 +12,7 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Select } from '@/components/ui/Select'
 import { buildTree, DepartementTree, type TreeNode } from './DepartementTree'
 import { DepartementFormModal } from './DepartementFormModal'
+import { DepartementMoveModal } from './DepartementMoveModal'
 import type { DepartementResponse } from '@/types/departement'
 
 export function DepartementsPage() {
@@ -25,6 +26,11 @@ export function DepartementsPage() {
   const [createModal, setCreateModal] = useState<{ open: boolean; parent: DepartementResponse | null }>({
     open: false,
     parent: null,
+  })
+  // AJOUTÉ — modale de déplacement du département sélectionné (admin).
+  const [moveModal, setMoveModal] = useState<{ open: boolean; target: DepartementResponse | null }>({
+    open: false,
+    target: null,
   })
   const [chefError, setChefError] = useState<string | null>(null)
   const [isAssigningChef, setIsAssigningChef] = useState(false)
@@ -152,6 +158,19 @@ export function DepartementsPage() {
                     Ajouter un sous-département
                   </Button>
                 )}
+
+                {/* AJOUTÉ — déplacement du département (répercuté sur ses sous-départements) ;
+                    le sélecteur de la modale exclut le département lui-même et son sous-arbre. */}
+                {admin && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={<ArrowLeftRight className="h-4 w-4" />}
+                    onClick={() => setMoveModal({ open: true, target: selected })}
+                  >
+                    Déplacer ce département
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -162,6 +181,15 @@ export function DepartementsPage() {
         isOpen={createModal.open}
         parent={createModal.parent}
         onClose={() => setCreateModal({ open: false, parent: null })}
+        onSaved={reload}
+      />
+
+      {/* AJOUTÉ — déplacement (l'API PATCH /departements/{id}/deplacer existait déjà). */}
+      <DepartementMoveModal
+        isOpen={moveModal.open}
+        departement={moveModal.target}
+        flat={flat ?? []}
+        onClose={() => setMoveModal({ open: false, target: null })}
         onSaved={reload}
       />
     </div>

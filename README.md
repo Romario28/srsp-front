@@ -24,7 +24,9 @@ tourner sur **http://localhost:8080**.
 | voahangy.rasoamanana@entreprise.mg | Delegue123! | « RH central » — délégation permanente sur le département racine |
 | hanta.rabe@entreprise.mg | Delegue123! | « RH local » — délégation permanente sur une Direction |
 
-La page de connexion propose un bouton par compte pour préremplir le formulaire.
+La page de connexion propose un bouton par compte pour préremplir le formulaire —
+**uniquement en environnement de démonstration** : `npm run dev`, ou un build avec
+`VITE_DEMO_HINTS=on`. En production, l'écran de connexion est un formulaire nu.
 
 ## Ce qui a changé depuis la v1
 
