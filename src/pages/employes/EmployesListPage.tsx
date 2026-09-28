@@ -126,12 +126,6 @@ export function EmployesListPage() {
     </tr>
   )
 
-  console.log('employés:', employes.map(e => ({ 
-  id: e.id, 
-  nom: `${e.prenom} ${e.nom}`, 
-  aunCompte: e.aunCompte 
-})))
-
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">

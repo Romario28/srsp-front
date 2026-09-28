@@ -40,7 +40,7 @@ export function CreateUtilisateurModal({ isOpen, onClose, onSaved }: CreateUtili
     // pas seulement ceux du sous-arbre de l'admin (qui est... tout, de toute façon).
     employesApi
       .getAll(0, 200)
-      .then((page) => setEmployesSansCompte(page.content.filter((e) => !e.aUnCompte)))
+      .then((page) => setEmployesSansCompte(page.content.filter((e) => !e.aunCompte)))
       .catch(() => {})
   }, [isOpen])
 

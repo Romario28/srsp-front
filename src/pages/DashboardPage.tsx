@@ -5,6 +5,7 @@ import { useFetch } from '@/hooks/useFetch'
 import { employesApi } from '@/api/employes'
 import { departementsApi } from '@/api/departements'
 import { utilisateursApi } from '@/api/utilisateurs'
+import { porteesDelegueesApi } from '@/api/porteesDeleguees'
 import { auditApi } from '@/api/audit'
 import { isAdmin } from '@/utils/roles'
 import { Spinner } from '@/components/ui/Spinner'
@@ -18,6 +19,13 @@ export function DashboardPage() {
   const departements = useFetch(() => departementsApi.getAll())
   const utilisateurs = useFetch(() => (admin ? utilisateursApi.getAll(0, 1) : Promise.resolve(null)), [admin])
   const audit = useFetch(() => (admin ? auditApi.getAll() : Promise.resolve([])), [admin])
+  const mesDelegations = useFetch(
+    () =>
+      !admin && user?.id != null
+        ? porteesDelegueesApi.getPourUtilisateur(user.id)
+        : Promise.resolve([]),
+    [admin, user?.id],
+  )
 
   const isLoading = employes.isLoading || departements.isLoading
 
@@ -52,7 +60,13 @@ export function DashboardPage() {
               </>
             )}
             {!admin && (
-              <StatCard icon={KeyRound} label="Mes délégations" value={0} to="/delegations" sub="voir le détail" />
+              <StatCard
+                icon={KeyRound}
+                label="Mes délégations"
+                value={mesDelegations.data?.length ?? 0}
+                to="/delegations"
+                sub="voir le détail"
+              />
             )}
           </div>
 

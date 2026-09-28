@@ -59,7 +59,7 @@ export function DelegationsPage() {
     setIsRevoking(true)
     setRevokeError(null)
     try {
-      await porteesDelegueesApi.revoquer(revokeTarget.id, revokeTarget.idUtilisateur)
+      await porteesDelegueesApi.revoquer(revokeTarget.id)
       setRevokeTarget(null)
       reload()
     } catch (err) {

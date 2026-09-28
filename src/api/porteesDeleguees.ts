@@ -13,6 +13,12 @@ export const porteesDelegueesApi = {
   accorder: (payload: CreatePorteeDelegueeRequest) =>
     apiClient.post<PorteeDelegueeDTO>('/portees-deleguees', payload).then((r) => r.data),
 
-  revoquer: (id: number, idUtilisateur: number) =>
-    apiClient.delete<void>(`/portees-deleguees/${id}`, { params: { idUtilisateur } }),
+  // Le backend résout le bénéficiaire via la portée elle-même + le principal authentifié
+  revoquer: (id: number) => apiClient.delete<void>(`/portees-deleguees/${id}`),
 }
+
+/*
+
+revoquer: (id: number, idUtilisateur: number) =>
+    apiClient.delete<void>(`/portees-deleguees/${id}`, { params: { idUtilisateur } }),
+*/
