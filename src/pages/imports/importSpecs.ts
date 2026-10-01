@@ -12,7 +12,10 @@ export interface ImportSpec {
 export const REGLES_COMMUNES = [
   'Fichier Excel (.xlsx ou .xls), 50 Mo maximum. Seule la première feuille est lue ; la première ligne contient les en-têtes.',
   'Un import crée ou met à jour chaque ligne selon sa clé ; il ne supprime jamais rien. Réimporter un fichier corrigé ne crée pas de doublons.',
-  'Une ligne en erreur n’est pas enregistrée, les autres le sont. Le compte-rendu liste ces lignes.',
+  // MODIFIÉ — + valeur trop longue
+  'Une ligne en erreur n’est pas enregistrée, les autres le sont. C’est aussi le cas d’une valeur plus longue que la limite de sa colonne (limites indiquées pour chaque fichier). Le compte-rendu liste ces lignes.',
+  // AJOUTÉ
+  'Pour les fichiers repérés par leurs en-têtes, une colonne obligatoire absente fait refuser l’import en entier (rien n’est enregistré) ; le message liste toutes les colonnes absentes.',
   'Codes à saisir en texte, zéros initiaux compris (« 00 », « 09 »). Les cellules à formule ne sont pas lues : utilisez des valeurs.',
 ]
 export const ETAPES = [

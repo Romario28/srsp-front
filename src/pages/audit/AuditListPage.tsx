@@ -16,6 +16,9 @@ const ACTION_TONES: Record<string, 'success' | 'warning' | 'danger' | 'accent' |
   DELETE_EMPLOYE: 'danger',
   LOGIN: 'neutral',
   LOGOUT: 'neutral',
+  UPDATE_CONFIG_DELAI: 'accent',    // AJOUTÉ
+  RESET_CONFIG_DELAI: 'warning',    // AJOUTÉ
+  IMPORT_EXCEL: 'accent',           // AJOUTÉ
 }
 
 export function AuditListPage() {
