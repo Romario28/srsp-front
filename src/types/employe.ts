@@ -33,12 +33,3 @@ export interface EmployeResponse {
 }
 
 // GET /api/employes est paginé (Spring Data Page<T>)
-export interface Page<T> {
-  content: T[]
-  totalElements: number
-  totalPages: number
-  number: number   // page courante (0-indexed)
-  size: number
-  first: boolean
-  last: boolean
-}

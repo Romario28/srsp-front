@@ -1,6 +1,6 @@
 import { apiClient } from './client'
 import type { CreateUtilisateurRequest, UtilisateurCreatedResponse, UtilisateurDTO } from '@/types/utilisateur'
-import type { Page } from '@/types/employe'
+import type { Page } from '@/types/api'
 
 export const utilisateursApi = {
   getAll: (page = 0, size = 100) =>

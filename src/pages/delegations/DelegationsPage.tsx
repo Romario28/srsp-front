@@ -5,7 +5,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useFetch } from '@/hooks/useFetch'
 import { porteesDelegueesApi } from '@/api/porteesDeleguees'
 import { extractErrorMessage } from '@/api/client'
-import { formatDate } from '@/utils/date'
+import { formatDate, todayInputValue } from '@/utils/date'
+import { isAdmin } from '@/utils/roles'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -24,9 +25,10 @@ import type { PorteeDelegueeDTO } from '@/types/porteeDeleguee'
  */
 export function DelegationsPage() {
   const { user } = useAuth()
+  const admin = isAdmin(user?.roles)
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const urlUserId = searchParams.get('userId')
+  const urlUserId = admin ? searchParams.get('userId') : null
   const targetId = urlUserId ? Number(urlUserId) : (user?.id ?? null)
   const [searchInput, setSearchInput] = useState(urlUserId ?? '')
 
@@ -51,7 +53,7 @@ export function DelegationsPage() {
     setSearchParams({})
   }
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayInputValue()
   const estRevocable = (d: PorteeDelegueeDTO) => !d.dateFin || d.dateFin >= today
 
   const handleRevoke = async () => {
@@ -83,7 +85,7 @@ export function DelegationsPage() {
         </Button>
       </div>
 
-      <div className="flex items-end gap-2">
+      {admin && <div className="flex items-end gap-2">
         <div className="relative w-56">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA0AC]" />
           <input
@@ -101,7 +103,7 @@ export function DelegationsPage() {
             Revenir à moi-même
           </Button>
         )}
-      </div>
+      </div>}
 
       {error && <ErrorBanner message={error} />}
 
@@ -171,7 +173,7 @@ export function DelegationsPage() {
 
       <CreateDelegationModal
         isOpen={isCreateOpen}
-        idUtilisateurPrerempli={targetId}
+        idUtilisateurPrerempli={isSelf ? null : targetId}
         onClose={() => setIsCreateOpen(false)}
         onSaved={reload}
       />

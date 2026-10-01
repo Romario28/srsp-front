@@ -10,6 +10,8 @@ import { auditApi } from '@/api/audit'
 import { isAdmin } from '@/utils/roles'
 import { Spinner } from '@/components/ui/Spinner'
 import { formatDateTime } from '@/utils/date'
+import { StatCard } from '@/components/ui/StatCard'
+import { SyntheseAnticipation } from '@/pages/anticipation/SyntheseAnticipation'
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -70,6 +72,8 @@ export function DashboardPage() {
             )}
           </div>
 
+          {admin && <SyntheseAnticipation />}
+
           {admin && (
             <div className="rounded-xl border border-[#E4E6EB] bg-white">
               <div className="flex items-center justify-between border-b border-[#EAEBF0] px-5 py-4">
@@ -98,25 +102,5 @@ export function DashboardPage() {
         </>
       )}
     </div>
-  )
-}
-
-function StatCard({
-  icon: Icon, label, value, sub, to,
-}: { icon: typeof Users; label: string; value: number; sub?: string; to: string }) {
-  return (
-    <Link to={to} className="group flex flex-col gap-3 rounded-xl border border-[#E4E6EB] bg-white p-5 transition-colors hover:border-accent">
-      <div className="flex items-center justify-between">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-light text-accent-dark">
-          <Icon className="h-[18px] w-[18px]" />
-        </div>
-        <ArrowUpRight className="h-4 w-4 text-[#C4C7D0] transition-colors group-hover:text-accent" />
-      </div>
-      <div>
-        <p className="font-display text-[24px] font-semibold leading-none text-ink">{value}</p>
-        <p className="mt-1.5 text-[13px] text-[#6B7180]">{label}</p>
-        {sub && <p className="text-[11.5px] text-[#9CA0AC]">{sub}</p>}
-      </div>
-    </Link>
   )
 }

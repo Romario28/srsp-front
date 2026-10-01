@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { LoginPage } from '@/pages/LoginPage'
@@ -10,6 +10,12 @@ import { UtilisateursListPage } from '@/pages/utilisateurs/UtilisateursListPage'
 import { AuditListPage } from '@/pages/audit/AuditListPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { EcheancesPage } from '@/pages/anticipation/EcheancesPage'
+import { AnomaliesPage } from '@/pages/anticipation/AnomaliesPage'
+import { AlertesPage } from '@/pages/anticipation/alertes/AlertesPage'
+import { ConfigurationPage } from '@/pages/anticipation/ConfigurationPage'
+import { ImportsPage } from '@/pages/imports/ImportsPage'
+import { ECHEANCE_SLUGS, TYPES_ECHEANCE } from '@/utils/anticipation'
 
 function App() {
   return (
@@ -52,6 +58,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="imports" element={<ProtectedRoute adminOnly><ImportsPage /></ProtectedRoute>} />
+        <Route path="anticipation" element={<ProtectedRoute adminOnly><Outlet /></ProtectedRoute>}>
+          <Route index element={<Navigate to="alertes" replace />} />
+          <Route path="alertes" element={<AlertesPage />} />
+          {TYPES_ECHEANCE.map((type) => <Route key={type} path={ECHEANCE_SLUGS[type]} element={<EcheancesPage key={type} type={type} />} />)}
+          <Route path="anomalies" element={<AnomaliesPage />} />
+          <Route path="configuration" element={<ConfigurationPage />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

@@ -44,3 +44,11 @@ export function extractErrorMessage(err: unknown, fallback = 'Une erreur est sur
   if (err instanceof Error) return err.message
   return fallback
 }
+
+export function extractErrorCode(err: unknown): string | undefined {
+  return axios.isAxiosError<ApiErrorBody>(err) ? err.response?.data?.code : undefined
+}
+
+export function estErreurReseau(err: unknown): boolean {
+  return axios.isAxiosError(err) && !err.response
+}

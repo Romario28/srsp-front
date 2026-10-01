@@ -16,6 +16,8 @@ const DEMO_ACCOUNTS = [
   { email: 'hanta.rabe@entreprise.mg', password: 'Delegue123!', label: '« RH local » (délégation DFI)' },
 ]
 
+const SHOW_DEMO_ACCOUNTS = import.meta.env.VITE_SHOW_DEMO_ACCOUNTS === 'true'
+
 export function LoginPage() {
   const { login, isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
@@ -114,7 +116,7 @@ export function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-8 rounded-xl border border-[#E4E6EB] bg-white p-4">
+          {SHOW_DEMO_ACCOUNTS && <div className="mt-8 rounded-xl border border-[#E4E6EB] bg-white p-4">
             <p className="text-[12px] font-medium text-ink">Comptes de démonstration</p>
             <p className="mt-0.5 text-[11.5px] text-[#6B7180]">
               Un par scénario de visibilité — cliquez pour pré-remplir.
@@ -130,7 +132,7 @@ export function LoginPage() {
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
         </div>
       </div>
     </div>

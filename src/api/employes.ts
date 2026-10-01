@@ -1,5 +1,6 @@
 import { apiClient } from './client'
-import type { CreateEmployeRequest, EmployeResponse, Page, UpdateEmployeRequest } from '@/types/employe'
+import type { CreateEmployeRequest, EmployeResponse, UpdateEmployeRequest } from '@/types/employe'
+import type { Page } from '@/types/api'
 
 export const employesApi = {
   // GET /api/employes est paginé côté backend et déjà filtré par portée (chef/délégation/soi-même)

@@ -24,7 +24,7 @@ tourner sur **http://localhost:8080**.
 | voahangy.rasoamanana@entreprise.mg | Delegue123! | « RH central » — délégation permanente sur le département racine |
 | hanta.rabe@entreprise.mg | Delegue123! | « RH local » — délégation permanente sur une Direction |
 
-La page de connexion propose un bouton par compte pour préremplir le formulaire.
+La page de connexion propose un bouton par compte quand `VITE_SHOW_DEMO_ACCOUNTS=true` (activé par `npm run dev`).
 
 ## Ce qui a changé depuis la v1
 

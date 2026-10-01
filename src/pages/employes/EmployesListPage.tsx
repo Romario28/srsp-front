@@ -96,6 +96,7 @@ export function EmployesListPage() {
       </td>
       <td className="table-cell text-[#4B4F5A]">{emp.poste || '—'}</td>
       {!grouperParDepartement && <td className="table-cell text-[#4B4F5A]">{emp.nomDepartement || '—'}</td>}
+      <td className="table-cell text-[#4B4F5A]">{emp.nomManager || '—'}</td>
       <td className="table-cell text-[#4B4F5A]">{formatDate(emp.dateEmbauche)}</td>
       <td className="table-cell">
         <Badge tone={emp.aunCompte ? 'success' : 'neutral'}>{emp.aunCompte ? 'Lié' : 'Aucun'}</Badge>
@@ -201,6 +202,7 @@ export function EmployesListPage() {
                 <th className="table-head-cell">Nom</th>
                 <th className="table-head-cell">Poste</th>
                 {!grouperParDepartement && <th className="table-head-cell">Département</th>}
+                <th className="table-head-cell">Supérieur</th>
                 <th className="table-head-cell">Embauche</th>
                 <th className="table-head-cell">Compte</th>
                 <th className="table-head-cell text-right">Actions</th>
@@ -210,7 +212,7 @@ export function EmployesListPage() {
               groupes.map(([nomDepartement, membres]) => (
                 <tbody key={nomDepartement} className="divide-y divide-[#EAEBF0]">
                   <tr className="bg-[#FAFAFB]">
-                    <td colSpan={6} className="px-4 py-2 text-[12px] font-semibold text-ink">
+                    <td colSpan={7} className="px-4 py-2 text-[12px] font-semibold text-ink">
                       {nomDepartement}
                       <span className="ml-2 font-normal text-[#9CA0AC]">
                         {membres.length} employé{membres.length > 1 ? 's' : ''}

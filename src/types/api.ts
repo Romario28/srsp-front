@@ -5,3 +5,15 @@ export interface ApiErrorBody {
   message?: string
   code?: string
 }
+
+// AJOUTÉ — déplacé depuis types/employe.ts. Enveloppe Spring Data, partagée par
+// employés, comptes utilisateurs et (lot 3) alertes.
+export interface Page<T> {
+  content: T[]
+  totalElements: number
+  totalPages: number
+  number: number   // page courante (0-indexée)
+  size: number
+  first: boolean
+  last: boolean
+}

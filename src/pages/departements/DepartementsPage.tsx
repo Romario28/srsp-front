@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Crown, Network, FolderTree } from 'lucide-react'
+import { Plus, Crown, Network, FolderTree, Move } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useFetch } from '@/hooks/useFetch'
 import { departementsApi } from '@/api/departements'
@@ -12,6 +12,7 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Select } from '@/components/ui/Select'
 import { buildTree, DepartementTree, type TreeNode } from './DepartementTree'
 import { DepartementFormModal } from './DepartementFormModal'
+import { DeplacerDepartementModal } from './DeplacerDepartementModal'
 import type { DepartementResponse } from '@/types/departement'
 
 export function DepartementsPage() {
@@ -28,6 +29,7 @@ export function DepartementsPage() {
   })
   const [chefError, setChefError] = useState<string | null>(null)
   const [isAssigningChef, setIsAssigningChef] = useState(false)
+  const [deplacerOpen, setDeplacerOpen] = useState(false)
 
   const tree = buildTree(flat ?? [])
   const selected = flat?.find((d) => d.id === selectedId) ?? null
@@ -143,6 +145,7 @@ export function DepartementsPage() {
                 </div>
 
                 {admin && (
+                  <div className="flex flex-wrap gap-2">
                   <Button
                     variant="secondary"
                     size="sm"
@@ -151,6 +154,10 @@ export function DepartementsPage() {
                   >
                     Ajouter un sous-département
                   </Button>
+                  <Button variant="secondary" size="sm" icon={<Move className="h-4 w-4" />} onClick={() => setDeplacerOpen(true)}>
+                    Déplacer
+                  </Button>
+                  </div>
                 )}
               </div>
             )}
@@ -162,6 +169,13 @@ export function DepartementsPage() {
         isOpen={createModal.open}
         parent={createModal.parent}
         onClose={() => setCreateModal({ open: false, parent: null })}
+        onSaved={reload}
+      />
+      <DeplacerDepartementModal
+        isOpen={deplacerOpen}
+        departement={selected}
+        departements={flat ?? []}
+        onClose={() => setDeplacerOpen(false)}
         onSaved={reload}
       />
     </div>
