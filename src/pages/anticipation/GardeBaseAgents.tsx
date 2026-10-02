@@ -31,3 +31,4 @@ export function GardeBaseAgents() {
   // En cas d'échec du comptage, les écrans restent accessibles et gèrent leurs erreurs.
   return <Outlet />
 }
+
