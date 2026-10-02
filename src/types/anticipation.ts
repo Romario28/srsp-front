@@ -7,6 +7,11 @@ export type TypeEcheance = Exclude<TypeAnticipation, 'ANOMALIE'>
 /** Le statut peut être null si la donnée est absente ou non reconnue à l'import. */
 export type StatutAgent = 'FONCTIONNAIRE' | 'CONTRACTUEL' | 'ELD'
 
+/** État du référentiel d'agents, renvoyé par GET /api/anticipation/base. */
+export interface EtatBaseAgents {
+  nbAgents: number
+}
+
 /** Ligne calculée à la demande par GET /api/anticipation/*, distincte d'une alerte persistée du batch. */
 export interface AlerteAnticipation {
   matricule: string

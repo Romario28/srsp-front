@@ -4,9 +4,11 @@ import { AlertTriangle, ArrowUpRight, BadgeCheck, CalendarClock, Hourglass, Refr
 import { useFetch } from '@/hooks/useFetch'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
 import { alertesApi } from '@/api/alertes'
+import { anticipationApi } from '@/api/anticipation'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { StatCard } from '@/components/ui/StatCard'
+import { EtatBaseVide } from './GardeBaseAgents'
 import type { TypeAnticipation } from '@/types/anticipation'
 
 const CARTES: { type: TypeAnticipation; label: string; icon: LucideIcon }[] = [
@@ -23,7 +25,7 @@ async function compterNouvellesParType(): Promise<Compteurs> {
   return Object.fromEntries(CARTES.map((carte, index) => [carte.type, nombres[index]])) as Compteurs
 }
 
-export function SyntheseAnticipation() {
+function CartesSynthese() {
   const { refresh: rafraichirBadge } = useAlertesNouvelles()
   const { data, isLoading, error, reload } = useFetch(compterNouvellesParType)
   useEffect(() => { rafraichirBadge() }, [rafraichirBadge])
@@ -49,4 +51,14 @@ export function SyntheseAnticipation() {
     </div>
     <p className="text-[12px] text-[#9CA0AC]">Comptes issus du calcul de nuit (03h00 par défaut), pas d'un calcul en direct : ils ne bougent pas pendant la journée, même après un import ou un changement de fenêtre. Seules les alertes « nouvelles » sont comptées : une alerte ouverte n'est plus comptée. Pour l'état à l'instant, lancez un calcul depuis les écrans de consultation.{misAJourA && ` Actualisé à ${misAJourA.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.`}</p>
   </section>
+}
+
+/** Vérifie qu'il existe des agents avant de demander les cinq compteurs d'alertes. */
+export function SyntheseAnticipation() {
+  const { data, isLoading } = useFetch(() => anticipationApi.etatBase())
+  if (isLoading && !data) return null
+  if (data?.nbAgents === 0) {
+    return <section className="flex flex-col gap-3"><h2 className="font-display text-[14.5px] font-semibold text-ink">Anticipation RH</h2><EtatBaseVide /></section>
+  }
+  return <CartesSynthese />
 }

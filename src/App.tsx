@@ -14,6 +14,7 @@ import { EcheancesPage } from '@/pages/anticipation/EcheancesPage'
 import { AnomaliesPage } from '@/pages/anticipation/AnomaliesPage'
 import { AlertesPage } from '@/pages/anticipation/alertes/AlertesPage'
 import { ConfigurationPage } from '@/pages/anticipation/ConfigurationPage'
+import { GardeBaseAgents } from '@/pages/anticipation/GardeBaseAgents'
 import { ImportsPage } from '@/pages/imports/ImportsPage'
 import { ECHEANCE_SLUGS, TYPES_ECHEANCE } from '@/utils/anticipation'
 
@@ -61,10 +62,12 @@ function App() {
         <Route path="imports" element={<ProtectedRoute adminOnly><ImportsPage /></ProtectedRoute>} />
         <Route path="anticipation" element={<ProtectedRoute adminOnly><Outlet /></ProtectedRoute>}>
           <Route index element={<Navigate to="alertes" replace />} />
-          <Route path="alertes" element={<AlertesPage />} />
-          {TYPES_ECHEANCE.map((type) => <Route key={type} path={ECHEANCE_SLUGS[type]} element={<EcheancesPage key={type} type={type} />} />)}
-          <Route path="anomalies" element={<AnomaliesPage />} />
           <Route path="configuration" element={<ConfigurationPage />} />
+          <Route element={<GardeBaseAgents />}>
+            <Route path="alertes" element={<AlertesPage />} />
+            {TYPES_ECHEANCE.map((type) => <Route key={type} path={ECHEANCE_SLUGS[type]} element={<EcheancesPage key={type} type={type} />} />)}
+            <Route path="anomalies" element={<AnomaliesPage />} />
+          </Route>
         </Route>
       </Route>
 
