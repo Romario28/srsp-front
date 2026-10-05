@@ -1,4 +1,5 @@
 import { formatDate } from '@/utils/date'
+import { MAX_MOIS } from '@/utils/anticipation'
 import type { FiltresEcheances } from '@/types/anticipation'
 import type { ConfigurationDelaiDTO } from '@/types/configurationDelai'
 
@@ -11,15 +12,15 @@ export interface EtatFiltres {
 
 export const FILTRES_VIDES: EtatFiltres = { prevenance: '', retard: '', dateDebut: '', dateFin: '' }
 export const datesActives = (etat: EtatFiltres) => etat.dateDebut !== '' || etat.dateFin !== ''
-const estEntierPositif = (valeur: string) => /^\d+$/.test(valeur.trim())
+const estMoisValide = (valeur: string) => /^\d+$/.test(valeur.trim()) && Number(valeur) <= MAX_MOIS
 
 export function validerFiltres(etat: EtatFiltres): string | null {
   if (datesActives(etat)) {
     if (etat.dateDebut && etat.dateFin && etat.dateFin < etat.dateDebut) return 'La date de fin précède la date de début.'
     return null
   }
-  if (etat.prevenance.trim() !== '' && !estEntierPositif(etat.prevenance)) return 'La prévenance doit être un nombre entier de jours (0 ou plus).'
-  if (etat.retard.trim() !== '' && !estEntierPositif(etat.retard)) return 'Le retard doit être un nombre entier de jours (0 ou plus).'
+  if (etat.prevenance.trim() !== '' && !estMoisValide(etat.prevenance)) return `La prévenance doit être un nombre entier de mois, entre 0 et ${MAX_MOIS}.`
+  if (etat.retard.trim() !== '' && !estMoisValide(etat.retard)) return `Le retard doit être un nombre entier de mois, entre 0 et ${MAX_MOIS}.`
   return null
 }
 
@@ -32,8 +33,8 @@ export function construireFiltres(etat: EtatFiltres, config: ConfigurationDelaiD
   }
   const prevenance = etat.prevenance.trim()
   const retard = etat.retard.trim()
-  if (prevenance !== '' && Number(prevenance) !== config?.prevenanceJours) filtres.prevenanceJours = Number(prevenance)
-  if (retard !== '' && Number(retard) !== config?.retardJours) filtres.retardJours = Number(retard)
+  if (prevenance !== '' && Number(prevenance) !== config?.prevenanceMois) filtres.prevenanceMois = Number(prevenance)
+  if (retard !== '' && Number(retard) !== config?.retardMois) filtres.retardMois = Number(retard)
   return filtres
 }
 
@@ -42,8 +43,8 @@ export function decrireFenetre(filtres: FiltresEcheances, config: ConfigurationD
     if (filtres.dateDebut && filtres.dateFin) return `échéances du ${formatDate(filtres.dateDebut)} au ${formatDate(filtres.dateFin)}`
     return filtres.dateDebut ? `échéances à partir du ${formatDate(filtres.dateDebut)}` : `échéances jusqu'au ${formatDate(filtres.dateFin)}`
   }
-  const prevenance = filtres.prevenanceJours ?? config?.prevenanceJours
-  const retard = filtres.retardJours ?? config?.retardJours
+  const prevenance = filtres.prevenanceMois ?? config?.prevenanceMois
+  const retard = filtres.retardMois ?? config?.retardMois
   if (prevenance == null || retard == null) return 'fenêtre configurée'
-  return `à venir dans ${prevenance} j au plus · ${retard === 0 ? 'aucun retard affiché' : `dépassées depuis ${retard} j au plus`}`
+  return `à venir dans ${prevenance} mois au plus · ${retard === 0 ? 'aucun retard affiché' : `dépassées depuis ${retard} mois au plus`}`
 }

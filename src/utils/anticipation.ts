@@ -62,10 +62,14 @@ export function libelleEcheance(joursRestants: number | null | undefined): strin
     : `Dépassé de ${formatDuree(joursRestants)}`
 }
 
-export function formatJoursEtMois(jours: number): string {
-  if (jours < 30) return `${jours} j`
-  const mois = (jours / 30).toLocaleString('fr-FR', { maximumFractionDigits: 1 })
-  return `${jours} j (≈ ${mois} mois)`
+/** Doit rester aligné sur FenetreAnticipation.MAX_MOIS côté backend. */
+export const MAX_MOIS = 1200
+
+export function formatMois(mois: number): string {
+  if (mois < 12) return `${mois} mois`
+  const ans = Math.floor(mois / 12)
+  const reste = mois % 12
+  return `${mois} mois (${ans} an${ans > 1 ? 's' : ''}${reste > 0 ? ` et ${reste} mois` : ''})`
 }
 
 export const ECHEANCE_SLUGS: Record<TypeEcheance, string> = {

@@ -34,8 +34,8 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
     if (!config) return
     setEtat((current) => ({
       ...current,
-      prevenance: current.prevenance === '' ? String(config.prevenanceJours) : current.prevenance,
-      retard: current.retard === '' ? String(config.retardJours) : current.retard,
+      prevenance: current.prevenance === '' ? String(config.prevenanceMois) : current.prevenance,
+      retard: current.retard === '' ? String(config.retardMois) : current.retard,
     }))
   }, [config])
 

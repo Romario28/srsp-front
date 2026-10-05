@@ -5,7 +5,7 @@ import { useFetch } from '@/hooks/useFetch'
 import { anticipationConfigApi } from '@/api/anticipationConfig'
 import { extractErrorMessage } from '@/api/client'
 import { isAdmin } from '@/utils/roles'
-import { TYPES_ECHEANCE, TYPE_LABELS, formatJoursEtMois } from '@/utils/anticipation'
+import { TYPES_ECHEANCE, TYPE_LABELS, formatMois } from '@/utils/anticipation'
 import { Badge } from '@/components/ui/Badge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
@@ -13,7 +13,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { ConfigurationFormModal } from './ConfigurationFormModal'
 import type { ConfigurationDelaiDTO } from '@/types/configurationDelai'
 
-const libelleRetard = (jours: number) => jours === 0 ? '0 j (aucun retard)' : formatJoursEtMois(jours)
+const libelleRetard = (mois: number) => mois === 0 ? '0 mois (aucun retard)' : formatMois(mois)
 
 export function ConfigurationPage() {
   const { user } = useAuth()
@@ -35,7 +35,7 @@ export function ConfigurationPage() {
   }
 
   return <div className="flex flex-col gap-5">
-    <div><h1 className="font-display text-[20px] font-semibold text-ink">Configuration des fenêtres</h1><p className="mt-0.5 max-w-3xl text-[13px] text-[#6B7180]">Pour chaque type d'échéance : combien de jours avant l'échéance elle apparaît (prévenance), et combien de jours après son dépassement elle reste affichée (retard).</p></div>
+    <div><h1 className="font-display text-[20px] font-semibold text-ink">Configuration des fenêtres</h1><p className="mt-0.5 max-w-3xl text-[13px] text-[#6B7180]">Pour chaque type d'échéance : combien de mois avant l'échéance elle apparaît (prévenance), et combien de mois après son dépassement elle reste affichée (retard). Les mois sont calendaires, comptés depuis aujourd'hui.</p></div>
     <div className="flex items-start gap-2.5 rounded-lg border border-accent/30 bg-accent-light px-4 py-3 text-[13px] text-accent-dark"><Info className="mt-0.5 h-4 w-4 flex-shrink-0" /><div className="flex flex-col gap-1.5">
       <p>Ces valeurs pré-remplissent les écrans de consultation (modifiables à chaque calcul) et décident, chaque nuit, quelles échéances génèrent une alerte.</p>
       <p>Une modification joue sur les prochaines recherches et sur le prochain passage de nuit, pas sur les alertes déjà créées : elles restent dans le fil jusqu'à leur acquittement.</p>
@@ -47,9 +47,9 @@ export function ConfigurationPage() {
         <th className="table-head-cell">Type</th><th className="table-head-cell">Prévenance</th><th className="table-head-cell">Retard toléré</th><th className="table-head-cell">Par défaut</th><th className="table-head-cell">État</th>{peutModifier && <th className="table-head-cell text-right">Actions</th>}
       </tr></thead><tbody className="divide-y divide-[#EAEBF0]">{lignes.map((config) => <tr key={config.type} className="hover:bg-[#FAFAFB]">
         <td className="table-cell font-medium text-ink">{TYPE_LABELS[config.type]}</td>
-        <td className={`table-cell ${config.prevenanceJours !== config.prevenanceJoursDefaut ? 'font-medium text-ink' : 'text-[#4B4F5A]'}`}>{formatJoursEtMois(config.prevenanceJours)}</td>
-        <td className={`table-cell ${config.retardJours !== config.retardJoursDefaut ? 'font-medium text-ink' : 'text-[#4B4F5A]'}`}>{libelleRetard(config.retardJours)}</td>
-        <td className="table-cell text-[12.5px] text-[#6B7180]"><div>Prévenance : {formatJoursEtMois(config.prevenanceJoursDefaut)}</div><div>Retard : {libelleRetard(config.retardJoursDefaut)}</div></td>
+        <td className={`table-cell ${config.prevenanceMois !== config.prevenanceMoisDefaut ? 'font-medium text-ink' : 'text-[#4B4F5A]'}`}>{formatMois(config.prevenanceMois)}</td>
+        <td className={`table-cell ${config.retardMois !== config.retardMoisDefaut ? 'font-medium text-ink' : 'text-[#4B4F5A]'}`}>{libelleRetard(config.retardMois)}</td>
+        <td className="table-cell text-[12.5px] text-[#6B7180]"><div>Prévenance : {formatMois(config.prevenanceMoisDefaut)}</div><div>Retard : {libelleRetard(config.retardMoisDefaut)}</div></td>
         <td className="table-cell"><Badge tone={config.personnalise ? 'warning' : 'neutral'}>{config.personnalise ? 'Personnalisé' : 'Par défaut'}</Badge></td>
         {peutModifier && <td className="table-cell"><div className="flex justify-end gap-1">
           <button onClick={() => setEdition(config)} aria-label={`Modifier la fenêtre ${TYPE_LABELS[config.type]}`} className="rounded-md p-1.5 text-[#6B7180] hover:bg-accent-light hover:text-accent-dark"><Pencil className="h-4 w-4" /></button>
@@ -59,6 +59,6 @@ export function ConfigurationPage() {
     </div> : null}
     <p className="text-[12px] text-[#9CA0AC]">Les valeurs par défaut sont fixées côté serveur ; elles s'appliquent tant qu'aucune personnalisation n'existe.</p>
     <ConfigurationFormModal config={edition} onClose={() => setEdition(null)} onSaved={() => { setEdition(null); reload() }} />
-    <ConfirmDialog isOpen={!!aReinitialiser} title="Rétablir les valeurs par défaut" message={erreurReinit ?? (aReinitialiser ? `Rétablir la fenêtre « ${TYPE_LABELS[aReinitialiser.type]} » : prévenance ${formatJoursEtMois(aReinitialiser.prevenanceJoursDefaut)}, retard ${libelleRetard(aReinitialiser.retardJoursDefaut)}. Les alertes déjà créées ne changent pas.` : '')} confirmLabel="Rétablir" danger={false} isLoading={enCours} onConfirm={reinitialiser} onCancel={() => setAReinitialiser(null)} />
+    <ConfirmDialog isOpen={!!aReinitialiser} title="Rétablir les valeurs par défaut" message={erreurReinit ?? (aReinitialiser ? `Rétablir la fenêtre « ${TYPE_LABELS[aReinitialiser.type]} » : prévenance ${formatMois(aReinitialiser.prevenanceMoisDefaut)}, retard ${libelleRetard(aReinitialiser.retardMoisDefaut)}. Les alertes déjà créées ne changent pas.` : '')} confirmLabel="Rétablir" danger={false} isLoading={enCours} onConfirm={reinitialiser} onCancel={() => setAReinitialiser(null)} />
   </div>
 }

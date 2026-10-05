@@ -31,8 +31,8 @@ export interface AlerteAnticipation {
 }
 
 export interface FiltresEcheances {
-  prevenanceJours?: number
-  retardJours?: number
+  prevenanceMois?: number
+  retardMois?: number
   dateDebut?: string
   dateFin?: string
 }

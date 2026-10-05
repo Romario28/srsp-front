@@ -2,7 +2,7 @@ import { Calculator, Info, RotateCcw, X } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
-import { formatJoursEtMois } from '@/utils/anticipation'
+import { formatMois, MAX_MOIS } from '@/utils/anticipation'
 import { datesActives, type EtatFiltres } from './filtres'
 import type { ConfigurationDelaiDTO } from '@/types/configurationDelai'
 
@@ -24,10 +24,10 @@ export function EcheancesFilters({ etat, onChange, config, erreur, isLoading, on
         <fieldset disabled={dates} className="min-w-0 disabled:opacity-50">
           <legend className="mb-2 text-[13px] font-semibold text-ink">Fenêtre relative</legend>
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Prévenance (jours avant)" type="number" min={0} step={1} inputMode="numeric" value={etat.prevenance} onChange={(e) => onChange({ prevenance: e.target.value })} placeholder={config ? String(config.prevenanceJours) : 'valeur configurée'} hint={config ? `Configuré : ${formatJoursEtMois(config.prevenanceJours)}` : undefined} />
-            <Input label="Retard (jours après)" type="number" min={0} step={1} inputMode="numeric" value={etat.retard} onChange={(e) => onChange({ retard: e.target.value })} placeholder={config ? String(config.retardJours) : 'valeur configurée'} hint={config ? `Configuré : ${formatJoursEtMois(config.retardJours)} · 0 = aucun retard` : '0 = aucun retard'} />
+            <Input label="Prévenance (mois avant)" type="number" min={0} max={MAX_MOIS} step={1} inputMode="numeric" value={etat.prevenance} onChange={(e) => onChange({ prevenance: e.target.value })} placeholder={config ? String(config.prevenanceMois) : 'valeur configurée'} hint={config ? `Configuré : ${formatMois(config.prevenanceMois)}` : undefined} />
+            <Input label="Retard (mois après)" type="number" min={0} max={MAX_MOIS} step={1} inputMode="numeric" value={etat.retard} onChange={(e) => onChange({ retard: e.target.value })} placeholder={config ? String(config.retardMois) : 'valeur configurée'} hint={config ? `Configuré : ${formatMois(config.retardMois)} · 0 = aucun retard` : '0 = aucun retard'} />
           </div>
-          <Button type="button" variant="ghost" size="sm" className="mt-2" icon={<RotateCcw className="h-3.5 w-3.5" />} disabled={!config} onClick={() => config && onChange({ prevenance: String(config.prevenanceJours), retard: String(config.retardJours) })}>Valeurs configurées</Button>
+          <Button type="button" variant="ghost" size="sm" className="mt-2" icon={<RotateCcw className="h-3.5 w-3.5" />} disabled={!config} onClick={() => config && onChange({ prevenance: String(config.prevenanceMois), retard: String(config.retardMois) })}>Valeurs configurées</Button>
         </fieldset>
         <fieldset className="min-w-0">
           <legend className="mb-2 text-[13px] font-semibold text-ink">Intervalle de dates (prioritaire)</legend>

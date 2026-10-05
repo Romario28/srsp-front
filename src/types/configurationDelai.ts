@@ -2,14 +2,14 @@ import type { TypeEcheance } from './anticipation'
 
 export interface ConfigurationDelaiDTO {
   type: TypeEcheance
-  prevenanceJours: number
-  retardJours: number
-  prevenanceJoursDefaut: number
-  retardJoursDefaut: number
+  prevenanceMois: number
+  retardMois: number
+  prevenanceMoisDefaut: number
+  retardMoisDefaut: number
   personnalise: boolean
 }
 
 export interface DefinirDelaiRequest {
-  prevenanceJours: number
-  retardJours: number
+  prevenanceMois: number
+  retardMois: number
 }
