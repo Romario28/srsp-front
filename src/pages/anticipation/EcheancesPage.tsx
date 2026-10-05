@@ -50,7 +50,7 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
   const perime = dernier != null && calcul.data != null && JSON.stringify(construireFiltres(etat, config)) !== JSON.stringify(dernier.filtres)
 
   return <div className="flex flex-col gap-5">
-    <div><h1 className="font-display text-[20px] font-semibold text-ink">{TYPE_LABELS[type]}</h1><p className="mt-0.5 text-[13px] text-[#6B7180]">{DESCRIPTIONS[type]}</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Seuls les agents en activité sont pris en compte (situation administrative « 00 » ou non renseignée).</p></div>
+    <div><h1 className="font-display text-[20px] font-semibold text-ink">{TYPE_LABELS[type]}</h1><p className="mt-0.5 text-[13px] text-[#6B7180]">{DESCRIPTIONS[type]}</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Seuls les agents en activité sont pris en compte (situation administrative « 00 » ou non renseignée).</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Date de préparation = échéance − délai de préparation du type : à partir de cette date, le dossier peut être constitué.</p></div>
     <EcheancesFilters etat={etat} config={config} erreur={erreurSaisie} isLoading={calcul.isLoading} onChange={(patch) => setEtat((current) => ({ ...current, ...patch }))} onCalculer={handleCalculer} onAnnuler={calcul.cancel} />
     {calcul.error && <ErrorBanner message={calcul.error} />}
     {calcul.data && dernier ? <div className={`flex flex-col gap-4 transition-opacity ${calcul.isLoading ? 'opacity-50' : ''}`}>

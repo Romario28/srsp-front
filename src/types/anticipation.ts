@@ -6,6 +6,7 @@ export type TypeEcheance = Exclude<TypeAnticipation, 'ANOMALIE'>
 
 /** Le statut peut être null si la donnée est absente ou non reconnue à l'import. */
 export type StatutAgent = 'FONCTIONNAIRE' | 'CONTRACTUEL' | 'ELD'
+export type CritereDate = 'ECHEANCE' | 'PREPARATION'
 
 /** État du référentiel d'agents, renvoyé par GET /api/anticipation/base. */
 export interface EtatBaseAgents {
@@ -18,6 +19,7 @@ export interface AlerteAnticipation {
   nomComplet: string
   type: TypeAnticipation
   dateEcheance: string | null
+  datePreparation: string | null
   joursRestants: number
   details: string | null
   statut: StatutAgent | null
@@ -35,4 +37,5 @@ export interface FiltresEcheances {
   retardMois?: number
   dateDebut?: string
   dateFin?: string
+  critereDate?: CritereDate
 }

@@ -6,7 +6,7 @@ import { Badge, StatutAlerteBadge } from '@/components/ui/Badge'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { alertesApi } from '@/api/alertes'
 import { extractErrorCode, extractErrorMessage } from '@/api/client'
-import { formatDateTime } from '@/utils/date'
+import { formatDate, formatDateTime } from '@/utils/date'
 import { TYPE_LABELS } from '@/utils/anticipation'
 import { EcheanceAlerte } from './EcheanceAlerte'
 import type { AlerteDTO } from '@/types/alerte'
@@ -54,6 +54,7 @@ function Contenu({ alerte, erreurConsultation, onClose, onAcquittee, onObsolete 
       <Ligne label="Type"><Badge tone={estAnomalie ? 'warning' : 'neutral'}>{TYPE_LABELS[alerte.type]}</Badge></Ligne>
       <Ligne label="Statut"><StatutAlerteBadge statut={alerte.statut} /></Ligne>
       <Ligne label="Échéance"><EcheanceAlerte alerte={alerte} /></Ligne>
+      {!estAnomalie && <Ligne label="Préparation dès le">{formatDate(alerte.datePreparation)}</Ligne>}
       <Ligne label={estAnomalie ? 'Raison' : 'Note'}>{alerte.details ?? '—'}</Ligne>
       <Ligne label="Détectée le">{formatDateTime(alerte.dateDetection)}</Ligne>
       <Ligne label="Dernière consultation">{formatDateTime(alerte.dateDerniereConsultation)}</Ligne>

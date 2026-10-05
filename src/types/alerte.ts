@@ -9,6 +9,7 @@ export interface AlerteDTO {
   nomCompletAgent: string | null
   type: TypeAnticipation
   dateEcheance: string | null
+  datePreparation: string | null
   details: string | null
   statut: StatutAlerte
   dateDetection: string

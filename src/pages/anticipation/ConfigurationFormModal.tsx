@@ -65,7 +65,7 @@ function Formulaire({ config, onClose, onSaved }: { config: ConfigurationDelaiDT
   return <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
     {erreur && <ErrorBanner message={erreur} />}
     <div className="grid grid-cols-2 gap-3">
-      <Input label="Prévenance (mois avant)" type="number" min={0} max={MAX_MOIS} step={1} inputMode="numeric" required value={prevenance} onChange={(event) => setPrevenance(event.target.value)} error={erreurMois(prevenance)} hint={`défaut ${config.prevenanceMoisDefaut} mois`} />
+      <Input label="Préparation (mois avant l'échéance)" type="number" min={0} max={MAX_MOIS} step={1} inputMode="numeric" required value={prevenance} onChange={(event) => setPrevenance(event.target.value)} error={erreurMois(prevenance)} hint={`défaut ${config.prevenanceMoisDefaut} mois`} />
       <Input label="Retard (mois après)" type="number" min={0} max={MAX_MOIS} step={1} inputMode="numeric" required value={retard} onChange={(event) => setRetard(event.target.value)} error={erreurMois(retard)} hint={`défaut ${config.retardMoisDefaut} mois`} />
     </div>
     <p className="text-[12.5px] text-[#6B7180]">Retard 0 : aucune échéance dépassée n'est affichée (celle du jour reste visible).</p>
