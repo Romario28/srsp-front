@@ -7,9 +7,9 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { alertesApi } from '@/api/alertes'
 import { extractErrorCode, extractErrorMessage } from '@/api/client'
 import { formatDate, formatDateTime } from '@/utils/date'
-import { TYPE_LABELS } from '@/utils/anticipation'
+import { changeDeGrade, TYPE_LABELS } from '@/utils/anticipation'
 import { EcheanceAlerte } from './EcheanceAlerte'
-import { GradeSuivant } from '../GradeSuivant'
+import { BlocsSituation } from '../SituationsGrade'
 import type { AlerteDTO } from '@/types/alerte'
 
 interface AlerteDetailModalProps {
@@ -22,6 +22,7 @@ interface AlerteDetailModalProps {
 function Ligne({ label, children }: { label: string; children: ReactNode }) {
   return <><dt className="text-[#6B7180]">{label}</dt><dd className="min-w-0 text-ink">{children}</dd></>
 }
+const GRILLE = 'grid grid-cols-[150px_minmax(0,1fr)] gap-x-3 gap-y-2.5 text-[13px]'
 
 export function AlerteDetailModal({ alerte, erreurConsultation, onClose, onAcquittee, onObsolete }: AlerteDetailModalProps) {
   return <Modal isOpen={alerte != null} onClose={onClose} maxWidth="max-w-lg" title={alerte ? `Alerte · ${TYPE_LABELS[alerte.type]}` : ''}>
@@ -50,13 +51,15 @@ function Contenu({ alerte, erreurConsultation, onClose, onAcquittee, onObsolete 
 
   return <div className="flex flex-col gap-4">
     {erreurConsultation && <ErrorBanner message={erreurConsultation} />}
-    <dl className="grid grid-cols-[150px_minmax(0,1fr)] gap-x-3 gap-y-2.5 text-[13px]">
+    <dl className={GRILLE}>
       <Ligne label="Agent"><span className="font-medium">{alerte.nomCompletAgent ?? '—'}</span>{' '}<span className="font-mono text-[12px] text-[#6B7180]">({alerte.matriculeAgent})</span></Ligne>
       <Ligne label="Type"><Badge tone={estAnomalie ? 'warning' : 'neutral'}>{TYPE_LABELS[alerte.type]}</Badge></Ligne>
       <Ligne label="Statut"><StatutAlerteBadge statut={alerte.statut} /></Ligne>
       <Ligne label="Échéance"><EcheanceAlerte alerte={alerte} /></Ligne>
       {!estAnomalie && <Ligne label="Préparation dès le">{formatDate(alerte.datePreparation)}</Ligne>}
-      {(alerte.type === 'AVANCEMENT' || alerte.type === 'TITULARISATION') && <Ligne label="Grade suivant"><GradeSuivant cas={alerte.gradeSuivantCas} grade={alerte.gradeSuivant} /></Ligne>}
+    </dl>
+    {changeDeGrade(alerte.type) && <BlocsSituation gradeActuel={alerte.gradeActuel} dateEffetActuelle={alerte.dateEffetActuelle} gradeSuivant={alerte.gradeSuivant} dateEffetNouvelle={alerte.dateEcheance} />}
+    <dl className={GRILLE}>
       <Ligne label={estAnomalie ? 'Raison' : 'Note'}>{alerte.details ?? '—'}</Ligne>
       <Ligne label="Détectée le">{formatDateTime(alerte.dateDetection)}</Ligne>
       <Ligne label="Dernière consultation">{formatDateTime(alerte.dateDerniereConsultation)}</Ligne>

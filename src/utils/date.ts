@@ -48,3 +48,15 @@ export function formatDureeMs(ms: number): string {
   const reste = Math.floor(secondes % 60)
   return `${minutes} min ${String(reste).padStart(2, '0')} s`
 }
+
+/** Âge en années révolues à une date (yyyy-MM-dd), avec le 29 février ramené au 28 hors années bissextiles. */
+export function ageEn(naissance: string | null | undefined, aLaDate: string | null | undefined): number | null {
+  if (!naissance || !aLaDate) return null
+  const [an, mn, jn0] = naissance.slice(0, 10).split('-').map(Number)
+  const [ac, mc, jc] = aLaDate.slice(0, 10).split('-').map(Number)
+  if ([an, mn, jn0, ac, mc, jc].some((n) => !Number.isInteger(n))) return null
+  const bissextile = (a: number) => (a % 4 === 0 && a % 100 !== 0) || a % 400 === 0
+  const jn = mn === 2 && jn0 === 29 && !bissextile(ac) ? 28 : jn0
+  const age = ac - an - (mc < mn || (mc === mn && jc < jn) ? 1 : 0)
+  return age >= 0 ? age : null
+}

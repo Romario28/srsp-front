@@ -4,21 +4,12 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Pagination } from '@/components/ui/Pagination'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { formatDate } from '@/utils/date'
-import { cleStatut, grouperParStatut, libelleEcheance, toneDelai, type FiltreStatut } from '@/utils/anticipation'
+import { changeDeGrade, cleStatut, grouperParStatut, libelleEcheance, toneDelai, type FiltreStatut } from '@/utils/anticipation'
 import type { AlerteAnticipation, TypeAnticipation } from '@/types/anticipation'
-import { GradeSuivant } from './GradeSuivant'
+import { CelluleDerniereSituation, CelluleNouvelleSituation } from './SituationsGrade'
+import { Age, DateRetraite } from './DatesCarriere'
 
 const TAILLE_PAGE = 50
-function enteteSource(type: TypeAnticipation): string | null {
-  if (type === 'DEPART_RETRAITE') return 'Date de naissance'
-  if (type === 'AVANCEMENT' || type === 'TITULARISATION') return "Date d'ancrage"
-  return null
-}
-function dateSource(type: TypeAnticipation, alerte: AlerteAnticipation): string | null {
-  if (type === 'DEPART_RETRAITE') return alerte.dateNaissance
-  if (type === 'AVANCEMENT' || type === 'TITULARISATION') return alerte.avanceDate ?? alerte.dateDebutContrat
-  return null
-}
 function corpsGrade(alerte: AlerteAnticipation): string {
   if (alerte.corpsCode == null && alerte.gradeCode == null) return '—'
   return [alerte.corpsCode, alerte.categorieCode, alerte.gradeCode].map((value) => value ?? '—').join(' / ')
@@ -42,9 +33,10 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
   const pageCourante = Math.min(page, totalPages - 1)
   const debut = pageCourante * TAILLE_PAGE
   const tranche = lignes.slice(debut, debut + TAILLE_PAGE)
-  const entete = enteteSource(type)
-  const avecGradeSuivant = type === 'AVANCEMENT' || type === 'TITULARISATION'
-  const nbColonnes = 3 + (entete ? 1 : 0) + (avecGradeSuivant ? 1 : 0) + (estAnomalie ? 1 : 3)
+  const estRetraite = type === 'DEPART_RETRAITE'
+  const estFinContrat = type === 'FIN_CONTRAT'
+  const afficheSituations = changeDeGrade(type)
+  const nbColonnes = 3 + (estRetraite ? 2 : 0) + (estFinContrat ? 1 : 0) + (afficheSituations ? 2 : 0) + (estAnomalie ? 1 : 3)
 
   return (
     <div className="flex flex-col gap-3">
@@ -52,9 +44,10 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
       <div className="overflow-x-auto rounded-xl border border-[#E4E6EB] bg-white"><table className="w-full">
         <thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr>
           <th className="table-head-cell">Matricule</th><th className="table-head-cell">Agent</th><th className="table-head-cell">Corps / cat. / grade</th>
-          {entete && <th className="table-head-cell">{entete}</th>}
-          {avecGradeSuivant && <th className="table-head-cell">Grade suivant</th>}
-          {estAnomalie ? <th className="table-head-cell">Raison</th> : <><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">Échéance</th><th className="table-head-cell">Délai</th></>}
+          {estRetraite && <><th className="table-head-cell">Date de naissance</th><th className="table-head-cell">Âge</th></>}
+          {estFinContrat && <th className="table-head-cell">Date de début</th>}
+          {afficheSituations && <><th className="table-head-cell border-l border-[#EAEBF0]">Dernière situation</th><th className="table-head-cell border-l border-[#EAEBF0]">Nouvelle situation</th></>}
+          {estAnomalie ? <th className="table-head-cell">Raison</th> : <><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">{estRetraite ? 'Date de retraite' : estFinContrat ? 'Date de fin' : 'Échéance'}</th><th className="table-head-cell">{estFinContrat ? 'Durée restante' : 'Délai'}</th></>}
         </tr></thead>
         <tbody className="divide-y divide-[#EAEBF0]">{tranche.map(({ groupe, item }, index) => {
           const premier = index === 0 || tranche[index - 1].groupe !== groupe
@@ -64,9 +57,10 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
               <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]">{item.matricule}</td>
               <td className="table-cell"><div className="font-medium text-ink">{item.nomComplet}</div>{!estAnomalie && item.details && <div className="text-[12px] text-[#9CA0AC]">{item.details}</div>}</td>
               <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]">{corpsGrade(item)}</td>
-              {entete && <td className="table-cell text-[#4B4F5A]">{formatDate(dateSource(type, item))}</td>}
-              {avecGradeSuivant && <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]"><GradeSuivant cas={item.gradeSuivantCas} grade={item.gradeSuivant} /></td>}
-              {estAnomalie ? <td className="table-cell text-[#4B4F5A]">{item.details ?? '—'}</td> : <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.datePreparation)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateEcheance)}</td><td className="table-cell"><Badge tone={toneDelai(item.joursRestants)}>{libelleEcheance(item.joursRestants)}</Badge></td></>}
+              {estRetraite && <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateNaissance)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]"><Age naissance={item.dateNaissance} /></td></>}
+              {estFinContrat && <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateDebutContrat)}</td>}
+              {afficheSituations && <><td className="table-cell border-l border-[#EAEBF0]"><CelluleDerniereSituation grade={item.gradeCode} dateEffet={item.avanceDate ?? item.dateDebutContrat} /></td><td className="table-cell border-l border-[#EAEBF0] bg-accent-light/30"><CelluleNouvelleSituation gradeSuivant={item.gradeSuivant} dateEffet={item.dateEcheance} /></td></>}
+              {estAnomalie ? <td className="table-cell text-[#4B4F5A]">{item.details ?? '—'}</td> : <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.datePreparation)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{estRetraite ? <DateRetraite dateEcheance={item.dateEcheance} naissance={item.dateNaissance} /> : formatDate(item.dateEcheance)}</td><td className="table-cell"><Badge tone={toneDelai(item.joursRestants)}>{libelleEcheance(item.joursRestants)}</Badge></td></>}
             </tr>
           </Fragment>
         })}</tbody>

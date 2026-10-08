@@ -89,3 +89,6 @@ export function toneDelai(jours: number): 'danger' | 'warning' | 'neutral' {
   if (jours < 0) return 'danger'
   return jours <= 30 ? 'warning' : 'neutral'
 }
+
+/** Seuls ces deux types d'échéance correspondent à un changement de grade. */
+export const changeDeGrade = (type: TypeAnticipation) => type === 'AVANCEMENT' || type === 'TITULARISATION'
