@@ -6,6 +6,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { formatDate } from '@/utils/date'
 import { cleStatut, grouperParStatut, libelleEcheance, toneDelai, type FiltreStatut } from '@/utils/anticipation'
 import type { AlerteAnticipation, TypeAnticipation } from '@/types/anticipation'
+import { GradeSuivant } from './GradeSuivant'
 
 const TAILLE_PAGE = 50
 function enteteSource(type: TypeAnticipation): string | null {
@@ -42,7 +43,8 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
   const debut = pageCourante * TAILLE_PAGE
   const tranche = lignes.slice(debut, debut + TAILLE_PAGE)
   const entete = enteteSource(type)
-  const nbColonnes = 3 + (entete ? 1 : 0) + (estAnomalie ? 1 : 3)
+  const avecGradeSuivant = type === 'AVANCEMENT' || type === 'TITULARISATION'
+  const nbColonnes = 3 + (entete ? 1 : 0) + (avecGradeSuivant ? 1 : 0) + (estAnomalie ? 1 : 3)
 
   return (
     <div className="flex flex-col gap-3">
@@ -51,6 +53,7 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
         <thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr>
           <th className="table-head-cell">Matricule</th><th className="table-head-cell">Agent</th><th className="table-head-cell">Corps / cat. / grade</th>
           {entete && <th className="table-head-cell">{entete}</th>}
+          {avecGradeSuivant && <th className="table-head-cell">Grade suivant</th>}
           {estAnomalie ? <th className="table-head-cell">Raison</th> : <><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">Échéance</th><th className="table-head-cell">Délai</th></>}
         </tr></thead>
         <tbody className="divide-y divide-[#EAEBF0]">{tranche.map(({ groupe, item }, index) => {
@@ -62,6 +65,7 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
               <td className="table-cell"><div className="font-medium text-ink">{item.nomComplet}</div>{!estAnomalie && item.details && <div className="text-[12px] text-[#9CA0AC]">{item.details}</div>}</td>
               <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]">{corpsGrade(item)}</td>
               {entete && <td className="table-cell text-[#4B4F5A]">{formatDate(dateSource(type, item))}</td>}
+              {avecGradeSuivant && <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]"><GradeSuivant cas={item.gradeSuivantCas} grade={item.gradeSuivant} /></td>}
               {estAnomalie ? <td className="table-cell text-[#4B4F5A]">{item.details ?? '—'}</td> : <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.datePreparation)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateEcheance)}</td><td className="table-cell"><Badge tone={toneDelai(item.joursRestants)}>{libelleEcheance(item.joursRestants)}</Badge></td></>}
             </tr>
           </Fragment>

@@ -16,6 +16,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
 import { AlerteDetailModal } from './AlerteDetailModal'
 import { EcheanceAlerte } from './EcheanceAlerte'
+import { GradeSuivant } from '../GradeSuivant'
 import type { TypeAnticipation } from '@/types/anticipation'
 import type { AlerteDTO, StatutAlerte } from '@/types/alerte'
 
@@ -116,11 +117,12 @@ export function AlertesPage() {
       lignes.length === 0 ? <EmptyState icon={Bell} title={statut === 'NOUVELLE' && !filtresActifs ? 'Aucune nouvelle alerte' : 'Aucune alerte'} description={statut === 'NOUVELLE' && !filtresActifs ? 'Le prochain calcul a lieu cette nuit.' : 'Aucune alerte ne correspond à ces filtres.'} /> :
       <div className={`flex flex-col gap-3 transition-opacity ${isLoading ? 'opacity-50' : ''}`}>
         <div className="overflow-x-auto rounded-xl border border-[#E4E6EB] bg-white"><table className="w-full">
-          <thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr><th className="table-head-cell">Matricule</th><th className="table-head-cell">Agent</th><th className="table-head-cell">Type</th><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">Échéance</th><th className="table-head-cell">Détectée le</th><th className="table-head-cell">Statut</th></tr></thead>
+          <thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr><th className="table-head-cell">Matricule</th><th className="table-head-cell">Agent</th><th className="table-head-cell">Type</th><th className="table-head-cell">Grade suivant</th><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">Échéance</th><th className="table-head-cell">Détectée le</th><th className="table-head-cell">Statut</th></tr></thead>
           <tbody className="divide-y divide-[#EAEBF0]">{lignes.map((alerte) => <tr key={alerte.id} onClick={() => ouvrir(alerte)} className="cursor-pointer hover:bg-[#FAFAFB]">
             <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]">{alerte.matriculeAgent}</td>
             <td className="table-cell"><button type="button" className={`text-left text-ink ${alerte.statut === 'NOUVELLE' ? 'font-semibold' : 'font-medium'}`}>{alerte.nomCompletAgent ?? '—'}</button>{alerte.details && <div className="text-[12px] text-[#9CA0AC]">{alerte.details}</div>}</td>
             <td className="table-cell"><Badge tone={alerte.type === 'ANOMALIE' ? 'warning' : 'neutral'}>{TYPE_LABELS[alerte.type]}</Badge></td>
+            <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]">{alerte.type === 'AVANCEMENT' || alerte.type === 'TITULARISATION' ? <GradeSuivant cas={alerte.gradeSuivantCas} grade={alerte.gradeSuivant} /> : '—'}</td>
             <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(alerte.datePreparation)}</td>
             <td className="table-cell"><EcheanceAlerte alerte={alerte} /></td>
             <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(alerte.dateDetection)}</td>

@@ -9,6 +9,7 @@ import { extractErrorCode, extractErrorMessage } from '@/api/client'
 import { formatDate, formatDateTime } from '@/utils/date'
 import { TYPE_LABELS } from '@/utils/anticipation'
 import { EcheanceAlerte } from './EcheanceAlerte'
+import { GradeSuivant } from '../GradeSuivant'
 import type { AlerteDTO } from '@/types/alerte'
 
 interface AlerteDetailModalProps {
@@ -55,6 +56,7 @@ function Contenu({ alerte, erreurConsultation, onClose, onAcquittee, onObsolete 
       <Ligne label="Statut"><StatutAlerteBadge statut={alerte.statut} /></Ligne>
       <Ligne label="Échéance"><EcheanceAlerte alerte={alerte} /></Ligne>
       {!estAnomalie && <Ligne label="Préparation dès le">{formatDate(alerte.datePreparation)}</Ligne>}
+      {(alerte.type === 'AVANCEMENT' || alerte.type === 'TITULARISATION') && <Ligne label="Grade suivant"><GradeSuivant cas={alerte.gradeSuivantCas} grade={alerte.gradeSuivant} /></Ligne>}
       <Ligne label={estAnomalie ? 'Raison' : 'Note'}>{alerte.details ?? '—'}</Ligne>
       <Ligne label="Détectée le">{formatDateTime(alerte.dateDetection)}</Ligne>
       <Ligne label="Dernière consultation">{formatDateTime(alerte.dateDerniereConsultation)}</Ligne>

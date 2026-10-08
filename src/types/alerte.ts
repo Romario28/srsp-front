@@ -1,4 +1,4 @@
-import type { TypeAnticipation } from './anticipation'
+import type { CasGradeSuivant, TypeAnticipation } from './anticipation'
 
 export type StatutAlerte = 'NOUVELLE' | 'VUE' | 'ACQUITTEE'
 
@@ -10,6 +10,8 @@ export interface AlerteDTO {
   type: TypeAnticipation
   dateEcheance: string | null
   datePreparation: string | null
+  gradeSuivantCas: CasGradeSuivant | null
+  gradeSuivant: string | null
   details: string | null
   statut: StatutAlerte
   dateDetection: string

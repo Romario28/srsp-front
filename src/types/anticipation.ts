@@ -7,6 +7,7 @@ export type TypeEcheance = Exclude<TypeAnticipation, 'ANOMALIE'>
 /** Le statut peut être null si la donnée est absente ou non reconnue à l'import. */
 export type StatutAgent = 'FONCTIONNAIRE' | 'CONTRACTUEL' | 'ELD'
 export type CritereDate = 'ECHEANCE' | 'PREPARATION'
+export type CasGradeSuivant = 'UNIQUE' | 'AMBIGU' | 'DERNIER_GRADE' | 'INDETERMINE'
 
 /** État du référentiel d'agents, renvoyé par GET /api/anticipation/base. */
 export interface EtatBaseAgents {
@@ -30,6 +31,8 @@ export interface AlerteAnticipation {
   corpsCode: string | null
   gradeCode: string | null
   categorieCode: string | null
+  gradeSuivantCas: CasGradeSuivant | null
+  gradeSuivant: string | null
 }
 
 export interface FiltresEcheances {
