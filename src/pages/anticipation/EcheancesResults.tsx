@@ -8,6 +8,7 @@ import { changeDeGrade, cleStatut, grouperParStatut, libelleEcheance, toneDelai,
 import type { AlerteAnticipation, TypeAnticipation } from '@/types/anticipation'
 import { CelluleDerniereSituation, CelluleNouvelleSituation } from './SituationsGrade'
 import { Age, DateRetraite } from './DatesCarriere'
+import { EcheanceDetailModal } from './EcheanceDetailModal'
 
 const TAILLE_PAGE = 50
 function corpsGrade(alerte: AlerteAnticipation): string {
@@ -20,6 +21,7 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
   const groupes = useMemo(() => grouperParStatut(items).filter((groupe) => groupe.items.length > 0), [items])
   const [filtre, setFiltre] = useState<FiltreStatut>('TOUS')
   const [page, setPage] = useState(0)
+  const [selection, setSelection] = useState<AlerteAnticipation | null>(null)
   if (items.length === 0) return <EmptyState title={estAnomalie ? 'Aucune anomalie' : 'Aucune échéance dans cette fenêtre'} description={estAnomalie ? 'Le calcul est possible pour tous les agents en activité.' : "Élargissez la fenêtre ou l'intervalle de dates."} />
 
   const options: { value: FiltreStatut; label: string; count: number }[] = [
@@ -53,9 +55,9 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
           const premier = index === 0 || tranche[index - 1].groupe !== groupe
           return <Fragment key={`${debut + index}-${item.matricule}`}>
             {premier && <tr className="bg-[#FAFAFB]"><td colSpan={nbColonnes} className="px-4 py-2 text-[12px] font-semibold text-ink">{groupe.label}<span className="ml-2 font-normal text-[#9CA0AC]">{groupe.items.length}</span></td></tr>}
-            <tr className="hover:bg-[#FAFAFB]">
+            <tr onClick={() => setSelection(item)} className="cursor-pointer hover:bg-[#FAFAFB]">
               <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]">{item.matricule}</td>
-              <td className="table-cell"><div className="font-medium text-ink">{item.nomComplet}</div>{!estAnomalie && item.details && <div className="text-[12px] text-[#9CA0AC]">{item.details}</div>}</td>
+              <td className="table-cell"><button type="button" aria-label={`Ouvrir la fiche de ${item.nomComplet}`} className="text-left font-medium text-ink">{item.nomComplet}</button>{!estAnomalie && item.details && <div className="text-[12px] text-[#9CA0AC]">{item.details}</div>}</td>
               <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]">{corpsGrade(item)}</td>
               {estRetraite && <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateNaissance)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]"><Age naissance={item.dateNaissance} /></td></>}
               {estFinContrat && <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateDebutContrat)}</td>}
@@ -66,6 +68,7 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
         })}</tbody>
       </table></div>
       <Pagination page={pageCourante} totalPages={totalPages} totalElements={lignes.length} onPageChange={setPage} />
+      <EcheanceDetailModal item={selection} onClose={() => setSelection(null)} />
     </div>
   )
 }

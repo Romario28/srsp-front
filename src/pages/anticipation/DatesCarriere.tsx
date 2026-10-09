@@ -2,10 +2,15 @@ import { ageEn, formatDate, todayInputValue } from '@/utils/date'
 
 const ans = (n: number) => `${n} an${n > 1 ? 's' : ''}`
 
+/** Âge révolu à la date indiquée. */
+export function AgeA({ naissance, aLaDate }: { naissance: string | null | undefined; aLaDate: string | null | undefined }) {
+  const age = ageEn(naissance, aLaDate)
+  return <>{age == null ? '—' : ans(age)}</>
+}
+
 /** Âge aujourd'hui, en années révolues. */
 export function Age({ naissance }: { naissance: string | null | undefined }) {
-  const age = ageEn(naissance, todayInputValue())
-  return <>{age == null ? '—' : ans(age)}</>
+  return <AgeA naissance={naissance} aLaDate={todayInputValue()} />
 }
 
 /** Date de retraite et âge atteint à cette échéance. */
