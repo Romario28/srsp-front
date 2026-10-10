@@ -8,9 +8,11 @@ interface ModalProps {
   title: string
   children: ReactNode
   maxWidth?: string
+  /** Pied fixe sous la zone défilante, pour garder les actions visibles. */
+  footer?: ReactNode
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-md' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-md', footer }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return
     const handler = (e: KeyboardEvent) => {
@@ -35,7 +37,8 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-md' 
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="max-h-[75vh] overflow-y-auto px-5 py-5">{children}</div>
+        <div className={`${footer ? 'max-h-[65vh]' : 'max-h-[75vh]'} overflow-y-auto px-5 py-5`}>{children}</div>
+        {footer && <div className="border-t border-[#EAEBF0] px-5 py-3.5">{footer}</div>}
       </div>
     </div>,
     document.body
