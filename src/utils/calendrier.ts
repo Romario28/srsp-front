@@ -2,12 +2,26 @@ import type { CritereDate } from '@/types/anticipation'
 import type { CalendrierJour, CategorieCalendrier } from '@/types/calendrier'
 
 export const CATEGORIES: readonly CategorieCalendrier[] = ['DEPART_RETRAITE', 'AVANCEMENT', 'ELD', 'TITULARISATION', 'FIN_CONTRAT']
-export const CATEGORIE_INFO: Record<CategorieCalendrier, { label: string; point: string }> = {
-  DEPART_RETRAITE: { label: 'Départs à la retraite', point: 'bg-violet' },
-  AVANCEMENT: { label: 'Avancements', point: 'bg-accent' },
-  ELD: { label: 'Avancements ELD', point: 'bg-warning' },
-  TITULARISATION: { label: 'Titularisations', point: 'bg-success' },
-  FIN_CONTRAT: { label: 'Fins de contrat', point: 'bg-danger' },
+
+/**
+ * label : forme pluriel, pour la légende et les titres.
+ * point : classe de FOND de la couleur du type, partagée par les badges, la légende et la modale.
+ *         Écrite en toutes lettres, car Tailwind ne détecte pas les noms composés dynamiquement.
+ * un / plusieurs : pour l'info-bulle (« 1 fin de contrat », « 18 fins de contrat »).
+ */
+export const CATEGORIE_INFO: Record<CategorieCalendrier, { label: string; point: string; un: string; plusieurs: string }> = {
+  DEPART_RETRAITE: { label: 'Départs à la retraite', point: 'bg-violet', un: 'départ à la retraite', plusieurs: 'départs à la retraite' },
+  AVANCEMENT: { label: 'Avancements', point: 'bg-accent', un: 'avancement', plusieurs: 'avancements' },
+  // Ambre du thème assombri : le texte blanc dessus tient 4,5:1 (3,6:1 avec bg-warning)
+  ELD: { label: 'Avancements ELD', point: 'bg-[#9C6414]', un: 'avancement ELD', plusieurs: 'avancements ELD' },
+  TITULARISATION: { label: 'Titularisations', point: 'bg-success', un: 'titularisation', plusieurs: 'titularisations' },
+  FIN_CONTRAT: { label: 'Fins de contrat', point: 'bg-danger', un: 'fin de contrat', plusieurs: 'fins de contrat' },
+}
+
+/** « 5 départs à la retraite », « 1 fin de contrat » : info-bulle des badges et texte pour lecteurs d'écran. */
+export function libelleNombre(categorie: CategorieCalendrier, nombre: number): string {
+  const info = CATEGORIE_INFO[categorie]
+  return `${nombre} ${nombre > 1 ? info.plusieurs : info.un}`
 }
 export interface Pastille { categorie: CategorieCalendrier; nombre: number }
 export type VueCalendrier = 'MOIS' | 'ANNEE'
