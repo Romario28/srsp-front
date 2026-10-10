@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, Network, KeyRound, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, BadgeCheck, CalendarClock, AlertTriangle, Bell, SlidersHorizontal, Upload } from 'lucide-react'
+import { LayoutDashboard, Users, Network, KeyRound, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin } from '@/utils/roles'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
@@ -26,6 +26,7 @@ const NAV_GROUPS = [
   { titre: 'Organisation', items: NAV_ITEMS.filter((item) => ['/employes', '/departements', '/delegations'].includes(item.to)) },
   { titre: 'Anticipation RH', items: [
     { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, adminOnly: true, badge: true },
+    { to: '/anticipation/calendrier', label: 'Calendrier', icon: CalendarDays, adminOnly: true },
     { to: '/anticipation/retraite', label: 'Départs à la retraite', icon: Hourglass, adminOnly: true },
     { to: '/anticipation/avancement', label: 'Avancements', icon: TrendingUp, adminOnly: true },
     { to: '/anticipation/titularisation', label: 'Titularisations', icon: BadgeCheck, adminOnly: true },
