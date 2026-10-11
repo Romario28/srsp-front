@@ -141,7 +141,7 @@ export function CalendrierPage() {
       {isLoading ? <Spinner label="Calcul des échéances…" /> : !error ? (
         vue === 'MOIS'
           ? <VueMois annee={annee} mois={mois} parJour={parJour} onJour={setJour} />
-          : <VueAnnee annee={annee} comptes={comptes} actifs={actifs} onMois={ouvrirMois} />
+          : <VueAnnee annee={annee} comptes={comptes} actifs={actifs} critere={critere} onMois={ouvrirMois} />
       ) : null}
 
       <JourModal

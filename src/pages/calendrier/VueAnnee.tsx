@@ -1,4 +1,5 @@
-import { CATEGORIES, CATEGORIE_INFO, nomMois, type ComptesJour } from '@/utils/calendrier'
+import { CATEGORIES, CATEGORIE_INFO, libelleTotal, nomMois, titreMode, type ComptesJour } from '@/utils/calendrier'
+import type { CritereDate } from '@/types/anticipation'
 import type { CategorieCalendrier } from '@/types/calendrier'
 
 interface VueAnneeProps {
@@ -6,10 +7,12 @@ interface VueAnneeProps {
   /** Index = mois (0-11) : nombre d'échéances par type, types actifs seulement. */
   comptes: readonly ComptesJour[]
   actifs: ReadonlySet<CategorieCalendrier>
+  /** Mode affiché : décide du sous-titre et du mot qui suit le total. Les libellés de types ne bougent pas. */
+  critere: CritereDate
   onMois: (mois: number) => void
 }
 
-export function VueAnnee({ annee, comptes, actifs, onMois }: VueAnneeProps) {
+export function VueAnnee({ annee, comptes, actifs, critere, onMois }: VueAnneeProps) {
   const types = CATEGORIES.filter((c) => actifs.has(c))
   const maintenant = new Date()
   const moisCourant = maintenant.getFullYear() === annee ? maintenant.getMonth() : -1
@@ -25,16 +28,20 @@ export function VueAnnee({ annee, comptes, actifs, onMois }: VueAnneeProps) {
               mois === moisCourant ? 'border-accent' : 'border-[#E4E6EB]'
             }`}
           >
+            {/* items-baseline : le total s'aligne sur la ligne du nom du mois, pas sur le sous-titre */}
             <div className="flex items-baseline justify-between gap-2">
-              <h3 className="font-display text-[14px] font-semibold capitalize text-ink">{nomMois(annee, mois)}</h3>
-              <span className="text-[12px] text-[#9CA0AC]">{total} échéance{total > 1 ? 's' : ''}</span>
+              <div className="min-w-0">
+                <h3 className="font-display text-[14px] font-semibold capitalize text-ink">{nomMois(annee, mois)}</h3>
+                <p className="mt-0.5 text-[12px] text-[#9CA0AC]">{titreMode(critere)}</p>
+              </div>
+              <span className="flex-shrink-0 whitespace-nowrap text-[12px] text-[#9CA0AC]">{libelleTotal(critere, total)}</span>
             </div>
             <ul className="flex flex-col gap-2">
               {types.map((c) => {
                 const n = compte[c] ?? 0
                 return (
                   <li key={c} className="flex items-center justify-between gap-3">
-                    {/* Même forme que le composant Badge. Coloré s'il y a des échéances, gris neutre sinon. */}
+                    {/* Libellé du type inchangé quel que soit le mode */}
                     <span
                       title={CATEGORIE_INFO[c].label}
                       className={`min-w-0 truncate rounded-full px-2.5 py-0.5 text-[12px] font-medium ${

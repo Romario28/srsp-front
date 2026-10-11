@@ -23,6 +23,20 @@ export function libelleNombre(categorie: CategorieCalendrier, nombre: number): s
   const info = CATEGORIE_INFO[categorie]
   return `${nombre} ${nombre > 1 ? info.plusieurs : info.un}`
 }
+
+const MODE_INFO: Record<CritereDate, { titre: string; un: string; plusieurs: string }> = {
+  PREPARATION: { titre: 'Préparations', un: 'préparation', plusieurs: 'préparations' },
+  ECHEANCE: { titre: 'Échéances', un: 'échéance', plusieurs: 'échéances' },
+}
+
+/** Sous-titre d'une carte : le mode affiché, toujours au pluriel. */
+export const titreMode = (critere: CritereDate) => MODE_INFO[critere].titre
+
+/** « 393 préparations », « 1 échéance », « 0 échéance ». */
+export function libelleTotal(critere: CritereDate, nombre: number): string {
+  const info = MODE_INFO[critere]
+  return `${nombre} ${nombre > 1 ? info.plusieurs : info.un}`
+}
 export interface Pastille { categorie: CategorieCalendrier; nombre: number }
 export type VueCalendrier = 'MOIS' | 'ANNEE'
 export type ComptesJour = Partial<Record<CategorieCalendrier, number>>
