@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { extractErrorMessage } from '@/api/client'
+import { APP_NAME, APP_NAME_LONG } from '@/config/app'
 
 // Comptes seedés par DataInitializer — un par scénario de visibilité du cahier des charges.
 const DEMO_ACCOUNTS = [
@@ -56,11 +57,14 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen">
       <div className="relative hidden w-[42%] flex-col justify-between bg-ink p-10 text-white lg:flex">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
-            <ShieldCheck className="h-5 w-5 text-white" />
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
+              <ShieldCheck className="h-5 w-5 text-white" />
+            </div>
+            <span className="font-display text-[15px] font-semibold tracking-wide">{APP_NAME}</span>
           </div>
-          <span className="font-display text-[15px] font-semibold">Gestion RH & Organigramme</span>
+          <p className="mt-3 max-w-xs text-[12.5px] leading-snug text-white/60">{APP_NAME_LONG}</p>
         </div>
 
         <div className="max-w-sm">
@@ -92,8 +96,9 @@ export function LoginPage() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ink">
                 <ShieldCheck className="h-5 w-5 text-white" />
               </div>
-              <span className="font-display text-[15px] font-semibold text-ink">Gestion RH & Organigramme</span>
+              <span className="font-display text-[15px] font-semibold tracking-wide text-ink">{APP_NAME}</span>
             </div>
+            <p className="mt-2.5 max-w-xs text-[12.5px] leading-snug text-[#6B7180]">{APP_NAME_LONG}</p>
           </div>
 
           <h2 className="font-display text-[22px] font-semibold text-ink">Connexion</h2>

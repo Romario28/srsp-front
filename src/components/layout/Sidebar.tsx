@@ -3,6 +3,7 @@ import { LayoutDashboard, Users, Network, KeyRound, UserCog, ScrollText, ShieldC
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin } from '@/utils/roles'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
+import { APP_NAME, APP_NAME_LONG, APP_VERSION } from '@/config/app'
 
 interface NavItem {
   to: string
@@ -49,14 +50,11 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-screen w-64 flex-shrink-0 flex-col bg-ink text-white">
-      <div className="flex items-center gap-2.5 px-5 py-6">
+      <div className="flex items-center gap-2.5 px-5 py-6" title={APP_NAME_LONG}>
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
           <ShieldCheck className="h-4.5 w-4.5 text-white" />
         </div>
-        <div>
-          <p className="font-display text-[14px] font-semibold leading-none">Gestion RH</p>
-          <p className="mt-1 text-[11px] leading-none text-white/50">& Organigramme</p>
-        </div>
+        <p className="font-display text-[16px] font-semibold leading-none tracking-wide">{APP_NAME}</p>
       </div>
 
       <nav className="flex-1 space-y-5 overflow-y-auto px-3">
@@ -78,7 +76,7 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-white/10 px-5 py-4">
-        <p className="text-[11px] text-white/40">Gestion RH & Organigramme · v2.0</p>
+        <p className="text-[11px] text-white/40">{APP_NAME} - v{APP_VERSION}</p>
       </div>
     </aside>
   )
