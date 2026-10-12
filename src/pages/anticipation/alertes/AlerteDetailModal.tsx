@@ -11,6 +11,7 @@ import { TYPE_LABELS, libelleEcheance, statutAgentLabel, toneDelai, changeDeGrad
 import { Age, AgeA } from '../DatesCarriere'
 import { BlocsSituation } from '../SituationsGrade'
 import { FicheAgentContenu, useFicheAgent, type CleFiche, type EtatFiche } from '../FicheAgent'
+import { NoteTitularisation } from '../NoteTitularisation'
 import type { AgentFiche, TypeAnticipation } from '@/types/anticipation'
 import type { AlerteDTO } from '@/types/alerte'
 
@@ -84,8 +85,14 @@ function InformationsCles({ alerte, etat }: { alerte: AlerteDTO; etat: EtatFiche
   const note = alerte.details ? <Ligne label="Note">{alerte.details}</Ligne> : null
   switch (alerte.type) {
     case 'AVANCEMENT': case 'TITULARISATION': return <Section titre="Informations clés">
-      <BlocsSituation gradeActuel={alerte.gradeActuel} dateEffetActuelle={alerte.dateEffetActuelle} gradeSuivant={alerte.gradeSuivant} dateEffetNouvelle={alerte.dateEcheance} />
-      <dl className={GRILLE}>{preparation}{note}</dl>
+      {/* Dates et note : gap-3 (12 px). Le groupe et BlocsSituation : gap-4 (16 px). Sans note, un seul enfant → aucun espace superflu. */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
+          <dl className={GRILLE}>{preparation}{note}</dl>
+          <NoteTitularisation type={alerte.type} datePreparation={alerte.datePreparation} dateEcheance={alerte.dateEcheance} />
+        </div>
+        <BlocsSituation gradeActuel={alerte.gradeActuel} dateEffetActuelle={alerte.dateEffetActuelle} gradeSuivant={alerte.gradeSuivant} dateEffetNouvelle={alerte.dateEcheance} />
+      </div>
     </Section>
     case 'FIN_CONTRAT': return <Section titre="Informations clés"><dl className={GRILLE}>
       <Ligne label="Début de contrat"><ValeurFiche etat={etat}>{(f) => formatDate(f.dateDebutContrat)}</ValeurFiche></Ligne>{preparation}{note}

@@ -7,6 +7,7 @@ import { TYPE_LABELS, libelleEcheance, statutAgentLabel, toneDelai } from '@/uti
 import { Age, AgeA } from './DatesCarriere'
 import { BlocsSituation } from './SituationsGrade'
 import { FicheAgent, type CleFiche } from './FicheAgent'
+import { NoteTitularisation } from './NoteTitularisation'
 import type { AlerteAnticipation } from '@/types/anticipation'
 
 const GRILLE = 'grid grid-cols-[180px_minmax(0,1fr)] gap-x-3 gap-y-2 text-[13px]'
@@ -27,6 +28,7 @@ function InformationsCles({ item }: { item: AlerteAnticipation }) {
     case 'TITULARISATION': return <div className="flex flex-col gap-3">
       <BlocsSituation gradeActuel={item.gradeCode} dateEffetActuelle={item.avanceDate ?? item.dateDebutContrat} gradeSuivant={item.gradeSuivant} dateEffetNouvelle={item.dateEcheance} />
       <dl className={GRILLE}>{preparation}{note}</dl>
+      <NoteTitularisation type={item.type} datePreparation={item.datePreparation} dateEcheance={item.dateEcheance} />
     </div>
     case 'FIN_CONTRAT': return <dl className={GRILLE}>
       <Ligne label="Date de début">{formatDate(item.dateDebutContrat)}</Ligne><Ligne label="Date de fin">{formatDate(item.dateFinContrat)}</Ligne>
