@@ -1,18 +1,21 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Maximize2, RefreshCw } from 'lucide-react'
 import { useCalendrierCache } from '@/hooks/useCalendrierCache'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
 import {
-  CATEGORIES, CATEGORIE_INFO, agregerParJour, comptesParMois, pastilles, prefixeMois, titrePeriode, totauxPeriode,
-  type VueCalendrier,
+  CATEGORIES, CATEGORIE_INFO, agregerParJour, comptesParMois, effectifsDuMois, pastilles, prefixeMois, titrePeriode,
+  totauxPeriode, type VueCalendrier,
 } from '@/utils/calendrier'
+import { EcheanceDetailModal } from '@/pages/anticipation/EcheanceDetailModal'
 import { VueMois } from './VueMois'
 import { VueAnnee } from './VueAnnee'
-import { JourModal } from './JourModal'
-import type { CritereDate } from '@/types/anticipation'
+import { DetailJour } from './DetailJour'
+import { EffectifsMois } from './EffectifsMois'
+import { PanneauJour } from './PanneauJour'
+import type { AlerteAnticipation, CritereDate } from '@/types/anticipation'
 import type { CategorieCalendrier } from '@/types/calendrier'
 
 const VUES: { value: VueCalendrier; label: string }[] = [
@@ -33,8 +36,8 @@ export function CalendrierPage() {
   const [critere, setCritere] = useState<CritereDate>('PREPARATION')
   const [actifs, setActifs] = useState<ReadonlySet<CategorieCalendrier>>(tousLesTypes)
   const [jour, setJour] = useState<string | null>(null)
+  const [fiche, setFiche] = useState<AlerteAnticipation | null>(null)
 
-  // Vue, critère et légende ne rappellent jamais le serveur : tout est dérivé du cache par année
   const { parAnnee, isLoading, error, chargeLe, reessayer, actualiser, chargerDetail, detailEnCache } = useCalendrierCache(annee)
 
   const parJourTous = useMemo(() => agregerParJour(parAnnee, critere), [parAnnee, critere])
@@ -42,6 +45,7 @@ export function CalendrierPage() {
   const comptes = useMemo(() => comptesParMois(parJourTous, annee, actifs), [parJourTous, annee, actifs])
   const prefixe = vue === 'ANNEE' ? String(annee) : prefixeMois(annee, mois)
   const totaux = useMemo(() => totauxPeriode(parJourTous, prefixe), [parJourTous, prefixe])
+  const effectifs = useMemo(() => effectifsDuMois(parJour, prefixeMois(annee, mois)), [parJour, annee, mois])
 
   const deplacer = (delta: number) => {
     if (vue === 'ANNEE') {
@@ -66,6 +70,10 @@ export function CalendrierPage() {
       return suivants
     })
 
+  const changerVue = (suivante: VueCalendrier) => {
+    setVue(suivante)
+    if (suivante === 'ANNEE') setJour(null)
+  }
   const ouvrirMois = (m: number) => { setMois(m); setVue('MOIS') }
   const heure = chargeLe != null
     ? new Date(chargeLe).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
@@ -76,7 +84,7 @@ export function CalendrierPage() {
       <div>
         <h1 className="font-display text-[20px] font-semibold text-ink">Calendrier des échéances</h1>
         <p className="mt-0.5 max-w-3xl text-[13px] text-[#6B7180]">
-          Agents en activité, jour par jour. Chaque pastille compte les agents d&apos;un type ce jour-là : cliquez un jour pour les lister.
+          Agents en activité, jour par jour. Cliquez un jour pour lister ses agents ; cliquez un agent pour ouvrir sa fiche.
           Les anomalies n&apos;apparaissent pas, faute de date.
         </p>
       </div>
@@ -97,7 +105,7 @@ export function CalendrierPage() {
           <Button variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>
             Actualiser
           </Button>
-          <SegmentedControl options={VUES} value={vue} onChange={setVue} ariaLabel="Vue du calendrier" />
+          <SegmentedControl options={VUES} value={vue} onChange={changerVue} ariaLabel="Vue du calendrier" />
         </div>
       </div>
 
@@ -108,7 +116,7 @@ export function CalendrierPage() {
         </div>
         <p className="text-[12.5px] text-[#6B7180]">
           {critere === 'PREPARATION'
-            ? 'Date à partir de laquelle le dossier peut être constitué (échéance − délai de préparation du type).'
+            ? 'Date à partir de laquelle le dossier peut être constitué (échéance - délai de préparation du type).'
             : "Date effective de l'événement : retraite, avancement, titularisation, fin de contrat."}
         </p>
       </div>
@@ -138,17 +146,33 @@ export function CalendrierPage() {
         </div>
       )}
 
-      {isLoading ? <Spinner label="Calcul des échéances…" /> : !error ? (
-        vue === 'MOIS'
-          ? <VueMois annee={annee} mois={mois} parJour={parJour} onJour={setJour} />
-          : <VueAnnee annee={annee} comptes={comptes} actifs={actifs} critere={critere} onMois={ouvrirMois} />
+      {isLoading ? <Spinner label="Calcul des échéances..." /> : !error ? (
+        vue === 'ANNEE' ? (
+          <VueAnnee annee={annee} comptes={comptes} actifs={actifs} critere={critere} onMois={ouvrirMois} />
+        ) : jour == null ? (
+          <VueMois annee={annee} mois={mois} parJour={parJour} onJour={setJour} />
+        ) : (
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)]">
+            <div className="flex flex-col gap-3 lg:sticky lg:top-0 lg:max-h-[calc(100vh_-_6rem)] lg:overflow-y-auto">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6B7180]">Calendrier</p>
+                <Button variant="secondary" size="sm" icon={<Maximize2 className="h-3.5 w-3.5" />} onClick={() => setJour(null)}>
+                  Agrandir
+                </Button>
+              </div>
+              <VueMois compact annee={annee} mois={mois} parJour={parJour} selection={jour} onJour={setJour} />
+              <DetailJour jour={jour} critere={critere} pastilles={parJour.get(jour) ?? []} />
+              <EffectifsMois effectifs={effectifs} critere={critere} selection={jour} onJour={setJour} />
+            </div>
+            <PanneauJour
+              key={`${jour}|${critere}`} jour={jour} critere={critere} actifs={actifs}
+              chargerDetail={chargerDetail} detailEnCache={detailEnCache} onSelect={setFiche}
+            />
+          </div>
+        )
       ) : null}
 
-      <JourModal
-        jour={jour} critere={critere} actifs={actifs}
-        chargerDetail={chargerDetail} detailEnCache={detailEnCache}
-        onClose={() => setJour(null)}
-      />
+      <EcheanceDetailModal item={fiche} onClose={() => setFiche(null)} />
     </div>
   )
 }

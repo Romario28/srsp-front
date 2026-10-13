@@ -107,3 +107,25 @@ export function totauxPeriode(parJour: ReadonlyMap<string, ComptesJour>, prefixe
   })
   return totaux
 }
+
+export const libelleAgents = (nombre: number) => `${nombre} agent${nombre > 1 ? 's' : ''}`
+
+export const totalPastilles = (liste: readonly Pastille[]) => liste.reduce((somme, p) => somme + p.nombre, 0)
+
+/** "Lun. 12 oct." : date compacte de la liste des effectifs. */
+export const jourCourt = (iso: string) =>
+  majuscule(depuisIso(iso).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }))
+
+/** "Mar. 15 oct. 2026" : titre du détail d'une date. */
+export const jourCourtAnnee = (iso: string) =>
+  majuscule(depuisIso(iso).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }))
+
+export interface EffectifJour { iso: string; pastilles: Pastille[]; total: number }
+
+/** Dates d'un mois ayant des échéances, dans l'ordre : types actifs seulement, selon le critère déjà appliqué. */
+export function effectifsDuMois(parJour: ReadonlyMap<string, Pastille[]>, prefixe: string): EffectifJour[] {
+  return Array.from(parJour.entries())
+    .filter(([iso]) => iso.startsWith(prefixe))
+    .map(([iso, liste]) => ({ iso, pastilles: liste, total: totalPastilles(liste) }))
+    .sort((a, b) => a.iso.localeCompare(b.iso))
+}

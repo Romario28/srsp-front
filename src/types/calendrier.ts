@@ -1,4 +1,4 @@
-import type { StatutAgent } from './anticipation'
+import type { AlerteAnticipation } from './anticipation'
 
 /** Miroir de CategorieCalendrier.java */
 export type CategorieCalendrier = 'DEPART_RETRAITE' | 'AVANCEMENT' | 'ELD' | 'TITULARISATION' | 'FIN_CONTRAT'
@@ -11,12 +11,11 @@ export interface CalendrierJour {
   nombre: number
 }
 
-/** Miroir de CalendrierAgentDTO.java */
+/**
+ * Miroir de CalendrierAgentDTO.java. L'échéance a la forme des lignes des écrans Retraites, Avancements...
+ * C'est ce qui permet d'afficher les colonnes propres à chaque type et d'ouvrir la fiche sans nouvel appel.
+ */
 export interface CalendrierAgent {
-  matricule: string
-  nomComplet: string
   categorie: CategorieCalendrier
-  statut: StatutAgent | null
-  datePreparation: string | null
-  dateEcheance: string | null
+  echeance: AlerteAnticipation
 }
