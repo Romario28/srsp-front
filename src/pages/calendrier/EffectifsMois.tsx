@@ -25,7 +25,7 @@ export function EffectifsMois({ effectifs, critere, selection, onJour }: Effecti
       {effectifs.length === 0 ? (
         <p className="px-4 py-5 text-[13px] text-[#6B7180]">Aucune échéance ce mois-ci pour les types affichés.</p>
       ) : (
-        <ul className="max-h-64 divide-y divide-[#EAEBF0] overflow-y-auto">
+        <ul className="divide-y divide-[#EAEBF0]">
           {effectifs.map((e) => {
             const choisi = e.iso === selection
             return (

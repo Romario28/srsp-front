@@ -172,9 +172,9 @@ export function CalendrierPage() {
         ) : portee == null ? (
           <VueMois annee={annee} mois={mois} parJour={parJour} onJour={choisirJour} />
         ) : (
-          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)]">
-            {/* Colonne gauche : calendrier réduit, détail, effectifs. Collante sur écran large, avec défilement interne. */}
-            <div className="flex flex-col gap-3 lg:sticky lg:top-0 lg:max-h-[calc(100vh_-_6rem)] lg:overflow-y-auto">
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]">
+            {/* Colonne gauche : calendrier réduit, détail, effectifs. Hauteur naturelle, c'est la page qui défile. */}
+            <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6B7180]">Calendrier</p>
                 <Button variant="secondary" size="sm" icon={<Maximize2 className="h-3.5 w-3.5" />} onClick={() => setJour(null)}>

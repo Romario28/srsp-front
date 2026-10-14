@@ -21,7 +21,7 @@ export function VueMois({ annee, mois, parJour, onJour, compact = false, selecti
   const aujourdhui = todayInputValue()
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#E4E6EB] bg-white">
+    <div className={`rounded-xl border border-[#E4E6EB] bg-white ${compact ? 'overflow-hidden' : 'overflow-x-auto'}`}>
       <div className={compact ? '' : 'min-w-[680px]'}>
         <div className="grid grid-cols-7 border-b border-[#EAEBF0] bg-[#FAFAFB]">
           {JOURS_SEMAINE.map((nom) => (

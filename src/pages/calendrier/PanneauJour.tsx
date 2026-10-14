@@ -131,7 +131,8 @@ export function PanneauJour({ portee, critere, actifs, chargerDetail, detailEnCa
   const groupes = CATEGORIES
     .map((categorie) => ({ categorie, items: lignes.filter((l) => l.categorie === categorie) }))
     .filter((g) => g.items.length > 0)
-  const nbAgents = new Set(lignes.map((l) => l.echeance.matricule)).size
+  const nbAgents = lignes.length   // une ligne = un agent pour un type : même unité que les groupes et « Effectifs du mois »
+  const nbDistincts = new Set(lignes.map((l) => l.echeance.matricule)).size
 
   const titre = portee.genre === 'JOUR' ? jourLong(portee.iso) : titrePeriode('MOIS', portee.annee, portee.mois)
   const quand = portee.genre === 'JOUR' ? 'ce jour' : 'ce mois'
@@ -143,6 +144,11 @@ export function PanneauJour({ portee, critere, actifs, chargerDetail, detailEnCa
         {lignes.length > 0 && (
           <p className="mt-0.5 text-[12.5px] text-[#6B7180]">
             <span className="font-medium text-ink">{nbAgents} agent{nbAgents > 1 ? 's' : ''} concerné{nbAgents > 1 ? 's' : ''}</span>
+            {nbDistincts < nbAgents && (
+              <span title="Un agent qui a plusieurs échéances sur la période (par exemple un avancement et une fin de contrat) figure dans chaque groupe concerné.">
+                {' '}({nbDistincts} distinct{nbDistincts > 1 ? 's' : ''})
+              </span>
+            )}
             {' '}· placés {quand} selon leur date de {critere === 'PREPARATION' ? 'préparation' : "d'échéance"}
             {' '}· cliquez une ligne pour ouvrir la fiche
           </p>
