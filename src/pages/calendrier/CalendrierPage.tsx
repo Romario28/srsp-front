@@ -118,7 +118,7 @@ export function CalendrierPage() {
             <ChevronRight className="h-4 w-4" />
           </Button>
           <h2 className="min-w-[10rem] px-2 font-display text-[17px] font-semibold text-ink">{titrePeriode(vue, annee, mois)}</h2>
-          <Button variant="ghost" size="sm" onClick={versAujourdhui} disabled={surPeriodeCourante}>Aujourd&apos;hui</Button>
+          <Button variant="ghost" size="sm" onClick={versAujourdhui} disabled={surPeriodeCourante}>Mois actuel</Button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {heure && <span className="text-[12px] text-[#9CA0AC]">Calculé à {heure}</span>}
