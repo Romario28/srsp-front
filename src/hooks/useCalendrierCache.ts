@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import { calendrierApi } from '@/api/calendrier'
 import { extractErrorMessage } from '@/api/client'
 import { CacheAsynchrone, ChargementAnnule } from '@/utils/cacheAsynchrone'
+import { clePortee, type Portee } from '@/utils/calendrier'
 import type { CritereDate } from '@/types/anticipation'
 import type { CalendrierAgent, CalendrierJour } from '@/types/calendrier'
 
 /** Un détail de jour est réutilisé sans appel pendant cette durée, comptée depuis son chargement. */
 const DUREE_DETAIL_JOUR_MS = 30_000
 
-const cleJour = (jour: string, critere: CritereDate) => `${critere}|${jour}`
+const cleDetail = (portee: Portee, critere: CritereDate) => `${critere}|${clePortee(portee)}`
 
 /**
  * Données du calendrier pour l'année affichée :
@@ -60,9 +61,18 @@ export function useCalendrierCache(annee: number) {
   const actualiser = useCallback(() => {
     annees.vider(); details.vider(); setErreur(null); setRechargement((n) => n + 1)
   }, [annees, details])
-  const chargerDetail = useCallback((jour: string, critere: CritereDate) =>
-    details.obtenir(cleJour(jour, critere), (signal) => calendrierApi.agents(jour, critere, signal)), [details])
-  const detailEnCache = useCallback((jour: string, critere: CritereDate) => details.lire(cleJour(jour, critere)), [details])
+  const chargerDetail = useCallback(
+    (portee: Portee, critere: CritereDate) =>
+      details.obtenir(cleDetail(portee, critere), (signal) =>
+        portee.genre === 'JOUR'
+          ? calendrierApi.agents(portee.iso, critere, signal)
+          : calendrierApi.agentsDuMois(portee.annee, portee.mois + 1, critere, signal)),   // 0-11 → 1-12
+    [details],
+  )
+  const detailEnCache = useCallback(
+    (portee: Portee, critere: CritereDate) => details.lire(cleDetail(portee, critere)),
+    [details],
+  )
 
   return {
     parAnnee,

@@ -6,8 +6,8 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
 import {
-  CATEGORIES, CATEGORIE_INFO, agregerParJour, comptesParMois, effectifsDuMois, pastilles, prefixeMois, titrePeriode,
-  totauxPeriode, type VueCalendrier,
+  CATEGORIES, CATEGORIE_INFO, agregerParJour, clePortee, comptesParMois, effectifsDuMois, pastilles, pastillesDe,
+  prefixeMois, titrePeriode, totauxPeriode, type Portee, type VueCalendrier,
 } from '@/utils/calendrier'
 import { EcheanceDetailModal } from '@/pages/anticipation/EcheanceDetailModal'
 import { VueMois } from './VueMois'
@@ -18,6 +18,8 @@ import { PanneauJour } from './PanneauJour'
 import type { AlerteAnticipation, CritereDate } from '@/types/anticipation'
 import type { CategorieCalendrier } from '@/types/calendrier'
 
+type ModeListe = 'JOUR' | 'MOIS'
+
 const VUES: { value: VueCalendrier; label: string }[] = [
   { value: 'MOIS', label: 'Mois' },
   { value: 'ANNEE', label: 'Année' },
@@ -26,18 +28,27 @@ const CRITERES: { value: CritereDate; label: string }[] = [
   { value: 'PREPARATION', label: 'Préparation' },
   { value: 'ECHEANCE', label: 'Échéance' },
 ]
+const MODES: { value: ModeListe; label: string }[] = [
+  { value: 'JOUR', label: 'Jour' },
+  { value: 'MOIS', label: 'Mois' },
+]
 const tousLesTypes = (): ReadonlySet<CategorieCalendrier> => new Set(CATEGORIES)
 
 export function CalendrierPage() {
   const maintenant = new Date()
   const [vue, setVue] = useState<VueCalendrier>('MOIS')
   const [annee, setAnnee] = useState(maintenant.getFullYear())
-  const [mois, setMois] = useState(maintenant.getMonth())
-  const [critere, setCritere] = useState<CritereDate>('PREPARATION')
+  const [mois, setMois] = useState(maintenant.getMonth())            // 0-11
+  const [critere, setCritere] = useState<CritereDate>('PREPARATION')  // par défaut : préparation
   const [actifs, setActifs] = useState<ReadonlySet<CategorieCalendrier>>(tousLesTypes)
+  // Jour choisi : non nul = disposition en deux zones (calendrier réduit + tableau des agents)
   const [jour, setJour] = useState<string | null>(null)
+  // Ce que la zone de droite liste : les agents du jour choisi, ou ceux du mois affiché
+  const [modeListe, setModeListe] = useState<ModeListe>('JOUR')
+  // Échéance dont la fiche complète est ouverte : une seule modale pour toute la page
   const [fiche, setFiche] = useState<AlerteAnticipation | null>(null)
 
+  // Vue, critères et légende ne rappellent jamais le serveur : tout est dérivé du cache par année
   const { parAnnee, isLoading, error, chargeLe, reessayer, actualiser, chargerDetail, detailEnCache } = useCalendrierCache(annee)
 
   const parJourTous = useMemo(() => agregerParJour(parAnnee, critere), [parAnnee, critere])
@@ -46,6 +57,10 @@ export function CalendrierPage() {
   const prefixe = vue === 'ANNEE' ? String(annee) : prefixeMois(annee, mois)
   const totaux = useMemo(() => totauxPeriode(parJourTous, prefixe), [parJourTous, prefixe])
   const effectifs = useMemo(() => effectifsDuMois(parJour, prefixeMois(annee, mois)), [parJour, annee, mois])
+
+  // null = pleine largeur. Sinon : le jour choisi (mode Jour) ou le mois affiché (mode Mois).
+  const portee: Portee | null = jour == null ? null
+    : modeListe === 'JOUR' ? { genre: 'JOUR', iso: jour } : { genre: 'MOIS', annee, mois }
 
   const deplacer = (delta: number) => {
     if (vue === 'ANNEE') {
@@ -70,9 +85,14 @@ export function CalendrierPage() {
       return suivants
     })
 
+  // Choisir une date, où qu'on clique (calendrier, effectifs), demande les agents de cette date : retour en mode Jour
+  const choisirJour = (iso: string) => {
+    setJour(iso)
+    setModeListe('JOUR')
+  }
   const changerVue = (suivante: VueCalendrier) => {
     setVue(suivante)
-    if (suivante === 'ANNEE') setJour(null)
+    if (suivante === 'ANNEE') setJour(null)   // la vue Année est un aperçu pleine largeur : pas de détail ouvert
   }
   const ouvrirMois = (m: number) => { setMois(m); setVue('MOIS') }
   const heure = chargeLe != null
@@ -116,7 +136,7 @@ export function CalendrierPage() {
         </div>
         <p className="text-[12.5px] text-[#6B7180]">
           {critere === 'PREPARATION'
-            ? 'Date à partir de laquelle le dossier peut être constitué (échéance - délai de préparation du type).'
+            ? 'Date à partir de laquelle le dossier peut être constitué (échéance − délai de préparation du type).'
             : "Date effective de l'événement : retraite, avancement, titularisation, fin de contrat."}
         </p>
       </div>
@@ -146,13 +166,14 @@ export function CalendrierPage() {
         </div>
       )}
 
-      {isLoading ? <Spinner label="Calcul des échéances..." /> : !error ? (
+      {isLoading ? <Spinner label="Calcul des échéances…" /> : !error ? (
         vue === 'ANNEE' ? (
           <VueAnnee annee={annee} comptes={comptes} actifs={actifs} critere={critere} onMois={ouvrirMois} />
-        ) : jour == null ? (
-          <VueMois annee={annee} mois={mois} parJour={parJour} onJour={setJour} />
+        ) : portee == null ? (
+          <VueMois annee={annee} mois={mois} parJour={parJour} onJour={choisirJour} />
         ) : (
           <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)]">
+            {/* Colonne gauche : calendrier réduit, détail, effectifs. Collante sur écran large, avec défilement interne. */}
             <div className="flex flex-col gap-3 lg:sticky lg:top-0 lg:max-h-[calc(100vh_-_6rem)] lg:overflow-y-auto">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6B7180]">Calendrier</p>
@@ -160,12 +181,20 @@ export function CalendrierPage() {
                   Agrandir
                 </Button>
               </div>
-              <VueMois compact annee={annee} mois={mois} parJour={parJour} selection={jour} onJour={setJour} />
-              <DetailJour jour={jour} critere={critere} pastilles={parJour.get(jour) ?? []} />
-              <EffectifsMois effectifs={effectifs} critere={critere} selection={jour} onJour={setJour} />
+              <SegmentedControl
+                options={MODES} value={modeListe} onChange={setModeListe}
+                ariaLabel="Agents listés à droite : ceux du jour choisi ou ceux du mois"
+              />
+              <VueMois compact annee={annee} mois={mois} parJour={parJour} selection={jour} onJour={choisirJour} />
+              <DetailJour
+                portee={portee} critere={critere}
+                pastilles={portee.genre === 'JOUR' ? parJour.get(portee.iso) ?? [] : pastillesDe(comptes[mois])}
+              />
+              <EffectifsMois effectifs={effectifs} critere={critere} selection={jour} onJour={choisirJour} />
             </div>
+            {/* key : un autre jour, un autre mois ou un autre critère repart d'un panneau neuf, jamais d'une liste périmée */}
             <PanneauJour
-              key={`${jour}|${critere}`} jour={jour} critere={critere} actifs={actifs}
+              key={`${clePortee(portee)}|${critere}`} portee={portee} critere={critere} actifs={actifs}
               chargerDetail={chargerDetail} detailEnCache={detailEnCache} onSelect={setFiche}
             />
           </div>

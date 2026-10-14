@@ -129,3 +129,16 @@ export function effectifsDuMois(parJour: ReadonlyMap<string, Pastille[]>, prefix
     .map(([iso, liste]) => ({ iso, pastilles: liste, total: totalPastilles(liste) }))
     .sort((a, b) => a.iso.localeCompare(b.iso))
 }
+
+/** Ce que montrent le détail de gauche et le tableau de droite : un jour (yyyy-MM-dd) ou un mois entier (mois : 0-11). */
+export type Portee = { genre: 'JOUR'; iso: string } | { genre: 'MOIS'; annee: number; mois: number }
+
+/** Identifiant stable d'une portée : « 2026-10-15 » ou « 2026-10 ». Sert de clé de cache, de clé React et de dépendance. */
+export const clePortee = (portee: Portee) => (portee.genre === 'JOUR' ? portee.iso : prefixeMois(portee.annee, portee.mois))
+
+/** Pastilles d'un ensemble de comptes, dans l'ordre de la légende, types à 0 omis. */
+export const pastillesDe = (comptes: ComptesJour): Pastille[] =>
+  CATEGORIES.flatMap((categorie) => {
+    const nombre = comptes[categorie] ?? 0
+    return nombre > 0 ? [{ categorie, nombre }] : []
+  })
