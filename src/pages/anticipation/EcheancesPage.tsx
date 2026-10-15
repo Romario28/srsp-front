@@ -8,11 +8,13 @@ import { Spinner } from '@/components/ui/Spinner'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Badge } from '@/components/ui/Badge'
+import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
 import { TYPE_LABELS } from '@/utils/anticipation'
+import { FILTRES_VIDES as FILTRES_AGENTS_VIDES, nbFiltres } from '@/utils/filtresAgents'
 import { EcheancesFilters } from './EcheancesFilters'
 import { EcheancesResults } from './EcheancesResults'
 import { FILTRES_VIDES, construireFiltres, decrireFenetre, validerFiltres, type EtatFiltres } from './filtres'
-import type { FiltresEcheances, TypeEcheance } from '@/types/anticipation'
+import type { FiltresAgents, FiltresEcheances, TypeEcheance } from '@/types/anticipation'
 
 const DESCRIPTIONS: Record<TypeEcheance, string> = {
   DEPART_RETRAITE: "Agents atteignant l'âge légal de départ (date de naissance + âge légal fixé côté serveur).",
@@ -28,6 +30,9 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
   const [etat, setEtat] = useState<EtatFiltres>(FILTRES_VIDES)
   const [erreurSaisie, setErreurSaisie] = useState<string | null>(null)
   const [dernier, setDernier] = useState<DernierCalcul | null>(null)
+  const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(FILTRES_AGENTS_VIDES)
+  // Fenêtre + filtres agents : un seul objet, envoyé tel quel et comparé pour détecter un résultat périmé
+  const filtresCourants = (): FiltresEcheances => ({ ...construireFiltres(etat, config), ...filtresAgents })
   const calcul = useAction((signal, filtres: FiltresEcheances) => anticipationApi.echeances(type, filtres, signal), 'Calcul impossible')
 
   useEffect(() => {
@@ -43,18 +48,19 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
     const erreur = validerFiltres(etat)
     setErreurSaisie(erreur)
     if (erreur) return
-    const filtres = construireFiltres(etat, config)
+    const filtres = filtresCourants()
     const resultat = await calcul.run(filtres)
     if (resultat) setDernier((current) => ({ filtres, version: (current?.version ?? 0) + 1, le: new Date() }))
   }
-  const perime = dernier != null && calcul.data != null && JSON.stringify(construireFiltres(etat, config)) !== JSON.stringify(dernier.filtres)
+  const perime = dernier != null && calcul.data != null && JSON.stringify(filtresCourants()) !== JSON.stringify(dernier.filtres)
 
   return <div className="flex flex-col gap-5">
     <div><h1 className="font-display text-[20px] font-semibold text-ink">{TYPE_LABELS[type]}</h1><p className="mt-0.5 text-[13px] text-[#6B7180]">{DESCRIPTIONS[type]}</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Seuls les agents en activité sont pris en compte (situation administrative « 00 » ou non renseignée).</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Date de préparation = échéance − délai de préparation du type : à partir de cette date, le dossier peut être constitué.</p></div>
+    <FiltresAgentsBar valeur={filtresAgents} onChange={setFiltresAgents} />
     <EcheancesFilters etat={etat} config={config} erreur={erreurSaisie} isLoading={calcul.isLoading} onChange={(patch) => setEtat((current) => ({ ...current, ...patch }))} onCalculer={handleCalculer} onAnnuler={calcul.cancel} />
     {calcul.error && <ErrorBanner message={calcul.error} />}
     {calcul.data && dernier ? <div className={`flex flex-col gap-4 transition-opacity ${calcul.isLoading ? 'opacity-50' : ''}`}>
-      <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#4B4F5A]"><span className="font-medium text-ink">{calcul.data.length} échéance{calcul.data.length > 1 ? 's' : ''}</span><span>· {decrireFenetre(dernier.filtres, config)}</span><span>· calculé à {dernier.le.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>{perime && <Badge tone="warning">Filtres modifiés depuis ce calcul</Badge>}</div>
+      <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#4B4F5A]"><span className="font-medium text-ink">{calcul.data.length} échéance{calcul.data.length > 1 ? 's' : ''}</span><span>· {decrireFenetre(dernier.filtres, config)}</span><span>· calculé à {dernier.le.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>{nbFiltres(dernier.filtres) > 0 && <Badge tone="accent">{nbFiltres(dernier.filtres)} filtre{nbFiltres(dernier.filtres) > 1 ? 's' : ''} agents</Badge>}{perime && <Badge tone="warning">Filtres modifiés depuis ce calcul</Badge>}</div>
       <EcheancesResults key={dernier.version} items={calcul.data} type={type} />
     </div> : calcul.isLoading ? <Spinner label="Calcul en cours sur l'ensemble des agents en activité…" /> : !calcul.error ? <EmptyState icon={Calculator} title="Aucun calcul lancé" description="Réglez la fenêtre puis cliquez sur « Calculer »." /> : null}
   </div>

@@ -71,7 +71,36 @@ export interface AlerteAnticipation {
   gradeSuivant: GradeSuivantDTO | null
 }
 
-export interface FiltresEcheances {
+/** Filtres cumulables sur les agents. Absent = pas de filtre. Noms identiques aux paramètres de l'API. */
+export interface FiltresAgents {
+  statutAgent?: StatutAgent
+  corps?: string
+  grade?: string
+  categorie?: string
+  fiv?: string
+  soa?: string
+  region?: string
+  ministere?: string
+}
+
+/** Miroir d'OptionFiltre.java */
+export interface OptionFiltre {
+  code: string
+  libelle: string | null
+}
+
+/** Miroir d'OptionsFiltresDTO.java */
+export interface OptionsFiltres {
+  corps: OptionFiltre[]
+  grades: OptionFiltre[]
+  categories: OptionFiltre[]
+  fiv: OptionFiltre[]
+  soa: OptionFiltre[]
+  regions: OptionFiltre[]
+  ministeres: OptionFiltre[]
+}
+
+export interface FiltresEcheances extends FiltresAgents {
   prevenanceMois?: number
   retardMois?: number
   dateDebut?: string

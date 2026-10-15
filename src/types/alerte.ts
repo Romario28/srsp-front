@@ -1,4 +1,4 @@
-import type { GradeSuivantDTO, TypeAnticipation } from './anticipation'
+import type { FiltresAgents, GradeSuivantDTO, TypeAnticipation } from './anticipation'
 
 export type StatutAlerte = 'NOUVELLE' | 'VUE' | 'ACQUITTEE'
 
@@ -21,9 +21,9 @@ export interface AlerteDTO {
   acquitteeParEmail: string | null
 }
 
-export interface FiltresAlertes {
+export interface FiltresAlertes extends FiltresAgents {
   type?: TypeAnticipation
-  statut?: StatutAlerte
+  statut?: StatutAlerte   // statut de l'ALERTE ; celui de l'agent est statutAgent
   matricule?: string
   page?: number
   size?: number

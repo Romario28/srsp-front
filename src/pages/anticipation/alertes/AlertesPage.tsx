@@ -14,10 +14,12 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Pagination } from '@/components/ui/Pagination'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
+import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
+import { FILTRES_VIDES, nbFiltres } from '@/utils/filtresAgents'
 import { AlerteDetailModal } from './AlerteDetailModal'
 import { EcheanceAlerte } from './EcheanceAlerte'
 import { CelluleDerniereSituation, CelluleNouvelleSituation } from '../SituationsGrade'
-import type { TypeAnticipation } from '@/types/anticipation'
+import type { FiltresAgents, TypeAnticipation } from '@/types/anticipation'
 import type { AlerteDTO, StatutAlerte } from '@/types/alerte'
 
 const TAILLE_PAGE = 20
@@ -39,13 +41,15 @@ export function AlertesPage() {
   const [saisie, setSaisie] = useState('')
   const [matricule, setMatricule] = useState('')
   const [page, setPage] = useState(0)
+  const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(FILTRES_VIDES)
   const { data, isLoading, error, reload } = useFetch(() => alertesApi.lister({
     type: type || undefined,
     statut: statut === 'TOUS' ? undefined : statut,
     matricule: matricule || undefined,
+    ...filtresAgents,
     page,
     size: TAILLE_PAGE,
-  }), [type, statut, matricule, page])
+  }), [type, statut, matricule, filtresAgents, page])
 
   const [surcharges, setSurcharges] = useState<Record<number, AlerteDTO>>({})
   useEffect(() => { setSurcharges({}) }, [data])
@@ -91,8 +95,9 @@ export function AlertesPage() {
   const changerStatut = (value: FiltreStatutAlerte) => { setStatut(value); setPage(0) }
   const rechercher = (event: FormEvent) => { event.preventDefault(); setMatricule(saisie.trim()); setPage(0) }
   const effacerMatricule = () => { setSaisie(''); setMatricule(''); setPage(0) }
+  const changerFiltresAgents = (value: FiltresAgents) => { setFiltresAgents(value); setPage(0) }
   const actualiser = () => { reload(); rafraichirCompteur() }
-  const filtresActifs = type !== '' || matricule !== ''
+  const filtresActifs = type !== '' || matricule !== '' || nbFiltres(filtresAgents) > 0
 
   return <div className="flex flex-col gap-5">
     <div className="flex items-start justify-between gap-4"><div>
@@ -111,6 +116,8 @@ export function AlertesPage() {
         {matricule !== '' && <Button type="button" variant="ghost" size="sm" icon={<X className="h-3.5 w-3.5" />} onClick={effacerMatricule}>{matricule}</Button>}
       </form>
     </div>
+
+    <FiltresAgentsBar valeur={filtresAgents} onChange={changerFiltresAgents} />
 
     {error && <ErrorBanner message={error} />}
     {isLoading && !data ? <Spinner label="Chargement des alertes…" /> : data && !error ? (
