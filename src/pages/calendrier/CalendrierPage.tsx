@@ -6,9 +6,10 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
 import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
+import { BoutonExport } from '@/components/BoutonExport'
 import {
   CATEGORIES, CATEGORIE_INFO, agregerParJour, clePortee, comptesParMois, effectifsDuMois, pastilles, pastillesDe,
-  prefixeMois, titrePeriode, totauxPeriode, versIso, type Portee, type VueCalendrier,
+  bornesExport, jourCourtAnnee, prefixeMois, titrePeriode, totauxPeriode, versIso, type Portee, type VueCalendrier,
 } from '@/utils/calendrier'
 import { FILTRES_VIDES, cleFiltres } from '@/utils/filtresAgents'
 import { EcheanceDetailModal } from '@/pages/anticipation/EcheanceDetailModal'
@@ -70,6 +71,13 @@ export function CalendrierPage() {
   const prefixe = vue === 'ANNEE' ? String(annee) : jourChoisi ?? prefixeMois(annee, mois)
   const periodeTotaux = vue === 'ANNEE' ? "de l'année" : jourChoisi ? 'du jour' : 'du mois'
   const totaux = useMemo(() => totauxPeriode(parJourTous, prefixe), [parJourTous, prefixe])
+  const perimetreExport = vue === 'MOIS' && jourChoisi ? jourCourtAnnee(jourChoisi) : titrePeriode(vue, annee, mois)
+  const paramsExport = {
+    ...bornesExport(vue, annee, mois, jourChoisi),
+    critereDate: critere,
+    typesCalendrier: actifs.size === CATEGORIES.length ? undefined : Array.from(actifs).join(','),
+    ...filtres,
+  }
   const effectifs = useMemo(() => effectifsDuMois(parJour, prefixeMois(annee, mois)), [parJour, annee, mois])
 
   /**
@@ -153,6 +161,8 @@ export function CalendrierPage() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {heure && <span className="text-[12px] text-[#9CA0AC]">Calculé à {heure}</span>}
+          <BoutonExport ecran="calendrier" params={paramsExport} disabled={actifs.size === 0}
+            title={actifs.size === 0 ? 'Aucun type affiché : rien à exporter' : `Exporter en Excel : ${perimetreExport}`} />
           <Button variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>
             Actualiser
           </Button>

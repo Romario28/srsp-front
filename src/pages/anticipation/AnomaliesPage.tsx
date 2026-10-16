@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Spinner } from '@/components/ui/Spinner'
 import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
+import { BoutonExport } from '@/components/BoutonExport'
 import { FILTRES_VIDES, cleFiltres, nbFiltres } from '@/utils/filtresAgents'
 import { EcheancesResults } from './EcheancesResults'
 import type { AlerteAnticipation, FiltresAgents } from '@/types/anticipation'
@@ -45,6 +46,7 @@ export function AnomaliesPage() {
         {nbFiltres(analyses) > 0 && <Badge tone="accent">{nbFiltres(analyses)} filtre{nbFiltres(analyses) > 1 ? 's' : ''} agents</Badge>}
         {perime && <Badge tone="warning">Filtres modifiés depuis cette analyse</Badge>}
       </div>
+      <div className="flex justify-end"><BoutonExport ecran="anomalies" params={analyses} disabled={anomalies.length === 0} title="Exporter en Excel l'analyse affichée" /></div>
       <EcheancesResults key={version} items={anomalies} type="ANOMALIE" />
     </div> : analyse.isLoading ? <Spinner label="Analyse en cours sur l'ensemble des agents en activité…" /> : !analyse.error ? <EmptyState icon={AlertTriangle} title="Aucune analyse lancée" description="Cliquez sur « Analyser »." /> : null}
   </div>

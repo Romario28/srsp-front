@@ -15,6 +15,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
 import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
+import { BoutonExport } from '@/components/BoutonExport'
 import { FILTRES_VIDES, nbFiltres } from '@/utils/filtresAgents'
 import { AlerteDetailModal } from './AlerteDetailModal'
 import { EcheanceAlerte } from './EcheanceAlerte'
@@ -42,11 +43,14 @@ export function AlertesPage() {
   const [matricule, setMatricule] = useState('')
   const [page, setPage] = useState(0)
   const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(FILTRES_VIDES)
-  const { data, isLoading, error, reload } = useFetch(() => alertesApi.lister({
+  const filtresListe = {
     type: type || undefined,
     statut: statut === 'TOUS' ? undefined : statut,
     matricule: matricule || undefined,
     ...filtresAgents,
+  }
+  const { data, isLoading, error, reload } = useFetch(() => alertesApi.lister({
+    ...filtresListe,
     page,
     size: TAILLE_PAGE,
   }), [type, statut, matricule, filtresAgents, page])
@@ -103,7 +107,7 @@ export function AlertesPage() {
     <div className="flex items-start justify-between gap-4"><div>
       <h1 className="font-display text-[20px] font-semibold text-ink">Alertes</h1>
       <p className="mt-0.5 max-w-3xl text-[13px] text-[#6B7180]">Générées chaque nuit avec les fenêtres configurées. Une alerte reste dans le fil jusqu'à son acquittement, même quand l'agent sort de la fenêtre. Les plus urgentes sont en tête, les anomalies en fin de liste.</p>
-    </div><Button variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>Actualiser</Button></div>
+    </div><div className="flex items-start gap-2"><BoutonExport ecran="alertes" params={filtresListe} disabled={data?.totalElements === 0} title="Exporter en Excel toutes les alertes correspondant aux filtres, pas seulement la page affichée" /><Button variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>Actualiser</Button></div></div>
 
     <div className="flex flex-wrap items-center gap-3">
       <SegmentedControl options={OPTIONS_STATUT} value={statut} onChange={changerStatut} ariaLabel="Filtrer par statut d'alerte" />

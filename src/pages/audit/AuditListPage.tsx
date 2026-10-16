@@ -19,6 +19,7 @@ const ACTION_TONES: Record<string, 'success' | 'warning' | 'danger' | 'accent' |
   UPDATE_CONFIG_DELAI: 'accent',    // AJOUTÉ
   RESET_CONFIG_DELAI: 'warning',    // AJOUTÉ
   IMPORT_EXCEL: 'accent',           // AJOUTÉ
+  EXPORT_EXCEL: 'accent',
 }
 
 export function AuditListPage() {

@@ -142,3 +142,11 @@ export const pastillesDe = (comptes: ComptesJour): Pastille[] =>
     const nombre = comptes[categorie] ?? 0
     return nombre > 0 ? [{ categorie, nombre }] : []
   })
+
+/** Bornes (yyyy-MM-dd) de ce que l'export couvre : année, jour choisi ou mois affiché. */
+export function bornesExport(vue: VueCalendrier, annee: number, mois: number, jour: string | null): { dateDebut: string; dateFin: string } {
+  if (vue === 'ANNEE') return { dateDebut: `${annee}-01-01`, dateFin: `${annee}-12-31` }
+  if (jour) return { dateDebut: jour, dateFin: jour }
+  const prefixe = prefixeMois(annee, mois)
+  return { dateDebut: `${prefixe}-01`, dateFin: `${prefixe}-${pad(new Date(annee, mois + 1, 0).getDate())}` }
+}

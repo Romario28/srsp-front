@@ -9,7 +9,9 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Badge } from '@/components/ui/Badge'
 import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
-import { TYPE_LABELS } from '@/utils/anticipation'
+import { ECHEANCE_SLUGS, TYPE_LABELS } from '@/utils/anticipation'
+import { BoutonExport } from '@/components/BoutonExport'
+import type { EcranExport } from '@/api/exports'
 import { FILTRES_VIDES as FILTRES_AGENTS_VIDES, nbFiltres } from '@/utils/filtresAgents'
 import { EcheancesFilters } from './EcheancesFilters'
 import { EcheancesResults } from './EcheancesResults'
@@ -61,6 +63,7 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
     {calcul.error && <ErrorBanner message={calcul.error} />}
     {calcul.data && dernier ? <div className={`flex flex-col gap-4 transition-opacity ${calcul.isLoading ? 'opacity-50' : ''}`}>
       <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#4B4F5A]"><span className="font-medium text-ink">{calcul.data.length} échéance{calcul.data.length > 1 ? 's' : ''}</span><span>· {decrireFenetre(dernier.filtres, config)}</span><span>· calculé à {dernier.le.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>{nbFiltres(dernier.filtres) > 0 && <Badge tone="accent">{nbFiltres(dernier.filtres)} filtre{nbFiltres(dernier.filtres) > 1 ? 's' : ''} agents</Badge>}{perime && <Badge tone="warning">Filtres modifiés depuis ce calcul</Badge>}</div>
+      <div className="flex justify-end"><BoutonExport ecran={ECHEANCE_SLUGS[type] as EcranExport} params={dernier.filtres} disabled={calcul.data.length === 0} title="Exporter en Excel le résultat affiché (le filtre Statut de la barre s'applique, pas les onglets)" /></div>
       <EcheancesResults key={dernier.version} items={calcul.data} type={type} />
     </div> : calcul.isLoading ? <Spinner label="Calcul en cours sur l'ensemble des agents en activité…" /> : !calcul.error ? <EmptyState icon={Calculator} title="Aucun calcul lancé" description="Réglez la fenêtre puis cliquez sur « Calculer »." /> : null}
   </div>
