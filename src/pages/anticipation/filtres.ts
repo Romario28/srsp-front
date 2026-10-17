@@ -8,6 +8,7 @@ export interface EtatFiltres {
   retard: string
   dateDebut: string
   dateFin: string
+  /** Date sur laquelle portent la fenêtre relative et l'intervalle de dates. */
   critere: CritereDate
 }
 
@@ -26,11 +27,11 @@ export function validerFiltres(etat: EtatFiltres): string | null {
 }
 
 export function construireFiltres(etat: EtatFiltres, config: ConfigurationDelaiDTO | null): FiltresEcheances {
-  const filtres: FiltresEcheances = {}
+  // Le critère s'applique aux deux modes : il part toujours (avant, seulement avec des dates).
+  const filtres: FiltresEcheances = { critereDate: etat.critere }
   if (datesActives(etat)) {
     if (etat.dateDebut) filtres.dateDebut = etat.dateDebut
     if (etat.dateFin) filtres.dateFin = etat.dateFin
-    filtres.critereDate = etat.critere
     return filtres
   }
   const prevenance = etat.prevenance.trim()
@@ -41,13 +42,17 @@ export function construireFiltres(etat: EtatFiltres, config: ConfigurationDelaiD
 }
 
 export function decrireFenetre(filtres: FiltresEcheances, config: ConfigurationDelaiDTO | null): string {
+  const surPreparation = filtres.critereDate === 'PREPARATION'
   if (filtres.dateDebut || filtres.dateFin) {
-    const quoi = filtres.critereDate === 'PREPARATION' ? 'préparation' : 'échéances'
+    const quoi = surPreparation ? 'préparation' : 'échéances'
     if (filtres.dateDebut && filtres.dateFin) return `${quoi} du ${formatDate(filtres.dateDebut)} au ${formatDate(filtres.dateFin)}`
     return filtres.dateDebut ? `${quoi} à partir du ${formatDate(filtres.dateDebut)}` : `${quoi} jusqu'au ${formatDate(filtres.dateFin)}`
   }
   const prevenance = filtres.prevenanceMois ?? config?.prevenanceMois
   const retard = filtres.retardMois ?? config?.retardMois
   if (prevenance == null || retard == null) return 'fenêtre configurée'
+  if (surPreparation) {
+    return `dont la préparation débute dans ${prevenance} mois au plus, ${retard === 0 ? 'sans préparation déjà ouverte' : `ou a débuté il y a ${retard} mois au plus`}`
+  }
   return `à préparer dès ${prevenance} mois avant l'échéance, ${retard === 0 ? 'sans retard affiché' : `jusqu'à ${retard} mois après`}`
 }
