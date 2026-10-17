@@ -64,6 +64,11 @@ const COLONNES: Record<CategorieCalendrier, Colonne[]> = {
     { titre: 'Date de début', cellule: (e) => date(e.dateDebutContrat, false) },
     { titre: 'Date de fin', cellule: (e, critere) => date(e.dateEcheance, critere === 'ECHEANCE') },
   ],
+  INTEGRATION: [
+    NOM, MATRICULE, PREPARATION,
+    { titre: 'Date de début', cellule: (e) => date(e.dateDebutContrat, false) },
+    { titre: "Date d'intégration", cellule: (e, critere) => date(e.dateEcheance, critere === 'ECHEANCE') },
+  ],
 }
 
 function Groupe({ categorie, lignes, critere, onSelect }: {

@@ -5,11 +5,12 @@ export const TYPE_LABELS: Record<TypeAnticipation, string> = {
   AVANCEMENT: 'Avancement',
   TITULARISATION: 'Titularisation',
   FIN_CONTRAT: 'Fin de contrat',
+  INTEGRATION: 'Intégration',
   ANOMALIE: 'Anomalie',
 }
 
 export const TYPES_ECHEANCE: readonly TypeEcheance[] = [
-  'DEPART_RETRAITE', 'AVANCEMENT', 'TITULARISATION', 'FIN_CONTRAT',
+  'DEPART_RETRAITE', 'AVANCEMENT', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION',
 ]
 
 const STATUT_LABELS: Record<StatutAgent, { singulier: string; pluriel: string }> = {
@@ -77,6 +78,7 @@ export const ECHEANCE_SLUGS: Record<TypeEcheance, string> = {
   AVANCEMENT: 'avancement',
   TITULARISATION: 'titularisation',
   FIN_CONTRAT: 'fin-contrat',
+  INTEGRATION: 'integration',
 }
 
 export type FiltreStatut = 'TOUS' | StatutAgent | 'NON_RENSEIGNE'

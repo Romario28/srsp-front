@@ -55,6 +55,7 @@ function libelleDateEcheance(type: TypeAnticipation): string {
   switch (type) {
     case 'DEPART_RETRAITE': return 'Date de retraite'
     case 'FIN_CONTRAT': return 'Date de fin de contrat'
+    case 'INTEGRATION': return "Date d'intégration"
     case 'AVANCEMENT': case 'TITULARISATION': return 'Nouvelle situation dès le'
     default: return 'Échéance'
   }
@@ -103,6 +104,9 @@ function InformationsCles({ alerte, etat }: { alerte: AlerteDTO; etat: EtatFiche
       <Ligne label="Âge de départ"><ValeurFiche etat={etat}>{(f) => <AgeA naissance={f.dateNaissance} aLaDate={alerte.dateEcheance} />}</ValeurFiche></Ligne>
       {preparation}{note}
     </dl></Section>
+    case 'INTEGRATION': return <Section titre="Informations clés"><dl className={GRILLE}>
+      <Ligne label="Début de contrat"><ValeurFiche etat={etat}>{(f) => formatDate(f.dateDebutContrat)}</ValeurFiche></Ligne>{preparation}{note}
+    </dl></Section>
     default: return <Section titre="Informations clés"><div className="rounded-lg border border-warning/30 bg-warning-light px-4 py-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-warning">Raison</p><p className="mt-1 text-[13px] text-ink">{alerte.details ?? '—'}</p>
     </div></Section>
@@ -131,6 +135,12 @@ function dejaAffiches(alerte: AlerteDTO, fiche: AgentFiche): ReadonlySet<CleFich
     case 'FIN_CONTRAT':
       exclus.add('debutContrat')
       if (memeDate(alerte.dateEcheance, fiche.dateFinContrat)) exclus.add('finContrat')
+      break
+    case 'INTEGRATION':
+      exclus.add('debutContrat')
+      if (fiche.integration.situation === 'CONCERNE') exclus.add('integrationEtat')
+      if (memeDate(alerte.dateEcheance, fiche.integration.dateIntegration)) exclus.add('integrationDate')
+      if (memeDate(alerte.datePreparation, fiche.integration.datePreparation)) exclus.add('integrationPreparation')
       break
   }
   return exclus

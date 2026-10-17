@@ -1,7 +1,7 @@
 import type { AlerteAnticipation } from './anticipation'
 
 /** Miroir de CategorieCalendrier.java */
-export type CategorieCalendrier = 'DEPART_RETRAITE' | 'AVANCEMENT' | 'ELD' | 'TITULARISATION' | 'FIN_CONTRAT'
+export type CategorieCalendrier = 'DEPART_RETRAITE' | 'AVANCEMENT' | 'ELD' | 'TITULARISATION' | 'FIN_CONTRAT' | 'INTEGRATION'
 
 /** Miroir de CalendrierJourDTO.java : un nombre d'échéances pour un couple de dates. */
 export interface CalendrierJour {

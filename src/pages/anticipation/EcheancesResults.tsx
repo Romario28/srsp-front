@@ -37,8 +37,9 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
   const tranche = lignes.slice(debut, debut + TAILLE_PAGE)
   const estRetraite = type === 'DEPART_RETRAITE'
   const estFinContrat = type === 'FIN_CONTRAT'
+  const estIntegration = type === 'INTEGRATION'
   const afficheSituations = changeDeGrade(type)
-  const nbColonnes = 3 + (estRetraite ? 2 : 0) + (estFinContrat ? 1 : 0) + (afficheSituations ? 2 : 0) + (estAnomalie ? 1 : 3)
+  const nbColonnes = 3 + (estRetraite ? 2 : 0) + (estFinContrat || estIntegration ? 1 : 0) + (afficheSituations ? 2 : 0) + (estAnomalie ? 1 : 3)
 
   return (
     <div className="flex flex-col gap-3">
@@ -47,9 +48,9 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
         <thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr>
           <th className="table-head-cell">Matricule</th><th className="table-head-cell">Agent</th><th className="table-head-cell">Corps / cat. / grade</th>
           {estRetraite && <><th className="table-head-cell">Date de naissance</th><th className="table-head-cell">Âge</th></>}
-          {estFinContrat && <th className="table-head-cell">Date de début</th>}
+          {(estFinContrat || estIntegration) && <th className="table-head-cell">{estIntegration ? 'Début de contrat' : 'Date de début'}</th>}
           {afficheSituations && <><th className="table-head-cell border-l border-[#EAEBF0]">Dernière situation</th><th className="table-head-cell border-l border-[#EAEBF0]">Nouvelle situation</th></>}
-          {estAnomalie ? <th className="table-head-cell">Raison</th> : <><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">{estRetraite ? 'Date de retraite' : estFinContrat ? 'Date de fin' : 'Échéance'}</th><th className="table-head-cell">{estFinContrat ? 'Durée restante' : 'Délai'}</th></>}
+          {estAnomalie ? <th className="table-head-cell">Raison</th> : <><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">{estRetraite ? 'Date de retraite' : estFinContrat ? 'Date de fin' : estIntegration ? "Date d'intégration" : 'Échéance'}</th><th className="table-head-cell">{estFinContrat ? 'Durée restante' : 'Délai'}</th></>}
         </tr></thead>
         <tbody className="divide-y divide-[#EAEBF0]">{tranche.map(({ groupe, item }, index) => {
           const premier = index === 0 || tranche[index - 1].groupe !== groupe
@@ -60,7 +61,7 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
               <td className="table-cell"><button type="button" aria-label={`Ouvrir la fiche de ${item.nomComplet}`} className="text-left font-medium text-ink">{item.nomComplet}</button>{!estAnomalie && item.details && <div className="text-[12px] text-[#9CA0AC]">{item.details}</div>}</td>
               <td className="table-cell font-mono text-[12.5px] text-[#4B4F5A]">{corpsGrade(item)}</td>
               {estRetraite && <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateNaissance)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]"><Age naissance={item.dateNaissance} /></td></>}
-              {estFinContrat && <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateDebutContrat)}</td>}
+              {(estFinContrat || estIntegration) && <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateDebutContrat)}</td>}
               {afficheSituations && <><td className="table-cell border-l border-[#EAEBF0]"><CelluleDerniereSituation grade={item.gradeCode} dateEffet={item.avanceDate ?? item.dateDebutContrat} /></td><td className="table-cell border-l border-[#EAEBF0] bg-accent-light/30"><CelluleNouvelleSituation gradeSuivant={item.gradeSuivant} dateEffet={item.dateEcheance} /></td></>}
               {estAnomalie ? <td className="table-cell text-[#4B4F5A]">{item.details ?? '—'}</td> : <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.datePreparation)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{estRetraite ? <DateRetraite dateEcheance={item.dateEcheance} naissance={item.dateNaissance} /> : formatDate(item.dateEcheance)}</td><td className="table-cell"><Badge tone={toneDelai(item.joursRestants)}>{libelleEcheance(item.joursRestants)}</Badge></td></>}
             </tr>

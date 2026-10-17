@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, Network, KeyRound, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload } from 'lucide-react'
+import { LayoutDashboard, Users, Network, KeyRound, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin } from '@/utils/roles'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
@@ -32,6 +32,7 @@ const NAV_GROUPS = [
     { to: '/anticipation/avancement', label: 'Avancements', icon: TrendingUp, adminOnly: true },
     { to: '/anticipation/titularisation', label: 'Titularisations', icon: BadgeCheck, adminOnly: true },
     { to: '/anticipation/fin-contrat', label: 'Fins de contrat', icon: CalendarClock, adminOnly: true },
+    { to: '/anticipation/integration', label: 'Intégrations', icon: UserPlus, adminOnly: true },
     { to: '/anticipation/anomalies', label: 'Anomalies', icon: AlertTriangle, adminOnly: true },
     { to: '/anticipation/configuration', label: 'Configuration', icon: SlidersHorizontal, adminOnly: true },
   ] },

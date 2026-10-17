@@ -23,6 +23,7 @@ const DESCRIPTIONS: Record<TypeEcheance, string> = {
   AVANCEMENT: "Échéance = date du dernier avancement (à défaut, début de contrat) + durée requise du couple corps/grade. Même calcul pour tous les statuts, ELD compris.",
   TITULARISATION: "Même calcul qu'un avancement : seul l'intitulé change, pour le grade de stagiaire.",
   FIN_CONTRAT: 'Agents dont le contrat prend fin. Un contrat sans date de fin (durée indéterminée) n’apparaît jamais.',
+  INTEGRATION: "Contractuels sans date de fin de contrat : intégration (passage au statut de fonctionnaire) 2 ans après la date de début de contrat. Un contractuel sans date de début est signalé en anomalie.",
 }
 interface DernierCalcul { filtres: FiltresEcheances; version: number; le: Date }
 

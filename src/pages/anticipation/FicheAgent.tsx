@@ -7,14 +7,20 @@ import { anticipationApi } from '@/api/anticipation'
 import { extractErrorCode } from '@/api/client'
 import { formatDate } from '@/utils/date'
 import { statutAgentLabel } from '@/utils/anticipation'
-import type { AgentFiche, ReferenceAgent } from '@/types/anticipation'
+import type { AgentFiche, ReferenceAgent, SituationIntegration } from '@/types/anticipation'
 
 export type CleFiche =
   | 'statut' | 'naissance' | 'sexe' | 'cin' | 'corps' | 'categorie' | 'grade' | 'indice'
-  | 'avanceDate' | 'debutContrat' | 'finContrat' | 'situation' | 'poste' | 'section'
+  | 'avanceDate' | 'debutContrat' | 'finContrat' | 'situation' | 'integrationEtat' | 'integrationDate' | 'integrationPreparation' | 'poste' | 'section'
   | 'localite' | 'ministere' | 'region' | 'hee' | 'heeCategorie' | 'soa'
 
-interface Champ { cle: CleFiche; label: string; valeur: (f: AgentFiche) => ReactNode }
+interface Champ { cle: CleFiche; label: string; valeur: (f: AgentFiche) => ReactNode; visible?: (f: AgentFiche) => boolean }
+const ETATS_INTEGRATION: Record<SituationIntegration, string> = {
+  NON_CONTRACTUEL: '', CONTRAT_AVEC_FIN: 'Non concerné : contrat à durée déterminée (date de fin renseignée)',
+  DEBUT_MANQUANT: 'Non calculable : date de début de contrat manquante', CONCERNE: 'Concerné : contractuel sans date de fin de contrat',
+}
+const contractuel = (f: AgentFiche) => f.integration.situation !== 'NON_CONTRACTUEL'
+const concerne = (f: AgentFiche) => f.integration.situation === 'CONCERNE'
 const texte = (v: string | null | undefined) => v || '—'
 const reference = (r: ReferenceAgent | null) => r == null ? '—' : r.libelle ? `${r.code} — ${r.libelle}` : r.code
 const SEXES: Record<string, string> = { M: 'Masculin', F: 'Féminin' }
@@ -34,6 +40,11 @@ const GROUPES: { titre: string; champs: Champ[] }[] = [
     { cle: 'debutContrat', label: 'Date de début de contrat', valeur: (f) => formatDate(f.dateDebutContrat) },
     { cle: 'finContrat', label: 'Date de fin de contrat', valeur: (f) => formatDate(f.dateFinContrat) },
     { cle: 'situation', label: 'Situation administrative', valeur: (f) => f.situation == null ? '— (réputé en activité)' : reference(f.situation) },
+  ] },
+  { titre: 'Intégration', champs: [
+    { cle: 'integrationEtat', label: 'Éligibilité', visible: contractuel, valeur: (f) => ETATS_INTEGRATION[f.integration.situation] },
+    { cle: 'integrationDate', label: "Date d'intégration prévue", visible: concerne, valeur: (f) => formatDate(f.integration.dateIntegration) },
+    { cle: 'integrationPreparation', label: 'Préparation dès le', visible: concerne, valeur: (f) => formatDate(f.integration.datePreparation) },
   ] },
   { titre: 'Affectation', champs: [
     { cle: 'poste', label: 'N° de poste', valeur: (f) => texte(f.posteNumero) },
@@ -77,7 +88,7 @@ export function FicheAgentContenu({ etat, exclus }: {
   if (!fiche) return <p className="text-[13px] text-[#6B7180]">Cet agent n'existe plus dans la base. Les informations ci-dessus restent valables.</p>
 
   const masques = exclus(fiche)
-  const groupes = GROUPES.map((g) => ({ ...g, champs: g.champs.filter((c) => !masques.has(c.cle)) })).filter((g) => g.champs.length > 0)
+  const groupes = GROUPES.map((g) => ({ ...g, champs: g.champs.filter((c) => !masques.has(c.cle) && (c.visible?.(fiche) ?? true)) })).filter((g) => g.champs.length > 0)
   return <div className="flex flex-col gap-4">{groupes.map((g) => <div key={g.titre}>
     <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#6B7180]">{g.titre}</h4>
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">{g.champs.map((c) => <div key={c.cle} className="min-w-0">

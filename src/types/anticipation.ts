@@ -1,5 +1,5 @@
 export type TypeAnticipation =
-  | 'DEPART_RETRAITE' | 'AVANCEMENT' | 'TITULARISATION' | 'FIN_CONTRAT' | 'ANOMALIE'
+  | 'DEPART_RETRAITE' | 'AVANCEMENT' | 'TITULARISATION' | 'FIN_CONTRAT' | 'INTEGRATION' | 'ANOMALIE'
 
 /** Les types avec échéance, donc une fenêtre configurable. ANOMALIE n'en a pas. */
 export type TypeEcheance = Exclude<TypeAnticipation, 'ANOMALIE'>
@@ -19,12 +19,23 @@ export interface ReferenceAgent {
   libelle: string | null
 }
 
+/** Miroir de SituationIntegration.java */
+export type SituationIntegration = 'NON_CONTRACTUEL' | 'CONTRAT_AVEC_FIN' | 'DEBUT_MANQUANT' | 'CONCERNE'
+
+/** Miroir de AgentFicheDTO.Integration : les dates ne sont renseignées que si CONCERNE. */
+export interface IntegrationFiche {
+  situation: SituationIntegration
+  dateIntegration: string | null
+  datePreparation: string | null
+}
+
 /** Fiche complète récupérée à l'ouverture du détail d'une échéance. */
 export interface AgentFiche {
   matricule: string
   nom: string | null
   prenoms: string | null
   statut: StatutAgent | null
+  integration: IntegrationFiche
   dateNaissance: string | null
   sexe: string | null
   cin: string | null

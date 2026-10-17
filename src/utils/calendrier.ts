@@ -1,7 +1,7 @@
 import type { CritereDate } from '@/types/anticipation'
 import type { CalendrierJour, CategorieCalendrier } from '@/types/calendrier'
 
-export const CATEGORIES: readonly CategorieCalendrier[] = ['DEPART_RETRAITE', 'AVANCEMENT', 'ELD', 'TITULARISATION', 'FIN_CONTRAT']
+export const CATEGORIES: readonly CategorieCalendrier[] = ['DEPART_RETRAITE', 'AVANCEMENT', 'ELD', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION']
 
 /**
  * label : forme pluriel, pour la légende et les titres.
@@ -16,6 +16,8 @@ export const CATEGORIE_INFO: Record<CategorieCalendrier, { label: string; point:
   ELD: { label: 'Avancements ELD', point: 'bg-[#9C6414]', un: 'avancement ELD', plusieurs: 'avancements ELD' },
   TITULARISATION: { label: 'Titularisations', point: 'bg-success', un: 'titularisation', plusieurs: 'titularisations' },
   FIN_CONTRAT: { label: 'Fins de contrat', point: 'bg-danger', un: 'fin de contrat', plusieurs: 'fins de contrat' },
+  // Magenta : teinte distincte des autres types.
+  INTEGRATION: { label: 'Intégrations', point: 'bg-[#B83280]', un: 'intégration', plusieurs: 'intégrations' },
 }
 
 /** « 5 départs à la retraite », « 1 fin de contrat » : info-bulle des badges et texte pour lecteurs d'écran. */

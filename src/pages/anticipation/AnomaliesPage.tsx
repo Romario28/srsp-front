@@ -32,7 +32,7 @@ export function AnomaliesPage() {
   return <div className="flex flex-col gap-5">
     <div>
       <h1 className="font-display text-[20px] font-semibold text-ink">Anomalies</h1>
-      <p className="mt-0.5 text-[13px] text-[#6B7180]">Agents en activité pour lesquels une échéance ne peut pas être calculée faute de données (date de naissance, grade, corps, dates d'ancrage ou durée requise). Il n'y a pas de fenêtre de dates : une anomalie n'a pas d'échéance. Corrigez à la source, puis réimportez.</p>
+      <p className="mt-0.5 text-[13px] text-[#6B7180]">Agents en activité pour lesquels une échéance ne peut pas être calculée faute de données (date de naissance, grade, corps, dates d'ancrage, durée requise, ou date de début de contrat d'un contractuel sans date de fin). Il n'y a pas de fenêtre de dates : une anomalie n'a pas d'échéance. Corrigez à la source, puis réimportez.</p>
     </div>
     <FiltresAgentsBar valeur={filtres} onChange={setFiltres} />
     <div className="flex justify-end gap-2">

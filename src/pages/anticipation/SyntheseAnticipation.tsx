@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, ArrowUpRight, BadgeCheck, CalendarClock, Hourglass, RefreshCw, TrendingUp, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, ArrowUpRight, BadgeCheck, CalendarClock, Hourglass, RefreshCw, TrendingUp, UserPlus, type LucideIcon } from 'lucide-react'
 import { useFetch } from '@/hooks/useFetch'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
 import { alertesApi } from '@/api/alertes'
@@ -16,6 +16,7 @@ const CARTES: { type: TypeAnticipation; label: string; icon: LucideIcon }[] = [
   { type: 'AVANCEMENT', label: 'Avancements', icon: TrendingUp },
   { type: 'TITULARISATION', label: 'Titularisations', icon: BadgeCheck },
   { type: 'FIN_CONTRAT', label: 'Fins de contrat', icon: CalendarClock },
+  { type: 'INTEGRATION', label: 'Intégrations', icon: UserPlus },
   { type: 'ANOMALIE', label: 'Anomalies', icon: AlertTriangle },
 ]
 type Compteurs = Record<TypeAnticipation, number>
@@ -43,7 +44,7 @@ function CartesSynthese() {
       <Link to="/anticipation/alertes" className="flex items-center gap-1 text-[12.5px] font-medium text-accent hover:underline">Voir le fil d'alertes <ArrowUpRight className="h-3.5 w-3.5" /></Link>
     </div></div>
     {error && <ErrorBanner message={error} />}
-    <div className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-5 ${isLoading && data ? 'opacity-60' : ''}`}>
+    <div className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 ${isLoading && data ? 'opacity-60' : ''}`}>
       {CARTES.map((carte) => {
         const nombre = data ? data[carte.type] : null
         return <StatCard key={carte.type} icon={carte.icon} label={carte.label} value={nombre ?? '—'} sub={nombre == null ? undefined : nombre > 1 ? 'alertes nouvelles' : 'alerte nouvelle'} to={`/anticipation/alertes?type=${carte.type}`} />
