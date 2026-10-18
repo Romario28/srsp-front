@@ -16,6 +16,7 @@ import { AlertesPage } from '@/pages/anticipation/alertes/AlertesPage'
 import { ConfigurationPage } from '@/pages/anticipation/ConfigurationPage'
 import { GardeBaseAgents } from '@/pages/anticipation/GardeBaseAgents'
 import { CalendrierPage } from '@/pages/calendrier/CalendrierPage'
+import { DossiersPage } from '@/pages/dossiers/DossiersPage'
 import { ImportsPage } from '@/pages/imports/ImportsPage'
 import { ECHEANCE_SLUGS, TYPES_ECHEANCE } from '@/utils/anticipation'
 
@@ -64,6 +65,7 @@ function App() {
         <Route path="anticipation" element={<ProtectedRoute adminOnly><Outlet /></ProtectedRoute>}>
           <Route index element={<Navigate to="alertes" replace />} />
           <Route path="configuration" element={<ConfigurationPage />} />
+          <Route path="dossiers" element={<DossiersPage />} />
           <Route element={<GardeBaseAgents />}>
             <Route path="alertes" element={<AlertesPage />} />
             <Route path="calendrier" element={<CalendrierPage />} />
