@@ -22,7 +22,7 @@ export const STATUT_DOSSIER: Record<StatutDossier, { label: string; tone: 'neutr
 /** Ordre envoyé au paramètre `inverse` de l'API. */
 export type Ordre = 'DEFAUT' | 'INVERSE'
 
-export const LIBELLE_ORDRE: Record<Ordre, string> = { INVERSE: 'Récent (Nouveau)', DEFAUT: 'Ancien (Urgent)' }
+export const LIBELLE_ORDRE: Record<Ordre, string> = { INVERSE: 'Récent', DEFAUT: 'Ancien' }
 
 export const AIDE_ORDRE: Partial<Record<VueDossier, Record<Ordre, string>>> = {
   A_TRAITER: {

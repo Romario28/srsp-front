@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { AlertTriangle, ArrowUpDown, ClipboardList, Filter, RefreshCw, Search, X } from 'lucide-react'
+import { AlertTriangle, ClipboardList, RefreshCw, Search, X } from 'lucide-react'
 import { useFetch } from '@/hooks/useFetch'
 import { dossiersApi } from '@/api/dossiers'
 import { extractErrorMessage } from '@/api/client'
 import { TYPE_LABELS, TYPES_ECHEANCE } from '@/utils/anticipation'
-import { FILTRES_VIDES, nbFiltres } from '@/utils/filtresAgents'
+import { FILTRES_VIDES } from '@/utils/filtresAgents'
 import { formatDate } from '@/utils/date'
-import { AIDE_ORDRE, ETAPES, LIBELLE_ORDRE, type Ordre } from '@/utils/dossiers'
+import { AIDE_ORDRE, ETAPES, type Ordre } from '@/utils/dossiers'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
@@ -16,8 +16,9 @@ import { Spinner } from '@/components/ui/Spinner'
 import { LigneDossier } from './LigneDossier'
 import { BarreLot } from './BarreLot'
 import { DossierFormModal } from './DossierFormModal'
-import { TriDossiersModal } from './TriDossiersModal'
-import { FiltresDossiersModal } from './FiltresDossiersModal'
+import { MenuTri } from './MenuTri'
+import { MenuFiltres } from './MenuFiltres'
+import { PastillesFiltres } from './PastillesFiltres'
 import type { FiltresAgents, TypeAnticipation } from '@/types/anticipation'
 import type { DossierDTO, EtapeDossier, ResultatLot, VueDossier } from '@/types/dossier'
 
@@ -42,7 +43,6 @@ export function DossiersPage() {
   const [matricule, setMatricule] = useState('')
   const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(FILTRES_VIDES)
   const [page, setPage] = useState(0)
-  const [modale, setModale] = useState<'tri' | 'filtres' | null>(null)
   const hautTableau = useRef<HTMLDivElement>(null)
 
   const { data, isLoading, error, reload } = useFetch(
@@ -53,7 +53,6 @@ export function DossiersPage() {
   const s = synthese.data
   const aideOrdre = AIDE_ORDRE[vue]
   const ordre: Ordre = inverse ? 'INVERSE' : 'DEFAUT'
-  const nFiltres = nbFiltres(filtresAgents)
 
   // Les mises à jour unitaires restent en place pour éviter un saut de ligne jusqu'au prochain rechargement.
   const [surcharges, setSurcharges] = useState<Record<number, DossierDTO>>({})
@@ -74,11 +73,8 @@ export function DossiersPage() {
   const repartir = () => { setPage(0); setSelection(new Set()) }
   const changerVue = (v: VueDossier) => { setVue(v); setInverse(false); repartir() }
   const changerPage = (p: number) => { setPage(p); hautTableau.current?.scrollIntoView({ block: 'start' }) }
-  const choisirOrdre = (o: Ordre) => {
-    setModale(null)
-    if (o !== ordre) { setInverse(o === 'INVERSE'); repartir() }
-  }
-  const appliquerFiltres = (v: FiltresAgents) => { setModale(null); setFiltresAgents(v); repartir() }
+  const choisirOrdre = (o: Ordre) => { setInverse(o === 'INVERSE'); repartir() }
+  const changerFiltres = (v: FiltresAgents) => { setFiltresAgents(v); repartir() }
   const rechercher = (event: FormEvent) => {
     event.preventDefault()
     const valeur = saisie.trim()
@@ -151,31 +147,26 @@ export function DossiersPage() {
         {vue === 'EN_COURS' && s && s.aRelancer > 0 && <span className="font-medium text-warning"> {s.aRelancer} à relancer (plus de {s.relanceApresJours} jours sans nouvelle étape).</span>}
       </p>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <form onSubmit={rechercher} role="search" className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA0AC]" />
-          <input value={saisie} onChange={(e) => setSaisie(e.target.value)} placeholder="Matricule exact (Entrée)"
-            aria-label="Matricule de l'agent : Entrée pour chercher"
-            className={`${CHAMP_BARRE} w-52 pl-9 pr-8 placeholder:text-[#9CA0AC] ${matricule !== '' && saisie.trim() === matricule ? 'border-accent' : ''}`} />
-          {saisie !== '' && <button type="button" onClick={effacerRecherche} aria-label="Effacer la recherche"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-[#9CA0AC] hover:text-ink"><X className="h-3.5 w-3.5" /></button>}
-        </form>
-
-        <select value={type} onChange={(e) => { setType(e.target.value as TypeAnticipation | ''); repartir() }} aria-label="Filtrer par type"
-          className={`${CHAMP_BARRE} px-2.5`}>
-          <option value="">Tous les types</option>{TYPES_ECHEANCE.map((t) => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-        </select>
-
-        <span className="inline-flex" title={aideOrdre ? `Ordre actuel : ${LIBELLE_ORDRE[ordre]}` : 'Ordre fixe pour cet onglet : rien à trier'}>
-          <Button variant="secondary" size="sm" icon={<ArrowUpDown className="h-3.5 w-3.5" />} aria-haspopup="dialog"
-            onClick={() => setModale('tri')} disabled={!aideOrdre}>Trier</Button>
-        </span>
-        <Button variant="secondary" size="sm" icon={<Filter className="h-3.5 w-3.5" />} aria-haspopup="dialog" onClick={() => setModale('filtres')}>
-          Filtrer{nFiltres > 0 && <span className="rounded-full bg-accent px-1.5 text-[11px] font-semibold leading-4 text-white">{nFiltres}</span>}
-        </Button>
-        <Button className="ml-auto" variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>Actualiser</Button>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <form onSubmit={rechercher} role="search" className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA0AC]" />
+            <input value={saisie} onChange={(e) => setSaisie(e.target.value)} placeholder="Matricule exact (Entrée)"
+              aria-label="Matricule de l'agent : Entrée pour chercher"
+              className={`${CHAMP_BARRE} w-52 pl-9 pr-8 placeholder:text-[#9CA0AC] ${matricule !== '' && saisie.trim() === matricule ? 'border-accent' : ''}`} />
+            {saisie !== '' && <button type="button" onClick={effacerRecherche} aria-label="Effacer la recherche"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-[#9CA0AC] hover:text-ink"><X className="h-3.5 w-3.5" /></button>}
+          </form>
+          <select value={type} onChange={(e) => { setType(e.target.value as TypeAnticipation | ''); repartir() }} aria-label="Filtrer par type"
+            className={`${CHAMP_BARRE} px-2.5`}>
+            <option value="">Tous les types</option>{TYPES_ECHEANCE.map((t) => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
+          </select>
+          <MenuTri aide={aideOrdre} ordre={ordre} onChoisir={choisirOrdre} />
+          <MenuFiltres valeur={filtresAgents} onChange={changerFiltres} />
+          <Button className="ml-auto" variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>Actualiser</Button>
+        </div>
+        <PastillesFiltres valeur={filtresAgents} onChange={changerFiltres} />
       </div>
-
       {error && <ErrorBanner message={error} />}
       {erreurAction && <ErrorBanner message={erreurAction} />}
       {resultatLot && <div className={`rounded-lg border px-4 py-3 text-[13px] ${resultatLot.refuses.length > 0 ? 'border-warning/30 bg-warning-light text-warning' : 'border-success/30 bg-success-light text-success'}`}>
@@ -214,8 +205,6 @@ export function DossiersPage() {
 
       {selection.size > 0 && <BarreLot nb={selection.size} occupe={enLot} onAppliquer={appliquerLot} onVider={() => setSelection(new Set())} />}
       <DossierFormModal dossier={edition} onClose={() => setEdition(null)} onChange={(maj) => { appliquer(maj); setEdition(null) }} />
-      {modale === 'tri' && aideOrdre && <TriDossiersModal aide={aideOrdre} ordre={ordre} onChoisir={choisirOrdre} onClose={() => setModale(null)} />}
-      {modale === 'filtres' && <FiltresDossiersModal valeur={filtresAgents} onAppliquer={appliquerFiltres} onClose={() => setModale(null)} />}
     </div>
   )
 }
