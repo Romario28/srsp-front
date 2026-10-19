@@ -75,7 +75,7 @@ function Formulaire({ dossier, onClose, onChange }: { dossier: DossierDTO; onClo
       </div>}
 
       <form onSubmit={enregistrer} className="flex flex-col gap-4">
-        <p className="text-[12.5px] text-[#6B7180]">Une date par étape, rétro-datation possible. Laissez vide une étape qui ne s'applique pas, et videz un champ pour effacer une date. « Chef avant FOP » démarre le dossier, « FIN » le clôt.</p>
+        <p className="text-[12.5px] text-[#6B7180]">Une date par étape, rétro-datation possible. Laissez vide une étape qui ne s'applique pas, et videz un champ pour effacer une date. « CHEF » démarre le dossier, « FIN » le clôt.</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {ETAPES.map((e) => <Input key={e.cle} label={e.label} type="date" value={dates[e.cle]} max={todayInputValue()} disabled={sansSuite || enCours}
             onChange={(event) => setDates((c) => ({ ...c, [e.cle]: event.target.value }))} />)}

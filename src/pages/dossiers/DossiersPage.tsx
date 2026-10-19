@@ -27,7 +27,7 @@ const TAILLE_PAGE = 50
 const AIDE_VUE: Record<VueDossier, string> = {
   A_TRAITER: 'Période de traitement ouverte : préparation atteinte, échéance pas encore dépassée, dossier non démarré.',
   EN_RETARD: "Échéance dépassée et dossier non démarré. Un dossier reste ici, en rouge, jusqu'à son démarrage.",
-  EN_COURS: 'Dossiers démarrés (« Chef avant FOP » renseignée) mais pas terminés. Ils ne sont jamais en retard : le badge « À relancer » signale ceux sans nouvelle étape depuis trop longtemps.',
+  EN_COURS: 'Dossiers démarrés (« CHEF » renseignée) mais pas terminés. Ils ne sont jamais en retard : le badge « À relancer » signale ceux sans nouvelle étape depuis trop longtemps.',
   TRAITES: "Dossiers dont l'étape FIN est renseignée.",
   SANS_SUITE: 'Dossiers classés sans suite. Ouvrez-en un pour le rouvrir.',
   TOUS: 'Tous les dossiers, quel que soit leur état.',

@@ -2,7 +2,7 @@ import type { EtapeDossier, StatutDossier, VueDossier } from '@/types/dossier'
 
 /** Même ordre que l'enum EtapeDossier côté Java : colonnes du tableau et champs du formulaire. */
 export const ETAPES: readonly { cle: EtapeDossier; label: string }[] = [
-  { cle: 'CHEF_AVANT_FOP', label: 'Chef avant FOP' },
+  { cle: 'CHEF_AVANT_FOP', label: 'CHEF' },
   { cle: 'FOP', label: 'FOP' },
   { cle: 'VISA', label: 'VISA' },
   { cle: 'CF', label: 'CF' },
