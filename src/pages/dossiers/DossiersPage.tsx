@@ -22,8 +22,41 @@ import type { DossierDTO, EtapeDossier, ResultatLot, VueDossier } from '@/types/
 
 const TAILLE_PAGE = 50
 
+type Ordre = 'DEFAUT' | 'INVERSE'
+interface ReglageOrdre {
+  options: { value: Ordre; label: string }[]
+  aide: Record<Ordre, string>
+}
+/** Seuls ces deux onglets ont un tri au choix ; « inversé » n'a pas le même sens dans chacun. */
+const ORDRES: Partial<Record<VueDossier, ReglageOrdre>> = {
+  A_TRAITER: {
+    options: [{ value: 'DEFAUT', label: "Plus urgent d'abord" }, { value: 'INVERSE', label: "Nouveautés d'abord" }],
+    aide: {
+      DEFAUT: "Échéance la plus proche en premier : les dossiers à finir aujourd'hui sont en tête.",
+      INVERSE: 'Préparation la plus récente en premier : les nouveaux dossiers, à commencer à préparer, sont en tête.',
+    },
+  },
+  EN_RETARD: {
+    options: [{ value: 'DEFAUT', label: "Plus anciens d'abord" }, { value: 'INVERSE', label: "Plus récents d'abord" }],
+    aide: {
+      DEFAUT: "Échéance la plus ancienne en premier : les oublis les plus critiques d'abord.",
+      INVERSE: 'Échéance la plus récente en premier : les retards qui viennent de commencer.',
+    },
+  },
+}
+
+const AIDE_VUE: Record<VueDossier, string> = {
+  A_TRAITER: 'Période de traitement ouverte : préparation atteinte, échéance pas encore dépassée, dossier non démarré.',
+  EN_RETARD: "Échéance dépassée et dossier non démarré. Un dossier reste ici, en rouge, jusqu'à son démarrage.",
+  EN_COURS: 'Dossiers démarrés (« Chef avant FOP » renseignée) mais pas terminés. Ils ne sont jamais en retard : le badge « À relancer » signale ceux sans nouvelle étape depuis trop longtemps.',
+  TRAITES: "Dossiers dont l'étape FIN est renseignée.",
+  SANS_SUITE: 'Dossiers classés sans suite. Ouvrez-en un pour le rouvrir.',
+  TOUS: 'Tous les dossiers, quel que soit leur état.',
+}
+
 export function DossiersPage() {
   const [vue, setVue] = useState<VueDossier>('A_TRAITER')
+  const [inverse, setInverse] = useState(false)
   const [type, setType] = useState<TypeAnticipation | ''>('')
   const [saisie, setSaisie] = useState('')
   const [matricule, setMatricule] = useState('')
@@ -31,12 +64,15 @@ export function DossiersPage() {
   const [page, setPage] = useState(0)
 
   const { data, isLoading, error, reload } = useFetch(
-    () => dossiersApi.lister({ vue, type: type || undefined, matricule: matricule || undefined, ...filtresAgents, page, size: TAILLE_PAGE }),
-    [vue, type, matricule, filtresAgents, page],
+    () => dossiersApi.lister({ vue, inverse, type: type || undefined, matricule: matricule || undefined, ...filtresAgents, page, size: TAILLE_PAGE }),
+    [vue, inverse, type, matricule, filtresAgents, page],
   )
   const synthese = useFetch(() => dossiersApi.synthese())
   const s = synthese.data
+  const ordres = ORDRES[vue]
+  const ordre: Ordre = inverse ? 'INVERSE' : 'DEFAUT'
 
+  // Une ligne modifiée se met à jour en place : pas de saut dans la liste. Elle quittera l'onglet au prochain rechargement.
   const [surcharges, setSurcharges] = useState<Record<number, DossierDTO>>({})
   useEffect(() => { setSurcharges({}) }, [data])
   const lignes = (data?.content ?? []).map((d) => surcharges[d.id] ?? d)
@@ -51,7 +87,8 @@ export function DossiersPage() {
   const pageEntiereCochee = selectionnables.length > 0 && selectionnables.every((d) => selection.has(d.id))
 
   const repartir = () => { setPage(0); setSelection(new Set()) }
-  const changerVue = (v: VueDossier) => { setVue(v); repartir() }
+  const changerVue = (v: VueDossier) => { setVue(v); setInverse(false); repartir() }
+  const changerOrdre = (o: Ordre) => { setInverse(o === 'INVERSE'); repartir() }
   const rechercher = (event: FormEvent) => { event.preventDefault(); setMatricule(saisie.trim()); repartir() }
   const basculer = (id: number) => setSelection((c) => { const n = new Set(c); if (!n.delete(id)) n.add(id); return n })
   const basculerPage = () => setSelection((c) => {
@@ -84,10 +121,11 @@ export function DossiersPage() {
   const actualiser = () => { setErreurAction(null); reload(); synthese.reload() }
 
   const options: { value: VueDossier; label: string; count?: number }[] = [
-    { value: 'A_TRAITER', label: 'À traiter', count: s ? s.enAttente + s.enCours : undefined },
+    { value: 'A_TRAITER', label: 'À traiter', count: s?.aTraiter },
     { value: 'EN_RETARD', label: 'En retard', count: s?.enRetard },
-    { value: 'A_RELANCER', label: 'À relancer', count: s?.aRelancer },
-    { value: 'TERMINES', label: 'Terminés', count: s?.termines },
+    { value: 'EN_COURS', label: 'En cours', count: s?.enCours },
+    { value: 'TRAITES', label: 'Traités', count: s?.traites },
+    { value: 'SANS_SUITE', label: 'Sans suite', count: s?.sansSuite },
     { value: 'TOUS', label: 'Tous' },
   ]
 
@@ -98,7 +136,7 @@ export function DossiersPage() {
           <h1 className="font-display text-[20px] font-semibold text-ink">Dossiers</h1>
           <p className="mt-0.5 max-w-3xl text-[13px] text-[#6B7180]">
             Suivi des dossiers administratifs, étape par étape. Un dossier est créé automatiquement quand sa date de préparation est atteinte
-            {s?.dateReprise ? ` (dossiers suivis à partir du ${formatDate(s.dateReprise)})` : ''}. Un dossier non démarré après sa préparation reste en rouge jusqu'à son démarrage.
+            {s?.dateReprise ? ` (dossiers suivis à partir du ${formatDate(s.dateReprise)})` : ''}. Un dossier non démarré après son échéance reste en rouge jusqu'à son démarrage.
           </p>
         </div>
         <Button variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>Actualiser</Button>
@@ -109,13 +147,22 @@ export function DossiersPage() {
       </div>}
       {s && s.enRetard > 0 && vue !== 'EN_RETARD' && <div className="flex items-center justify-between gap-3 rounded-lg border border-danger/30 bg-danger-light px-4 py-3 text-[13px] text-danger">
         <span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 flex-shrink-0" />
-          <span><strong>{s.enRetard} dossier{s.enRetard > 1 ? 's' : ''} en retard</strong> : préparation dépassée, dossier non démarré.</span>
+          <span><strong>{s.enRetard} dossier{s.enRetard > 1 ? 's' : ''} en retard</strong> : échéance dépassée, dossier non démarré.</span>
         </span>
         <Button variant="secondary" size="sm" onClick={() => changerVue('EN_RETARD')}>Voir</Button>
       </div>}
 
       <SegmentedControl options={options} value={vue} onChange={changerVue} ariaLabel="Vue des dossiers" />
-      {vue === 'A_RELANCER' && s && <p className="text-[12.5px] text-[#6B7180]">Dossiers en cours sans nouvelle étape depuis plus de {s.relanceApresJours} jours. Ce n'est pas un retard : un simple rappel.</p>}
+      <p className="text-[12.5px] text-[#6B7180]">
+        {AIDE_VUE[vue]}
+        {vue === 'EN_COURS' && s && s.aRelancer > 0 && <span className="font-medium text-warning"> {s.aRelancer} à relancer (plus de {s.relanceApresJours} jours sans nouvelle étape).</span>}
+      </p>
+
+      {ordres && <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <span className="text-[13px] font-medium text-ink">Trier :</span>
+        <SegmentedControl options={ordres.options} value={ordre} onChange={changerOrdre} ariaLabel="Ordre d'affichage" />
+        <p className="text-[12.5px] text-[#6B7180]">{ordres.aide[ordre]}</p>
+      </div>}
 
       <div className="flex flex-wrap items-center gap-3">
         <select value={type} onChange={(e) => { setType(e.target.value as TypeAnticipation | ''); repartir() }} aria-label="Filtrer par type"
@@ -148,7 +195,8 @@ export function DossiersPage() {
       </div>}
 
       {isLoading && !data ? <Spinner label="Chargement des dossiers…" /> : data && !error ? (
-        lignes.length === 0 ? <EmptyState icon={ClipboardList} title="Aucun dossier" description={vue === 'EN_RETARD' ? 'Aucun dossier en retard : rien à rattraper.' : 'Aucun dossier ne correspond à ces critères.'} /> :
+        lignes.length === 0 ? <EmptyState icon={ClipboardList} title="Aucun dossier"
+          description={vue === 'EN_RETARD' ? 'Aucun dossier en retard : rien à rattraper.' : vue === 'A_TRAITER' ? 'Aucun dossier à traiter pour le moment.' : 'Aucun dossier ne correspond à ces critères.'} /> :
         <div className={`flex flex-col gap-3 transition-opacity ${isLoading ? 'opacity-50' : ''}`}>
           <div className="overflow-x-auto rounded-xl border border-[#E4E6EB] bg-white"><table className="w-full">
             <thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr>
