@@ -41,8 +41,11 @@ export function FormulaireDossier({ dossier, onClose, onChange, onOuvrirDansDoss
   const sansSuite = dossier.statut === 'SANS_SUITE'
   const clos = sansSuite || dossier.statut === 'TRAITE'
   const statut = STATUT_DOSSIER[dossier.statut]
+  const minDate = dossier.datePreparation.slice(0, 10)
   const modifie = ETAPES.some((e) => (dates[e.cle] || null) !== dossier.etapes[e.cle])
-  const dateAvantPreparation = ETAPES.some((e) => dates[e.cle] !== '' && dates[e.cle] < dossier.datePreparation)
+  const modifiee = (cle: EtapeDossier) => (dates[cle] || null) !== dossier.etapes[cle]
+  const avantPreparation = (cle: EtapeDossier) => dates[cle] !== '' && dates[cle] < minDate
+  const invalide = ETAPES.some((e) => modifiee(e.cle) && avantPreparation(e.cle))
 
   const executer = async (action: () => Promise<DossierDTO>, repli: string) => {
     setEnCours(true)
@@ -53,10 +56,7 @@ export function FormulaireDossier({ dossier, onClose, onChange, onOuvrirDansDoss
   }
   const enregistrer = (event: FormEvent) => {
     event.preventDefault()
-    if (dateAvantPreparation) {
-      setErreur(`Aucune étape ne peut être datée avant la préparation du ${formatDate(dossier.datePreparation)}.`)
-      return
-    }
+    if (invalide) return
     void executer(() => dossiersApi.majEtapes(dossier.id, {
       version: dossier.version,
       etapes: Object.fromEntries(ETAPES.map((e) => [e.cle, dates[e.cle] || null])),
@@ -88,10 +88,11 @@ export function FormulaireDossier({ dossier, onClose, onChange, onOuvrirDansDoss
       </div>}
 
       <form onSubmit={enregistrer} className="flex flex-col gap-4">
-        <p className="text-[12.5px] text-[#6B7180]">Une date par étape, rétro-datation possible. Laissez vide une étape qui ne s'applique pas, et videz un champ pour effacer une date. « CHEF » démarre le dossier, « FIN » le clôt.</p>
-        {dateAvantPreparation && <ErrorBanner message={`Une ou plusieurs dates d’étape précèdent la préparation du ${formatDate(dossier.datePreparation)}. Corrigez-les ou effacez-les.`} />}
+        <p className="text-[12.5px] text-[#6B7180]">Une date par étape, rétro-datation possible après la préparation. Aucune date ne peut précéder la date de préparation. Laissez vide une étape qui ne s'applique pas, et videz un champ pour effacer une date. « CHEF » démarre le dossier, « FIN » le clôt.</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {ETAPES.map((e) => <Input key={e.cle} label={e.label} type="date" value={dates[e.cle]} min={dossier.datePreparation} max={todayInputValue()} disabled={sansSuite || enCours}
+          {ETAPES.map((e) => <Input key={e.cle} label={e.label} type="date" value={dates[e.cle]} min={minDate} max={todayInputValue()} disabled={sansSuite || enCours}
+            error={modifiee(e.cle) && avantPreparation(e.cle) ? `Avant la préparation (${formatDate(dossier.datePreparation)})` : undefined}
+            hint={!modifiee(e.cle) && avantPreparation(e.cle) ? 'Antérieure à la préparation : à corriger.' : undefined}
             onChange={(event) => setDates((c) => ({ ...c, [e.cle]: event.target.value }))} />)}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -100,7 +101,7 @@ export function FormulaireDossier({ dossier, onClose, onChange, onOuvrirDansDoss
             : <span />}
           <div className="flex gap-2">
             <Button type="button" variant="secondary" onClick={onClose} disabled={enCours}>Fermer</Button>
-            <Button type="submit" isLoading={enCours} disabled={!modifie || sansSuite || dateAvantPreparation}>Enregistrer</Button>
+            <Button type="submit" isLoading={enCours} disabled={!modifie || sansSuite || invalide}>Enregistrer</Button>
           </div>
         </div>
       </form>

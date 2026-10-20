@@ -126,6 +126,11 @@ export function DossiersPage() {
   }
   const enregistrerEtape = async (d: DossierDTO, etape: EtapeDossier, valeur: string | null) => {
     setErreurAction(null)
+    if (valeur && valeur.slice(0, 10) < d.datePreparation.slice(0, 10)) {
+      const libelle = ETAPES.find((e) => e.cle === etape)?.label ?? etape
+      setErreurAction(`« ${libelle} » : la date ${formatDate(valeur)} précède la date de préparation du dossier (${formatDate(d.datePreparation)}).`)
+      return
+    }
     try { appliquer(await dossiersApi.majEtapes(d.id, { version: d.version, etapes: { [etape]: valeur } })) }
     catch (err) { setErreurAction(extractErrorMessage(err, "Impossible d'enregistrer cette étape")) }
   }
