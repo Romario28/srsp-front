@@ -139,7 +139,7 @@ export function AlertesPage() {
             <td className="table-cell"><EcheanceAlerte alerte={alerte} /></td>
             <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(alerte.dateDetection)}</td>
             <td className="table-cell"><StatutAlerteBadge statut={alerte.statut} /></td>
-            <td className="table-cell"><DossierBadge etat={alerte.dossier} /></td>
+            <td className="table-cell"><DossierBadge etat={alerte.dossier} matricule={alerte.matriculeAgent} type={alerte.type} dateEcheance={alerte.dateEcheance} /></td>
           </tr>)}</tbody>
         </table></div>
         <Pagination page={data.number} totalPages={data.totalPages} totalElements={data.totalElements} onPageChange={setPage} disabled={isLoading} />

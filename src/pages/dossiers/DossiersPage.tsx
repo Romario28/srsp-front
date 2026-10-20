@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AlertTriangle, ClipboardList, RefreshCw, Search, X } from 'lucide-react'
 import { useFetch } from '@/hooks/useFetch'
 import { dossiersApi } from '@/api/dossiers'
@@ -6,7 +7,7 @@ import { extractErrorMessage } from '@/api/client'
 import { TYPE_LABELS, TYPES_ECHEANCE } from '@/utils/anticipation'
 import { FILTRES_VIDES, nbFiltres } from '@/utils/filtresAgents'
 import { formatDate } from '@/utils/date'
-import { AIDE_ORDRE, ETAPES, type Ordre } from '@/utils/dossiers'
+import { AIDE_ORDRE, ETAPES, VUES_DOSSIER, type Ordre } from '@/utils/dossiers'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
@@ -16,6 +17,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { LigneDossier } from './LigneDossier'
 import { BarreLot } from './BarreLot'
 import { DossierFormModal } from './DossierFormModal'
+import { BoutonExport } from '@/components/BoutonExport'
 import { MenuTri } from './MenuTri'
 import { MenuFiltres } from './MenuFiltres'
 import { PastillesFiltres } from './PastillesFiltres'
@@ -36,11 +38,13 @@ const AIDE_VUE: Record<VueDossier, string> = {
 const CHAMP_BARRE = 'h-8 rounded-lg border border-[#DADCE3] bg-white text-[13px] text-ink focus:border-accent'
 
 export function DossiersPage() {
-  const [vue, setVue] = useState<VueDossier>('A_TRAITER')
+  const [params] = useSearchParams()
+  const matriculeUrl = (params.get('matricule') ?? '').trim()
+  const [vue, setVue] = useState<VueDossier>(() => VUES_DOSSIER.find((v) => v === params.get('vue')) ?? 'A_TRAITER')
   const [inverse, setInverse] = useState(false)
   const [type, setType] = useState<TypeAnticipation | ''>('')
-  const [saisie, setSaisie] = useState('')
-  const [matricule, setMatricule] = useState('')
+  const [saisie, setSaisie] = useState(matriculeUrl)
+  const [matricule, setMatricule] = useState(matriculeUrl)
   const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(FILTRES_VIDES)
   const [page, setPage] = useState(0)
   const hautTableau = useRef<HTMLDivElement>(null)
@@ -58,6 +62,7 @@ export function DossiersPage() {
   const filtreActif = type !== '' || matricule !== '' || nbFiltres(filtresAgents) > 0
   const aideOrdre = AIDE_ORDRE[vue]
   const ordre: Ordre = inverse ? 'INVERSE' : 'DEFAUT'
+  const paramsExport = { vue, inverse, type: type || undefined, matricule: matricule || undefined, ...filtresAgents }
 
   // Les mises à jour unitaires restent en place pour éviter un saut de ligne jusqu'au prochain rechargement.
   const [surcharges, setSurcharges] = useState<Record<number, DossierDTO>>({})
@@ -169,7 +174,11 @@ export function DossiersPage() {
           </select>
           <MenuTri aide={aideOrdre} ordre={ordre} onChoisir={choisirOrdre} />
           <MenuFiltres valeur={filtresAgents} onChange={changerFiltres} />
-          <Button className="ml-auto" variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>Actualiser</Button>
+          <div className="ml-auto flex items-start gap-2">
+            <BoutonExport ecran="dossiers" params={paramsExport} disabled={isLoading || data?.totalElements === 0}
+              title="Exporter en Excel les dossiers de l’onglet affiché, avec les filtres actifs (toutes les pages)" />
+            <Button variant="secondary" size="sm" icon={<RefreshCw className="h-3.5 w-3.5" />} onClick={actualiser} disabled={isLoading}>Actualiser</Button>
+          </div>
         </div>
         <PastillesFiltres valeur={filtresAgents} onChange={changerFiltres} />
       </div>

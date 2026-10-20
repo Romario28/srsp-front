@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { ExternalLink } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -19,11 +20,18 @@ interface DossierFormModalProps {
 
 export function DossierFormModal({ dossier, onClose, onChange }: DossierFormModalProps) {
   return <Modal isOpen={dossier != null} onClose={onClose} maxWidth="max-w-2xl" title="Suivi du dossier">
-    {dossier && <Formulaire key={dossier.id} dossier={dossier} onClose={onClose} onChange={onChange} />}
+    {dossier && <FormulaireDossier key={dossier.id} dossier={dossier} onClose={onClose} onChange={onChange} />}
   </Modal>
 }
 
-function Formulaire({ dossier, onClose, onChange }: { dossier: DossierDTO; onClose: () => void; onChange: (maj: DossierDTO) => void }) {
+interface FormulaireDossierProps {
+  dossier: DossierDTO
+  onClose: () => void
+  onChange: (maj: DossierDTO) => void
+  onOuvrirDansDossiers?: () => void
+}
+
+export function FormulaireDossier({ dossier, onClose, onChange, onOuvrirDansDossiers }: FormulaireDossierProps) {
   const [dates, setDates] = useState<Record<EtapeDossier, string>>(
     () => Object.fromEntries(ETAPES.map((e) => [e.cle, dossier.etapes[e.cle] ?? ''])) as Record<EtapeDossier, string>)
   const [motif, setMotif] = useState('')
@@ -80,9 +88,14 @@ function Formulaire({ dossier, onClose, onChange }: { dossier: DossierDTO; onClo
           {ETAPES.map((e) => <Input key={e.cle} label={e.label} type="date" value={dates[e.cle]} max={todayInputValue()} disabled={sansSuite || enCours}
             onChange={(event) => setDates((c) => ({ ...c, [e.cle]: event.target.value }))} />)}
         </div>
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={enCours}>Fermer</Button>
-          <Button type="submit" isLoading={enCours} disabled={!modifie || sansSuite}>Enregistrer</Button>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {onOuvrirDansDossiers
+            ? <Button type="button" variant="secondary" icon={<ExternalLink className="h-4 w-4" />} onClick={onOuvrirDansDossiers} disabled={enCours}>Ouvrir dans les dossiers</Button>
+            : <span />}
+          <div className="flex gap-2">
+            <Button type="button" variant="secondary" onClick={onClose} disabled={enCours}>Fermer</Button>
+            <Button type="submit" isLoading={enCours} disabled={!modifie || sansSuite}>Enregistrer</Button>
+          </div>
         </div>
       </form>
 

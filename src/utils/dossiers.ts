@@ -1,5 +1,5 @@
 import type { EtatDossier } from '@/types/anticipation'
-import type { EtapeDossier, StatutDossier, VueDossier } from '@/types/dossier'
+import type { DossierDTO, EtapeDossier, StatutDossier, VueDossier } from '@/types/dossier'
 
 /** Même ordre que l'enum EtapeDossier côté Java : colonnes du tableau et champs du formulaire. */
 export const ETAPES: readonly { cle: EtapeDossier; label: string }[] = [
@@ -43,4 +43,26 @@ export const AIDE_ORDRE: Partial<Record<VueDossier, Record<Ordre, string>>> = {
     INVERSE: 'Échéance la plus récente en premier : les retards qui viennent de commencer.',
     DEFAUT: "Échéance la plus ancienne en premier : les oublis les plus critiques d'abord.",
   },
+}
+
+export const VUES_DOSSIER: readonly VueDossier[] = ['A_TRAITER', 'EN_RETARD', 'EN_COURS', 'TRAITES', 'SANS_SUITE', 'TOUS']
+
+/** État affiché d'un dossier : « en retard » n'existe que pour un dossier non démarré. */
+export function etatDe(d: Pick<DossierDTO, 'statut' | 'enRetard'>): EtatDossier {
+  switch (d.statut) {
+    case 'SANS_SUITE': return 'SANS_SUITE'
+    case 'TRAITE': return 'TRAITE'
+    case 'EN_COURS': return 'EN_COURS'
+    case 'EN_ATTENTE_DE_TRAITEMENT': return d.enRetard ? 'EN_RETARD' : 'A_TRAITER'
+  }
+}
+
+const VUE_DE_ETAT: Record<EtatDossier, VueDossier> = {
+  A_TRAITER: 'A_TRAITER', EN_RETARD: 'EN_RETARD', EN_COURS: 'EN_COURS', TRAITE: 'TRAITES', SANS_SUITE: 'SANS_SUITE',
+}
+
+/** Écran Dossiers filtré sur l'agent et ouvert sur l'onglet correspondant à son état. */
+export function lienDossiers(d: Pick<DossierDTO, 'matricule' | 'statut' | 'enRetard'>): string {
+  const params = new URLSearchParams({ matricule: d.matricule, vue: VUE_DE_ETAT[etatDe(d)] })
+  return `/anticipation/dossiers?${params.toString()}`
 }

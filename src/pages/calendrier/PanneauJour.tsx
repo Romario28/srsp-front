@@ -47,7 +47,7 @@ const NOUVELLE: Colonne = {
   titre: 'Nouvelle situation', groupe: 'nouvelle',
   cellule: (e) => <CelluleNouvelleSituation gradeSuivant={e.gradeSuivant} dateEffet={e.dateEcheance} />,
 }
-const DOSSIER: Colonne = { titre: 'Dossier', cellule: (e) => <DossierBadge etat={e.dossier} /> }
+const DOSSIER: Colonne = { titre: 'Dossier', cellule: (e) => <DossierBadge etat={e.dossier} matricule={e.matricule} type={e.type} dateEcheance={e.dateEcheance} /> }
 const SITUATIONS = [NOM, MATRICULE, PREPARATION, DERNIERE, NOUVELLE, DOSSIER]
 
 /** Colonnes de chaque type. « Date de préparation » figure dans tous. ELD : comme Avancement. */

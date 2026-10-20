@@ -26,6 +26,13 @@ export interface DossierDTO {
   joursSansNouvelle: number | null
 }
 
+/** Identifie le dossier d'une ligne d'agent : clé d'unicité (matricule, type, échéance). */
+export interface CibleDossier {
+  matricule: string
+  type: TypeAnticipation
+  dateEcheance: string
+}
+
 /** Miroir de SyntheseDossiersDTO.java */
 export interface SyntheseDossiers {
   aTraiter: number
