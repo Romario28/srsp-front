@@ -1,4 +1,4 @@
-import type { FiltresAgents, GradeSuivantDTO, TypeAnticipation } from './anticipation'
+import type { EtatDossier, FiltresAgents, GradeSuivantDTO, TypeAnticipation } from './anticipation'
 
 export type StatutAlerte = 'NOUVELLE' | 'VUE' | 'ACQUITTEE'
 
@@ -19,6 +19,7 @@ export interface AlerteDTO {
   dateDerniereConsultation: string | null
   dateAcquittement: string | null
   acquitteeParEmail: string | null
+  dossier: EtatDossier | null
 }
 
 export interface FiltresAlertes extends FiltresAgents {

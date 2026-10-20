@@ -1,4 +1,4 @@
-import type { StatutAgent, TypeAnticipation } from './anticipation'
+import type { FiltresAgents, StatutAgent, TypeAnticipation } from './anticipation'
 
 export type EtapeDossier = 'CHEF_AVANT_FOP' | 'FOP' | 'VISA' | 'CF' | 'PREFET' | 'PERS_TANA' | 'SOLDE' | 'FIN'
 export type StatutDossier = 'EN_ATTENTE_DE_TRAITEMENT' | 'EN_COURS' | 'TRAITE' | 'SANS_SUITE'
@@ -37,6 +37,9 @@ export interface SyntheseDossiers {
   dateReprise: string | null
   relanceApresJours: number
 }
+
+/** Ce qui réduit la liste, donc aussi les compteurs des onglets. */
+export type FiltresSynthese = FiltresAgents & { type?: TypeAnticipation; matricule?: string }
 
 export interface FiltresDossiers {
   vue: VueDossier

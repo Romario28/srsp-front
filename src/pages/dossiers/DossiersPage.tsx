@@ -4,7 +4,7 @@ import { useFetch } from '@/hooks/useFetch'
 import { dossiersApi } from '@/api/dossiers'
 import { extractErrorMessage } from '@/api/client'
 import { TYPE_LABELS, TYPES_ECHEANCE } from '@/utils/anticipation'
-import { FILTRES_VIDES } from '@/utils/filtresAgents'
+import { FILTRES_VIDES, nbFiltres } from '@/utils/filtresAgents'
 import { formatDate } from '@/utils/date'
 import { AIDE_ORDRE, ETAPES, type Ordre } from '@/utils/dossiers'
 import { Button } from '@/components/ui/Button'
@@ -49,8 +49,13 @@ export function DossiersPage() {
     () => dossiersApi.lister({ vue, inverse, type: type || undefined, matricule: matricule || undefined, ...filtresAgents, page, size: TAILLE_PAGE }),
     [vue, inverse, type, matricule, filtresAgents, page],
   )
-  const synthese = useFetch(() => dossiersApi.synthese())
+  // Les compteurs des onglets suivent les mêmes critères que la liste : type, recherche et filtres agents.
+  const synthese = useFetch(
+    () => dossiersApi.synthese({ type: type || undefined, matricule: matricule || undefined, ...filtresAgents }),
+    [type, matricule, filtresAgents],
+  )
   const s = synthese.data
+  const filtreActif = type !== '' || matricule !== '' || nbFiltres(filtresAgents) > 0
   const aideOrdre = AIDE_ORDRE[vue]
   const ordre: Ordre = inverse ? 'INVERSE' : 'DEFAUT'
 
@@ -136,7 +141,7 @@ export function DossiersPage() {
       </div>}
       {s && s.enRetard > 0 && vue !== 'EN_RETARD' && <div className="flex items-center justify-between gap-3 rounded-lg border border-danger/30 bg-danger-light px-4 py-3 text-[13px] text-danger">
         <span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 flex-shrink-0" />
-          <span><strong>{s.enRetard} dossier{s.enRetard > 1 ? 's' : ''} en retard</strong> : échéance dépassée, dossier non démarré.</span>
+          <span><strong>{s.enRetard} dossier{s.enRetard > 1 ? 's' : ''} en retard</strong> : échéance dépassée, dossier non démarré.{filtreActif && ' (selon les filtres actifs)'}</span>
         </span>
         <Button variant="secondary" size="sm" onClick={() => changerVue('EN_RETARD')}>Voir</Button>
       </div>}
@@ -145,6 +150,7 @@ export function DossiersPage() {
       <p className="text-[12.5px] text-[#6B7180]">
         {AIDE_VUE[vue]}
         {vue === 'EN_COURS' && s && s.aRelancer > 0 && <span className="font-medium text-warning"> {s.aRelancer} à relancer (plus de {s.relanceApresJours} jours sans nouvelle étape).</span>}
+        {filtreActif && <span className="text-[#9CA0AC]"> Les compteurs tiennent compte du type, de la recherche et des filtres actifs.</span>}
       </p>
 
       <div className="flex flex-col gap-3">

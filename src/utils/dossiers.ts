@@ -1,3 +1,4 @@
+import type { EtatDossier } from '@/types/anticipation'
 import type { EtapeDossier, StatutDossier, VueDossier } from '@/types/dossier'
 
 /** Même ordre que l'enum EtapeDossier côté Java : colonnes du tableau et champs du formulaire. */
@@ -14,6 +15,15 @@ export const ETAPES: readonly { cle: EtapeDossier; label: string }[] = [
 
 export const STATUT_DOSSIER: Record<StatutDossier, { label: string; tone: 'neutral' | 'accent' | 'success' | 'violet' }> = {
   EN_ATTENTE_DE_TRAITEMENT: { label: 'À traiter', tone: 'neutral' },
+  EN_COURS: { label: 'En cours', tone: 'accent' },
+  TRAITE: { label: 'Traité', tone: 'success' },
+  SANS_SUITE: { label: 'Sans suite', tone: 'violet' },
+}
+
+/** Mêmes tons que STATUT_DOSSIER ; « en retard » s'y ajoute en rouge. */
+export const ETAT_DOSSIER: Record<EtatDossier, { label: string; tone: 'neutral' | 'danger' | 'accent' | 'success' | 'violet' }> = {
+  A_TRAITER: { label: 'À traiter', tone: 'neutral' },
+  EN_RETARD: { label: 'En retard', tone: 'danger' },
   EN_COURS: { label: 'En cours', tone: 'accent' },
   TRAITE: { label: 'Traité', tone: 'success' },
   SANS_SUITE: { label: 'Sans suite', tone: 'violet' },

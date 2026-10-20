@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { Users } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { DossierBadge } from '@/components/DossierBadge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Spinner } from '@/components/ui/Spinner'
@@ -46,7 +47,8 @@ const NOUVELLE: Colonne = {
   titre: 'Nouvelle situation', groupe: 'nouvelle',
   cellule: (e) => <CelluleNouvelleSituation gradeSuivant={e.gradeSuivant} dateEffet={e.dateEcheance} />,
 }
-const SITUATIONS = [NOM, MATRICULE, PREPARATION, DERNIERE, NOUVELLE]
+const DOSSIER: Colonne = { titre: 'Dossier', cellule: (e) => <DossierBadge etat={e.dossier} /> }
+const SITUATIONS = [NOM, MATRICULE, PREPARATION, DERNIERE, NOUVELLE, DOSSIER]
 
 /** Colonnes de chaque type. « Date de préparation » figure dans tous. ELD : comme Avancement. */
 const COLONNES: Record<CategorieCalendrier, Colonne[]> = {
@@ -55,6 +57,7 @@ const COLONNES: Record<CategorieCalendrier, Colonne[]> = {
     { titre: 'Âge', cellule: (e) => <Age naissance={e.dateNaissance} /> },
     PREPARATION,
     { titre: "Date d'échéance", cellule: (e, critere) => date(e.dateEcheance, critere === 'ECHEANCE') },
+    DOSSIER,
   ],
   AVANCEMENT: SITUATIONS,
   ELD: SITUATIONS,
@@ -63,11 +66,13 @@ const COLONNES: Record<CategorieCalendrier, Colonne[]> = {
     NOM, MATRICULE, PREPARATION,
     { titre: 'Date de début', cellule: (e) => date(e.dateDebutContrat, false) },
     { titre: 'Date de fin', cellule: (e, critere) => date(e.dateEcheance, critere === 'ECHEANCE') },
+    DOSSIER,
   ],
   INTEGRATION: [
     NOM, MATRICULE, PREPARATION,
     { titre: 'Date de début', cellule: (e) => date(e.dateDebutContrat, false) },
     { titre: "Date d'intégration", cellule: (e, critere) => date(e.dateEcheance, critere === 'ECHEANCE') },
+    DOSSIER,
   ],
 }
 

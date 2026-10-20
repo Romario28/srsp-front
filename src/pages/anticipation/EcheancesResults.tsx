@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
+import { DossierBadge } from '@/components/DossierBadge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Pagination } from '@/components/ui/Pagination'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
@@ -39,7 +40,7 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
   const estFinContrat = type === 'FIN_CONTRAT'
   const estIntegration = type === 'INTEGRATION'
   const afficheSituations = changeDeGrade(type)
-  const nbColonnes = 3 + (estRetraite ? 2 : 0) + (estFinContrat || estIntegration ? 1 : 0) + (afficheSituations ? 2 : 0) + (estAnomalie ? 1 : 3)
+  const nbColonnes = 3 + (estRetraite ? 2 : 0) + (estFinContrat || estIntegration ? 1 : 0) + (afficheSituations ? 2 : 0) + (estAnomalie ? 1 : 4)
 
   return (
     <div className="flex flex-col gap-3">
@@ -50,7 +51,7 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
           {estRetraite && <><th className="table-head-cell">Date de naissance</th><th className="table-head-cell">Âge</th></>}
           {(estFinContrat || estIntegration) && <th className="table-head-cell">{estIntegration ? 'Début de contrat' : 'Date de début'}</th>}
           {afficheSituations && <><th className="table-head-cell border-l border-[#EAEBF0]">Dernière situation</th><th className="table-head-cell border-l border-[#EAEBF0]">Nouvelle situation</th></>}
-          {estAnomalie ? <th className="table-head-cell">Raison</th> : <><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">{estRetraite ? 'Date de retraite' : estFinContrat ? 'Date de fin' : estIntegration ? "Date d'intégration" : 'Échéance'}</th><th className="table-head-cell">{estFinContrat ? 'Durée restante' : 'Délai'}</th></>}
+          {estAnomalie ? <th className="table-head-cell">Raison</th> : <><th className="table-head-cell">Préparation dès le</th><th className="table-head-cell">{estRetraite ? 'Date de retraite' : estFinContrat ? 'Date de fin' : estIntegration ? "Date d'intégration" : 'Échéance'}</th><th className="table-head-cell">{estFinContrat ? 'Durée restante' : 'Délai'}</th><th className="table-head-cell">Dossier</th></>}
         </tr></thead>
         <tbody className="divide-y divide-[#EAEBF0]">{tranche.map(({ groupe, item }, index) => {
           const premier = index === 0 || tranche[index - 1].groupe !== groupe
@@ -63,7 +64,7 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
               {estRetraite && <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateNaissance)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]"><Age naissance={item.dateNaissance} /></td></>}
               {(estFinContrat || estIntegration) && <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.dateDebutContrat)}</td>}
               {afficheSituations && <><td className="table-cell border-l border-[#EAEBF0]"><CelluleDerniereSituation grade={item.gradeCode} dateEffet={item.avanceDate ?? item.dateDebutContrat} /></td><td className="table-cell border-l border-[#EAEBF0] bg-accent-light/30"><CelluleNouvelleSituation gradeSuivant={item.gradeSuivant} dateEffet={item.dateEcheance} /></td></>}
-              {estAnomalie ? <td className="table-cell text-[#4B4F5A]">{item.details ?? '—'}</td> : <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.datePreparation)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{estRetraite ? <DateRetraite dateEcheance={item.dateEcheance} naissance={item.dateNaissance} /> : formatDate(item.dateEcheance)}</td><td className="table-cell"><Badge tone={toneDelai(item.joursRestants)}>{libelleEcheance(item.joursRestants)}</Badge></td></>}
+              {estAnomalie ? <td className="table-cell text-[#4B4F5A]">{item.details ?? '—'}</td> : <><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(item.datePreparation)}</td><td className="table-cell whitespace-nowrap text-[#4B4F5A]">{estRetraite ? <DateRetraite dateEcheance={item.dateEcheance} naissance={item.dateNaissance} /> : formatDate(item.dateEcheance)}</td><td className="table-cell"><Badge tone={toneDelai(item.joursRestants)}>{libelleEcheance(item.joursRestants)}</Badge></td><td className="table-cell"><DossierBadge etat={item.dossier} /></td></>}
             </tr>
           </Fragment>
         })}</tbody>

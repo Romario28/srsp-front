@@ -7,6 +7,8 @@ export type TypeEcheance = Exclude<TypeAnticipation, 'ANOMALIE'>
 /** Le statut peut être null si la donnée est absente ou non reconnue à l'import. */
 export type StatutAgent = 'FONCTIONNAIRE' | 'CONTRACTUEL' | 'ELD'
 export type CritereDate = 'ECHEANCE' | 'PREPARATION'
+/** Miroir de EtatDossier.java : état du dossier lié à une échéance. null = aucun dossier. */
+export type EtatDossier = 'A_TRAITER' | 'EN_RETARD' | 'EN_COURS' | 'TRAITE' | 'SANS_SUITE'
 export type CasGradeSuivant = 'UNIQUE' | 'AMBIGU' | 'DERNIER_GRADE' | 'INDETERMINE'
 
 export interface GradeSuivantDTO {
@@ -80,6 +82,7 @@ export interface AlerteAnticipation {
   gradeCode: string | null
   categorieCode: string | null
   gradeSuivant: GradeSuivantDTO | null
+  dossier: EtatDossier | null
 }
 
 /** Filtres cumulables sur les agents. Absent = pas de filtre. Noms identiques aux paramètres de l'API. */
