@@ -3,6 +3,7 @@ import { formatDate, todayInputValue } from '@/utils/date'
 
 interface CelluleEtapeProps {
   valeur: string | null
+  datePreparation: string
   modifiable: boolean
   libelle: string
   /** Doit gérer ses erreurs elle-même : la cellule revient en lecture dans tous les cas. */
@@ -10,9 +11,10 @@ interface CelluleEtapeProps {
 }
 
 /** Une étape du cahier : clic, date, Entrée. Échap annule ; sortir sans rien changer n'enregistre rien. */
-export function CelluleEtape({ valeur, modifiable, libelle, onEnregistrer }: CelluleEtapeProps) {
+export function CelluleEtape({ valeur, datePreparation, modifiable, libelle, onEnregistrer }: CelluleEtapeProps) {
   const [saisie, setSaisie] = useState<string | null>(null)
   const [envoi, setEnvoi] = useState(false)
+  const [erreur, setErreur] = useState<string | null>(null)
   const annule = useRef(false)
   const proposee = valeur ?? todayInputValue()
 
@@ -20,6 +22,11 @@ export function CelluleEtape({ valeur, modifiable, libelle, onEnregistrer }: Cel
     if (saisie === null || envoi) return
     const suivante = saisie === '' ? null : saisie
     if (suivante === valeur) { setSaisie(null); return }
+    if (suivante !== null && suivante < datePreparation) {
+      setErreur(`La date ne peut pas précéder la préparation du ${formatDate(datePreparation)}.`)
+      return
+    }
+    setErreur(null)
     setEnvoi(true)
     try { await onEnregistrer(suivante) } finally { setEnvoi(false); setSaisie(null) }
   }
@@ -42,7 +49,11 @@ export function CelluleEtape({ valeur, modifiable, libelle, onEnregistrer }: Cel
       </button>
     )
   }
-  return <input type="date" autoFocus value={saisie} max={todayInputValue()} disabled={envoi} aria-label={libelle}
-    onChange={(e) => setSaisie(e.target.value)} onKeyDown={surTouche} onBlur={surSortie}
-    className="h-8 w-[136px] rounded-md border border-accent bg-white px-1 text-[12.5px] text-ink" />
+  return <div className="flex flex-col gap-0.5">
+    <input type="date" autoFocus value={saisie} min={datePreparation} max={todayInputValue()} disabled={envoi} aria-label={libelle}
+      title={erreur ?? undefined} aria-invalid={erreur !== null}
+      onChange={(e) => { setSaisie(e.target.value); setErreur(null) }} onKeyDown={surTouche} onBlur={surSortie}
+      className={`h-8 w-[136px] rounded-md border ${erreur ? 'border-danger' : 'border-accent'} bg-white px-1 text-[12.5px] text-ink`} />
+    {erreur && <span role="alert" className="max-w-[150px] text-[10px] leading-tight text-danger">Avant la préparation ({formatDate(datePreparation)})</span>}
+  </div>
 }

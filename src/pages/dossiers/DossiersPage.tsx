@@ -73,6 +73,7 @@ export function DossiersPage() {
   }, [data])
 
   const [selection, setSelection] = useState<ReadonlySet<number>>(new Set())
+  const [preparationsSelection, setPreparationsSelection] = useState<Record<number, string>>({})
   const [edition, setEdition] = useState<DossierDTO | null>(null)
   const [erreurAction, setErreurAction] = useState<string | null>(null)
   const [resultatLot, setResultatLot] = useState<ResultatLot | null>(null)
@@ -80,7 +81,7 @@ export function DossiersPage() {
 
   const selectionnables = lignes.filter((d) => d.statut !== 'SANS_SUITE')
   const pageEntiereCochee = selectionnables.length > 0 && selectionnables.every((d) => selection.has(d.id))
-  const repartir = () => { setPage(0); setSelection(new Set()) }
+  const repartir = () => { setPage(0); setSelection(new Set()); setPreparationsSelection({}) }
   const changerVue = (v: VueDossier) => { setVue(v); setInverse(false); repartir() }
   const changerPage = (p: number) => { setPage(p); hautTableau.current?.scrollIntoView({ block: 'start' }) }
   const choisirOrdre = (o: Ordre) => { setInverse(o === 'INVERSE'); repartir() }
@@ -92,12 +93,32 @@ export function DossiersPage() {
     else if (page !== 0) repartir()
   }
   const effacerRecherche = () => { setSaisie(''); if (matricule !== '') { setMatricule(''); repartir() } }
-  const basculer = (id: number) => setSelection((c) => { const n = new Set(c); if (!n.delete(id)) n.add(id); return n })
-  const basculerPage = () => setSelection((c) => {
-    const n = new Set(c)
-    selectionnables.forEach((d) => (pageEntiereCochee ? n.delete(d.id) : n.add(d.id)))
-    return n
-  })
+  const basculer = (d: DossierDTO) => {
+    setSelection((c) => { const n = new Set(c); if (!n.delete(d.id)) n.add(d.id); return n })
+    setPreparationsSelection((c) => {
+      const n = { ...c }
+      if (selection.has(d.id)) delete n[d.id]
+      else n[d.id] = d.datePreparation
+      return n
+    })
+  }
+  const basculerPage = () => {
+    setSelection((c) => {
+      const n = new Set(c)
+      selectionnables.forEach((d) => (pageEntiereCochee ? n.delete(d.id) : n.add(d.id)))
+      return n
+    })
+    setPreparationsSelection((p) => {
+      const dates = { ...p }
+      selectionnables.forEach((d) => {
+        if (pageEntiereCochee) delete dates[d.id]
+        else dates[d.id] = d.datePreparation
+      })
+      return dates
+    })
+  }
+  const viderSelection = () => { setSelection(new Set()); setPreparationsSelection({}) }
+  const dateMinimumLot = Object.values(preparationsSelection).sort().at(-1) ?? null
 
   const appliquer = (maj: DossierDTO) => {
     setSurcharges((c) => ({ ...c, [maj.id]: maj }))
@@ -114,7 +135,7 @@ export function DossiersPage() {
     setResultatLot(null)
     try {
       setResultatLot(await dossiersApi.appliquerLot({ ids: Array.from(selection), etape, date, ecraser }))
-      setSelection(new Set())
+      viderSelection()
       reload()
       synthese.reload()
     } catch (err) { setErreurAction(extractErrorMessage(err, "Impossible d'appliquer l'étape")) }
@@ -210,7 +231,7 @@ export function DossiersPage() {
                 <th className="table-head-cell">Statut</th>
               </tr></thead>
               <tbody className="divide-y divide-[#EAEBF0]">{lignes.map((d) => <LigneDossier key={d.id} d={d} selectionne={selection.has(d.id)}
-                onToggle={() => basculer(d.id)} onOuvrir={() => setEdition(d)} onEtape={(etape, valeur) => enregistrerEtape(d, etape, valeur)} />)}</tbody>
+                    onToggle={() => basculer(d)} onOuvrir={() => setEdition(d)} onEtape={(etape, valeur) => enregistrerEtape(d, etape, valeur)} />)}</tbody>
             </table>
           </div>
           <Pagination page={data.number} totalPages={data.totalPages} totalElements={data.totalElements}
@@ -218,7 +239,7 @@ export function DossiersPage() {
         </div>
       ) : null}
 
-      {selection.size > 0 && <BarreLot nb={selection.size} occupe={enLot} onAppliquer={appliquerLot} onVider={() => setSelection(new Set())} />}
+      {selection.size > 0 && <BarreLot nb={selection.size} dateMinimum={dateMinimumLot} occupe={enLot} onAppliquer={appliquerLot} onVider={viderSelection} />}
       <DossierFormModal dossier={edition} onClose={() => setEdition(null)} onChange={(maj) => { appliquer(maj); setEdition(null) }} />
     </div>
   )

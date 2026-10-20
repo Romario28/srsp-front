@@ -6,13 +6,14 @@ import type { EtapeDossier } from '@/types/dossier'
 
 interface BarreLotProps {
   nb: number
+  dateMinimum: string | null
   occupe: boolean
   onAppliquer: (etape: EtapeDossier, date: string, ecraser: boolean) => void
   onVider: () => void
 }
 
 /** Barre fixée en bas tant qu'une sélection existe. */
-export function BarreLot({ nb, occupe, onAppliquer, onVider }: BarreLotProps) {
+export function BarreLot({ nb, dateMinimum, occupe, onAppliquer, onVider }: BarreLotProps) {
   const [etape, setEtape] = useState<EtapeDossier>('CHEF_AVANT_FOP')
   const [date, setDate] = useState(todayInputValue())
   const [ecraser, setEcraser] = useState(false)
@@ -26,7 +27,8 @@ export function BarreLot({ nb, occupe, onAppliquer, onVider }: BarreLotProps) {
         </select>
       </label>
       <label className="flex flex-col gap-1"><span className="text-[12px] font-medium text-[#6B7180]">Date</span>
-        <input type="date" value={date} max={todayInputValue()} onChange={(e) => setDate(e.target.value)} className={champ} />
+        <input type="date" value={date} min={dateMinimum ?? undefined} max={todayInputValue()} onChange={(e) => setDate(e.target.value)} className={champ} />
+        {dateMinimum && <span className="text-[11px] text-[#6B7180]">À partir du {dateMinimum}</span>}
       </label>
       <label className="flex items-center gap-1.5 self-center text-[12.5px] text-[#4B4F5A]">
         <input type="checkbox" checked={ecraser} onChange={(e) => setEcraser(e.target.checked)} className="h-4 w-4 accent-accent" />
@@ -34,7 +36,7 @@ export function BarreLot({ nb, occupe, onAppliquer, onVider }: BarreLotProps) {
       </label>
       <div className="ml-auto flex gap-2">
         <Button variant="ghost" onClick={onVider} disabled={occupe}>Désélectionner</Button>
-        <Button onClick={() => onAppliquer(etape, date, ecraser)} isLoading={occupe} disabled={!date}>Appliquer</Button>
+        <Button onClick={() => onAppliquer(etape, date, ecraser)} isLoading={occupe} disabled={!date || Boolean(dateMinimum && date < dateMinimum)}>Appliquer</Button>
       </div>
     </div>
   )

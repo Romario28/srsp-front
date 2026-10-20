@@ -36,7 +36,7 @@ export function LigneDossier({ d, selectionne, onToggle, onOuvrir, onEtape }: Li
       <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDate(d.datePreparation)}</td>
       <td className={`table-cell whitespace-nowrap ${d.enRetard ? 'font-semibold text-danger' : 'text-[#4B4F5A]'}`}>{formatDate(d.dateEcheance)}</td>
       {ETAPES.map((etape) => <td key={etape.cle} className="px-1 py-1.5">
-        <CelluleEtape valeur={d.etapes[etape.cle]} libelle={`${etape.label}, ${d.nomComplet}`} modifiable={!sansSuite}
+        <CelluleEtape valeur={d.etapes[etape.cle]} datePreparation={d.datePreparation} libelle={`${etape.label}, ${d.nomComplet}`} modifiable={!sansSuite}
           onEnregistrer={(valeur) => onEtape(etape.cle, valeur)} />
       </td>)}
       <td className="table-cell whitespace-nowrap"><span title={d.motifSansSuite ?? undefined}><Badge tone={statut.tone}>{statut.label}</Badge></span></td>
