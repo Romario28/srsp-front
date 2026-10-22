@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Maximize2, RefreshCw } from 'lucide-react'
 import { useCalendrierCache } from '@/hooks/useCalendrierCache'
 import { Button } from '@/components/ui/Button'
@@ -40,11 +41,12 @@ const MODES: { value: ModeListe; label: string }[] = [
 const tousLesTypes = (): ReadonlySet<CategorieCalendrier> => new Set(CATEGORIES)
 
 export function CalendrierPage() {
+  const [params] = useSearchParams()
   const maintenant = new Date()
   const [vue, setVue] = useState<VueCalendrier>('MOIS')
   const [annee, setAnnee] = useState(maintenant.getFullYear())
   const [mois, setMois] = useState(maintenant.getMonth())            // 0-11
-  const [critere, setCritere] = useState<CritereDate>('PREPARATION')  // par défaut : préparation
+  const [critere, setCritere] = useState<CritereDate>(() => params.get('critere') === 'ECHEANCE' ? 'ECHEANCE' : 'PREPARATION')
   const [actifs, setActifs] = useState<ReadonlySet<CategorieCalendrier>>(tousLesTypes)
   // null = pleine largeur ; sinon disposition en deux zones (calendrier réduit + tableau des agents)
   const [detail, setDetail] = useState<Detail | null>(null)
