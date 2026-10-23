@@ -57,3 +57,31 @@ export const nbFiltres = (filtres: FiltresAgents) => CHAMPS_FILTRES.filter((c) =
 
 /** Identifiant stable d'un jeu de filtres : clé de cache et comparaison. */
 export const cleFiltres = (filtres: FiltresAgents) => JSON.stringify(CHAMPS_FILTRES.map((c) => filtres[c.cle] ?? ''))
+
+const STATUTS_URL: readonly string[] = ['FONCTIONNAIRE', 'CONTRACTUEL', 'ELD']
+
+/** Filtres de l'URL : valeurs inconnues ignorées. */
+export function filtresDepuisUrl(params: URLSearchParams): FiltresAgents {
+  let filtres: FiltresAgents = {}
+  for (const champ of CHAMPS_FILTRES) {
+    const valeur = params.get(champ.cle)?.trim()
+    if (!valeur || (champ.cle === 'statutAgent' && !STATUTS_URL.includes(valeur))) continue
+    filtres = avecFiltre(filtres, champ.cle, valeur)
+  }
+  return filtres
+}
+
+/** Paramètres d'URL d'un jeu de filtres (ordre canonique), plus les paramètres propres à l'écran. */
+export function parametresUrl(filtres: FiltresAgents, extra: Record<string, string> = {}): URLSearchParams {
+  const params = new URLSearchParams(extra)
+  for (const champ of CHAMPS_FILTRES) {
+    const valeur = filtres[champ.cle]
+    if (valeur) params.set(champ.cle, valeur)
+  }
+  return params
+}
+
+export function lienAvecPortee(chemin: string, portee: FiltresAgents, extra: Record<string, string> = {}): string {
+  const requete = parametresUrl(portee, extra).toString()
+  return requete ? `${chemin}?${requete}` : chemin
+}

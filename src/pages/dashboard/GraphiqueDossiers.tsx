@@ -2,16 +2,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Infobulle } from '@/components/ui/Infobulle'
 import { BlocDashboard, VoirEnTableau } from './BlocDashboard'
 import { ETATS_GRAPHE, nombreFr, pluriel, pourcent } from '@/utils/dashboard'
+import { lienAvecPortee } from '@/utils/filtresAgents'
+import type { FiltresAgents } from '@/types/anticipation'
 import type { EtatChargement } from '@/types/dashboard'
 import type { SyntheseDossiers, VueDossier } from '@/types/dossier'
 
 const RAYON = 46
 const EPAISSEUR = 18
 const CIRCONFERENCE = 2 * Math.PI * RAYON
-const lien = (vue: VueDossier) => `/anticipation/dossiers?vue=${vue}`
-
-export function GraphiqueDossiers({ etat, className }: { etat: EtatChargement<SyntheseDossiers>; className?: string }) {
+export function GraphiqueDossiers({ etat, portee, className }: { etat: EtatChargement<SyntheseDossiers>; portee: FiltresAgents; className?: string }) {
   const navigate = useNavigate()
+  const lien = (vue: VueDossier) => lienAvecPortee('/anticipation/dossiers', portee, { vue })
   const s = etat.data
   const total = s ? ETATS_GRAPHE.reduce((sum, e) => sum + s[e.cle], 0) : 0
   let decalage = 0

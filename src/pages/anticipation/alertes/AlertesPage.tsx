@@ -17,7 +17,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
 import { BoutonExport } from '@/components/BoutonExport'
 import { DossierBadge } from '@/components/DossierBadge'
-import { FILTRES_VIDES, nbFiltres } from '@/utils/filtresAgents'
+import { filtresDepuisUrl, nbFiltres } from '@/utils/filtresAgents'
 import { AlerteDetailModal } from './AlerteDetailModal'
 import { EcheanceAlerte } from './EcheanceAlerte'
 import { CelluleDerniereSituation, CelluleNouvelleSituation } from '../SituationsGrade'
@@ -43,7 +43,7 @@ export function AlertesPage() {
   const [saisie, setSaisie] = useState('')
   const [matricule, setMatricule] = useState('')
   const [page, setPage] = useState(0)
-  const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(FILTRES_VIDES)
+  const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(() => filtresDepuisUrl(searchParams))
   const filtresListe = {
     type: type || undefined,
     statut: statut === 'TOUS' ? undefined : statut,

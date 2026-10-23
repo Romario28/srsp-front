@@ -12,7 +12,7 @@ import {
   CATEGORIES, CATEGORIE_INFO, agregerParJour, clePortee, comptesParMois, effectifsDuMois, pastilles, pastillesDe,
   bornesExport, jourCourtAnnee, prefixeMois, titrePeriode, totauxPeriode, versIso, type Portee, type VueCalendrier,
 } from '@/utils/calendrier'
-import { FILTRES_VIDES, cleFiltres } from '@/utils/filtresAgents'
+import { cleFiltres, filtresDepuisUrl } from '@/utils/filtresAgents'
 import { EcheanceDetailModal } from '@/pages/anticipation/EcheanceDetailModal'
 import { VueMois } from './VueMois'
 import { VueAnnee } from './VueAnnee'
@@ -52,7 +52,7 @@ export function CalendrierPage() {
   const [detail, setDetail] = useState<Detail | null>(null)
   // Échéance dont la fiche complète est ouverte : une seule modale pour toute la page
   const [fiche, setFiche] = useState<AlerteAnticipation | null>(null)
-  const [filtres, setFiltres] = useState<FiltresAgents>(FILTRES_VIDES)
+  const [filtres, setFiltres] = useState<FiltresAgents>(() => filtresDepuisUrl(params))
 
   const modeListe: ModeListe = detail?.mode ?? 'JOUR'
   // Date marquée dans le calendrier et les effectifs : seulement en mode Jour

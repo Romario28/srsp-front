@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Calculator } from 'lucide-react'
 import { useFetch } from '@/hooks/useFetch'
 import { useAction } from '@/hooks/useAction'
@@ -12,7 +13,7 @@ import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
 import { ECHEANCE_SLUGS, TYPE_LABELS } from '@/utils/anticipation'
 import { BoutonExport } from '@/components/BoutonExport'
 import type { EcranExport } from '@/api/exports'
-import { FILTRES_VIDES as FILTRES_AGENTS_VIDES, nbFiltres } from '@/utils/filtresAgents'
+import { filtresDepuisUrl, nbFiltres } from '@/utils/filtresAgents'
 import { EcheancesFilters } from './EcheancesFilters'
 import { EcheancesResults } from './EcheancesResults'
 import { FILTRES_VIDES, construireFiltres, decrireFenetre, validerFiltres, type EtatFiltres } from './filtres'
@@ -28,12 +29,13 @@ const DESCRIPTIONS: Record<TypeEcheance, string> = {
 interface DernierCalcul { filtres: FiltresEcheances; version: number; le: Date }
 
 export function EcheancesPage({ type }: { type: TypeEcheance }) {
+  const [params] = useSearchParams()
   const { data: configs } = useFetch(() => anticipationConfigApi.lister())
   const config = useMemo(() => configs?.find((item) => item.type === type) ?? null, [configs, type])
   const [etat, setEtat] = useState<EtatFiltres>(FILTRES_VIDES)
   const [erreurSaisie, setErreurSaisie] = useState<string | null>(null)
   const [dernier, setDernier] = useState<DernierCalcul | null>(null)
-  const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(FILTRES_AGENTS_VIDES)
+  const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(() => filtresDepuisUrl(params))
   // Fenêtre + filtres agents : un seul objet, envoyé tel quel et comparé pour détecter un résultat périmé
   const filtresCourants = (): FiltresEcheances => ({ ...construireFiltres(etat, config), ...filtresAgents })
   const calcul = useAction((signal, filtres: FiltresEcheances) => anticipationApi.echeances(type, filtres, signal), 'Calcul impossible')

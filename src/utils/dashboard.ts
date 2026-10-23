@@ -1,5 +1,7 @@
 import type { EffectifsDTO } from '@/types/dashboard'
 import { AlertTriangle, Ban, CheckCircle2, Clock3, RefreshCw } from 'lucide-react'
+import { avecFiltre, type CleFiltre } from '@/utils/filtresAgents'
+import type { FiltresAgents } from '@/types/anticipation'
 
 export const nombreFr = (n: number) => n.toLocaleString('fr-FR')
 export const pluriel = (n: number, singulier: string, plurielMot: string) => `${nombreFr(n)} ${n > 1 ? plurielMot : singulier}`
@@ -54,3 +56,18 @@ export const ETATS_GRAPHE = [
   { cle: 'traites', label: 'Traités', vue: 'TRAITES', couleur: '#2F855A', icone: CheckCircle2, aide: 'Étape FIN renseignée.' },
   { cle: 'sansSuite', label: 'Sans suite', vue: 'SANS_SUITE', couleur: '#805AD5', icone: Ban, aide: 'Dossiers classés sans suite.' },
 ] as const
+
+export const CHAMPS_PORTEE: readonly { cle: Extract<CleFiltre, 'ministere' | 'soa' | 'fiv'>; label: string }[] = [
+  { cle: 'ministere', label: 'Ministère' },
+  { cle: 'soa', label: 'SOA' },
+  { cle: 'fiv', label: 'Localité' },
+]
+
+export function porteeDepuisUrl(params: URLSearchParams): FiltresAgents {
+  let portee: FiltresAgents = {}
+  for (const { cle } of CHAMPS_PORTEE) {
+    const valeur = params.get(cle)?.trim()
+    if (valeur) portee = avecFiltre(portee, cle, valeur)
+  }
+  return portee
+}

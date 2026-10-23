@@ -12,7 +12,8 @@ export function GraphiqueAges({ etat, className }: { etat: EtatChargement<Effect
   const [sexe, setSexe] = useState<FiltreSexe>('TOUS'); const [categorie, setCategorie] = useState(TOUTES)
   const ages = etat.data?.ages ?? null
   const categories = useMemo(() => ages ? categoriesDisponibles(ages.lignes) : [], [ages])
-  const barres = useMemo(() => ages ? agregerAges(ages.lignes, sexe, categorie === TOUTES ? null : categorie, ages.bornes) : [], [ages, sexe, categorie])
+  const categorieActive = categorie === TOUTES || categories.includes(categorie) ? categorie : TOUTES
+  const barres = useMemo(() => ages ? agregerAges(ages.lignes, sexe, categorieActive === TOUTES ? null : categorieActive, ages.bornes) : [], [ages, sexe, categorieActive])
   const affiches = barres.reduce((s, b) => s + b.total, 0)
   const sexesAffiches = SEXES.filter((s) => s !== '?' || barres.some((b) => b.inconnu > 0))
   const detail = (b: BarreAge) => sexe === 'TOUS' ? sexesAffiches.map((s) => `${LIBELLES_SEXE[s]} ${nombreFr(valeurSexe(b, s))}`).join(' · ') + ' · ' : ''
@@ -23,7 +24,7 @@ export function GraphiqueAges({ etat, className }: { etat: EtatChargement<Effect
   })) : []
   const filtres = <div className="flex flex-wrap items-center gap-2">
     <SegmentedControl options={OPTIONS_SEXE} value={sexe} onChange={setSexe} ariaLabel="Filtrer par sexe" />
-    <select value={categorie} onChange={(e) => setCategorie(e.target.value)} aria-label="Filtrer par catégorie" className="h-9 rounded-lg border border-[#DADCE3] bg-white px-3 text-[13px] text-ink focus:border-accent">
+    <select value={categorieActive} onChange={(e) => setCategorie(e.target.value)} aria-label="Filtrer par catégorie" className="h-9 rounded-lg border border-[#DADCE3] bg-white px-3 text-[13px] text-ink focus:border-accent">
       <option value={TOUTES}>Toutes catégories</option>{categories.map((c) => <option key={c} value={c}>{c === '' ? 'Sans corps' : `Catégorie ${c}`}</option>)}
     </select>
   </div>

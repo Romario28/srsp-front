@@ -8,7 +8,11 @@ export interface EcheancesAVenirDTO {
   au: string
   total: number
   parCategorie: Record<string, number>
+  enPreparation: Record<string, number>
+  moisProchain: PeriodeEcheances
+  anneeProchaine: PeriodeEcheances
 }
+export interface PeriodeEcheances { du: string; au: string; total: number; parCategorie: Record<string, number> }
 export interface EffectifsDTO {
   total: number
   fonctionnaires: number

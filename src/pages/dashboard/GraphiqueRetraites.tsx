@@ -4,13 +4,15 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { BlocDashboard, VoirEnTableau } from './BlocDashboard'
 import { Barres, type ColonneBarre } from './Barres'
 import { moisCourt, moisLong, nombreFr, pluriel } from '@/utils/dashboard'
+import { lienAvecPortee } from '@/utils/filtresAgents'
+import type { FiltresAgents } from '@/types/anticipation'
 import type { EffectifsDTO, EtatChargement } from '@/types/dashboard'
 
 type Mode = 'MOIS' | 'ANNEES'
 const OPTIONS: { value: Mode; label: string }[] = [{ value: 'MOIS', label: '12 mois' }, { value: 'ANNEES', label: '5 ans' }]
 const COULEUR = '#2A6F97'
 
-export function GraphiqueRetraites({ etat, className }: { etat: EtatChargement<EffectifsDTO>; className?: string }) {
+export function GraphiqueRetraites({ etat, portee, className }: { etat: EtatChargement<EffectifsDTO>; portee: FiltresAgents; className?: string }) {
   const [mode, setMode] = useState<Mode>('MOIS')
   const r = etat.data?.retraites ?? null
   const periodes = r ? mode === 'MOIS' ? r.mois : r.annees : []
@@ -36,7 +38,7 @@ export function GraphiqueRetraites({ etat, className }: { etat: EtatChargement<E
       <Barres colonnes={colonnes} ariaLabel={`Départs à la retraite : ${pluriel(total, 'départ', 'départs')} sur la période`} />
       <div className="flex flex-col gap-1 text-[12px] text-[#6B7180]"><p>Cumul sur la période : <span className="font-semibold text-ink">{nombreFr(total)}</span></p>
         {r.dejaAtteint > 0 && <p>Date de retraite déjà passée : {pluriel(r.dejaAtteint, 'agent', 'agents')} (hors graphique)</p>}</div>
-      <Link to="/anticipation/retraite" className="text-[12.5px] font-medium text-accent hover:underline">Voir les départs à la retraite →</Link>
+      <Link to={lienAvecPortee('/anticipation/retraite', portee)} className="text-[12.5px] font-medium text-accent hover:underline">Voir les départs à la retraite →</Link>
       <VoirEnTableau colonnes={['Période', 'Départs', 'Cumul']} lignes={lignesTableau} />
     </>}
   </BlocDashboard>

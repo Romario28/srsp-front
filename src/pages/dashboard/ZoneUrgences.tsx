@@ -8,6 +8,8 @@ import { TYPE_LABELS, libelleEcheance } from '@/utils/anticipation'
 import { formatDate, joursRestantsDepuis } from '@/utils/date'
 import { etatDe } from '@/utils/dossiers'
 import { nombreFr, pluriel } from '@/utils/dashboard'
+import { lienAvecPortee } from '@/utils/filtresAgents'
+import type { FiltresAgents } from '@/types/anticipation'
 import { BlocDashboard } from './BlocDashboard'
 import type { EtatChargement, Urgences } from '@/types/dashboard'
 import type { DossierDTO } from '@/types/dossier'
@@ -17,7 +19,7 @@ function Delai({ d, retard }: { d: DossierDTO; retard: boolean }) {
   return <Badge>{libelleEcheance(joursRestantsDepuis(d.dateEcheance) ?? 0)}</Badge>
 }
 
-export function ZoneUrgences({ etat }: { etat: EtatChargement<Urgences> }) {
+export function ZoneUrgences({ etat, portee }: { etat: EtatChargement<Urgences>; portee: FiltresAgents }) {
   const { ouvrir } = useDossierApercu()
   const u = etat.data
   const retard = u?.mode === 'RETARD'
@@ -29,8 +31,8 @@ export function ZoneUrgences({ etat }: { etat: EtatChargement<Urgences> }) {
     : "Prochains dossiers à traiter, échéance la plus proche d'abord"
   const actions = u && <div className="flex flex-wrap items-center justify-between gap-2">
     <p className="text-[12.5px] text-[#6B7180]">{sousTitre}</p>
-    {retard ? <Link to="/anticipation/dossiers?vue=EN_RETARD" className="text-[12.5px] font-medium text-accent hover:underline">{total > 1 ? `Voir les ${nombreFr(total)} dossiers en retard →` : 'Voir le dossier en retard →'}</Link>
-      : <Link to="/anticipation/dossiers?vue=A_TRAITER" className="text-[12.5px] font-medium text-accent hover:underline">Voir les dossiers à traiter →</Link>}
+    {retard ? <Link to={lienAvecPortee('/anticipation/dossiers', portee, { vue: 'EN_RETARD' })} className="text-[12.5px] font-medium text-accent hover:underline">{total > 1 ? `Voir les ${nombreFr(total)} dossiers en retard →` : 'Voir le dossier en retard →'}</Link>
+      : <Link to={lienAvecPortee('/anticipation/dossiers', portee, { vue: 'A_TRAITER' })} className="text-[12.5px] font-medium text-accent hover:underline">Voir les dossiers à traiter →</Link>}
   </div>
   return <BlocDashboard titre="À traiter en priorité" actions={actions}
     aide="Les dossiers non démarrés dont l'échéance est dépassée, du plus ancien au plus récent. Un dossier démarré n'est jamais « en retard »."

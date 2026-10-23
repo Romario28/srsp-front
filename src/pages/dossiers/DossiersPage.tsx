@@ -5,7 +5,7 @@ import { useFetch } from '@/hooks/useFetch'
 import { dossiersApi } from '@/api/dossiers'
 import { extractErrorMessage } from '@/api/client'
 import { TYPE_LABELS, TYPES_ECHEANCE } from '@/utils/anticipation'
-import { FILTRES_VIDES, nbFiltres } from '@/utils/filtresAgents'
+import { filtresDepuisUrl, nbFiltres } from '@/utils/filtresAgents'
 import { formatDate } from '@/utils/date'
 import { AIDE_ORDRE, ETAPES, VUES_DOSSIER, type Ordre } from '@/utils/dossiers'
 import { Button } from '@/components/ui/Button'
@@ -45,7 +45,7 @@ export function DossiersPage() {
   const [type, setType] = useState<TypeAnticipation | ''>('')
   const [saisie, setSaisie] = useState(matriculeUrl)
   const [matricule, setMatricule] = useState(matriculeUrl)
-  const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(FILTRES_VIDES)
+  const [filtresAgents, setFiltresAgents] = useState<FiltresAgents>(() => filtresDepuisUrl(params))
   const [page, setPage] = useState(0)
   const hautTableau = useRef<HTMLDivElement>(null)
 
