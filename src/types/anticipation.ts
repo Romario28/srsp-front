@@ -8,7 +8,7 @@ export type TypeEcheance = Exclude<TypeAnticipation, 'ANOMALIE'>
 export type StatutAgent = 'FONCTIONNAIRE' | 'CONTRACTUEL' | 'ELD'
 export type CritereDate = 'ECHEANCE' | 'PREPARATION'
 /** Miroir de EtatDossier.java : état du dossier lié à une échéance. null = aucun dossier. */
-export type EtatDossier = 'A_TRAITER' | 'EN_RETARD' | 'EN_COURS' | 'TRAITE' | 'SANS_SUITE'
+export type EtatDossier = 'A_TRAITER' | 'EN_RETARD' | 'EN_COURS' | 'SANS_SUITE'
 export type CasGradeSuivant = 'UNIQUE' | 'AMBIGU' | 'DERNIER_GRADE' | 'INDETERMINE'
 
 export interface GradeSuivantDTO {

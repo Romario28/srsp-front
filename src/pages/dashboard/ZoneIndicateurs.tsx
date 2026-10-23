@@ -29,7 +29,6 @@ export function ZoneIndicateurs({ effectifs, synthese, urgences, alertes, echean
       ton={retards === 0 ? 'succes' : (retards ?? 0) > 0 ? 'danger' : 'neutre'} valeur={retards}
       aide="Échéance dépassée et dossier non démarré" precision={retards === 0 ? 'Aucun retard' : plusAncien != null ? `le plus ancien : ${pluriel(plusAncien, 'jour', 'jours')}` : undefined}
       to={lien('/anticipation/dossiers', { vue: 'EN_RETARD' })}
-      pied={s?.aRelancer ? <Link to={lien('/anticipation/dossiers', { vue: 'EN_COURS' })} className={LIEN}>{pluriel(s.aRelancer, 'dossier', 'dossiers')} en cours à relancer</Link> : undefined}
       chargement={synthese.isLoading && !s} erreur={synthese.error} onReessayer={synthese.reload} />
     <CarteKpi libelle="Alertes nouvelles" icone={Bell} valeur={a?.nouvelles ?? null}
       aide="Alertes du calcul de nuit qui n'ont pas encore été ouvertes" to={lien('/anticipation/alertes')}

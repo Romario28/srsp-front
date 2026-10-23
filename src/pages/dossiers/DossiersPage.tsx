@@ -7,31 +7,30 @@ import { extractErrorMessage } from '@/api/client'
 import { TYPE_LABELS, TYPES_ECHEANCE } from '@/utils/anticipation'
 import { filtresDepuisUrl, nbFiltres } from '@/utils/filtresAgents'
 import { formatDate } from '@/utils/date'
-import { AIDE_ORDRE, ETAPES, VUES_DOSSIER, type Ordre } from '@/utils/dossiers'
+import { AIDE_ORDRE, VUES_DOSSIER, type Ordre } from '@/utils/dossiers'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Pagination } from '@/components/ui/Pagination'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
-import { LigneDossier } from './LigneDossier'
-import { BarreLot } from './BarreLot'
-import { DossierFormModal } from './DossierFormModal'
 import { BoutonExport } from '@/components/BoutonExport'
+import { LigneDossier } from './LigneDossier'
+import { DossierFormModal } from './DossierFormModal'
 import { MenuTri } from './MenuTri'
 import { MenuFiltres } from './MenuFiltres'
 import { PastillesFiltres } from './PastillesFiltres'
 import type { FiltresAgents, TypeAnticipation } from '@/types/anticipation'
-import type { DossierDTO, EtapeDossier, ResultatLot, VueDossier } from '@/types/dossier'
+import type { DossierDTO, VueDossier } from '@/types/dossier'
 
 const TAILLE_PAGE = 50
 
 const AIDE_VUE: Record<VueDossier, string> = {
-  A_TRAITER: 'Période de traitement ouverte : préparation atteinte, échéance pas encore dépassée, dossier non démarré.',
+  A_TRAITER: "Préparation atteinte, échéance pas encore dépassée, dossier non démarré. Cliquez sur « Démarrer » quand vous commencez le dossier.",
   EN_RETARD: "Échéance dépassée et dossier non démarré. Un dossier reste ici, en rouge, jusqu'à son démarrage.",
-  EN_COURS: 'Dossiers démarrés (« CHEF » renseignée) mais pas terminés. Ils ne sont jamais en retard : le badge « À relancer » signale ceux sans nouvelle étape depuis trop longtemps.',
-  TRAITES: "Dossiers dont l'étape FIN est renseignée.",
-  SANS_SUITE: 'Dossiers classés sans suite. Ouvrez-en un pour le rouvrir.',
+  EN_COURS: 'Dossiers démarrés par un gestionnaire. Un dossier en cours n’est jamais « en retard ».',
+  SANS_SUITE: 'Dossiers abandonnés, avec leur motif. Ouvrez-en un pour le rouvrir.',
   TOUS: 'Tous les dossiers, quel que soit leur état.',
 }
 
@@ -64,7 +63,7 @@ export function DossiersPage() {
   const ordre: Ordre = inverse ? 'INVERSE' : 'DEFAUT'
   const paramsExport = { vue, inverse, type: type || undefined, matricule: matricule || undefined, ...filtresAgents }
 
-  // Les mises à jour unitaires restent en place pour éviter un saut de ligne jusqu'au prochain rechargement.
+  // Une ligne modifiée reste en place (nouvel état affiché) jusqu'au prochain rechargement, pour éviter un saut de ligne.
   const [surcharges, setSurcharges] = useState<Record<number, DossierDTO>>({})
   useEffect(() => { setSurcharges({}) }, [data])
   const lignes = (data?.content ?? []).map((d) => surcharges[d.id] ?? d)
@@ -72,16 +71,12 @@ export function DossiersPage() {
     if (data && data.content.length === 0 && data.number > 0) setPage(Math.max(0, data.totalPages - 1))
   }, [data])
 
-  const [selection, setSelection] = useState<ReadonlySet<number>>(new Set())
-  const [preparationsSelection, setPreparationsSelection] = useState<Record<number, string>>({})
   const [edition, setEdition] = useState<DossierDTO | null>(null)
+  const [aDemarrer, setADemarrer] = useState<DossierDTO | null>(null)
+  const [demarrage, setDemarrage] = useState(false)
   const [erreurAction, setErreurAction] = useState<string | null>(null)
-  const [resultatLot, setResultatLot] = useState<ResultatLot | null>(null)
-  const [enLot, setEnLot] = useState(false)
 
-  const selectionnables = lignes.filter((d) => d.statut !== 'SANS_SUITE')
-  const pageEntiereCochee = selectionnables.length > 0 && selectionnables.every((d) => selection.has(d.id))
-  const repartir = () => { setPage(0); setSelection(new Set()); setPreparationsSelection({}) }
+  const repartir = () => setPage(0)
   const changerVue = (v: VueDossier) => { setVue(v); setInverse(false); repartir() }
   const changerPage = (p: number) => { setPage(p); hautTableau.current?.scrollIntoView({ block: 'start' }) }
   const choisirOrdre = (o: Ordre) => { setInverse(o === 'INVERSE'); repartir() }
@@ -93,58 +88,24 @@ export function DossiersPage() {
     else if (page !== 0) repartir()
   }
   const effacerRecherche = () => { setSaisie(''); if (matricule !== '') { setMatricule(''); repartir() } }
-  const basculer = (d: DossierDTO) => {
-    setSelection((c) => { const n = new Set(c); if (!n.delete(d.id)) n.add(d.id); return n })
-    setPreparationsSelection((c) => {
-      const n = { ...c }
-      if (selection.has(d.id)) delete n[d.id]
-      else n[d.id] = d.datePreparation
-      return n
-    })
-  }
-  const basculerPage = () => {
-    setSelection((c) => {
-      const n = new Set(c)
-      selectionnables.forEach((d) => (pageEntiereCochee ? n.delete(d.id) : n.add(d.id)))
-      return n
-    })
-    setPreparationsSelection((p) => {
-      const dates = { ...p }
-      selectionnables.forEach((d) => {
-        if (pageEntiereCochee) delete dates[d.id]
-        else dates[d.id] = d.datePreparation
-      })
-      return dates
-    })
-  }
-  const viderSelection = () => { setSelection(new Set()); setPreparationsSelection({}) }
-  const dateMinimumLot = Object.values(preparationsSelection).sort().at(-1) ?? null
 
   const appliquer = (maj: DossierDTO) => {
     setSurcharges((c) => ({ ...c, [maj.id]: maj }))
     synthese.reload()
   }
-  const enregistrerEtape = async (d: DossierDTO, etape: EtapeDossier, valeur: string | null) => {
+  const confirmerDemarrage = async () => {
+    if (!aDemarrer) return
+    setDemarrage(true)
     setErreurAction(null)
-    if (valeur && valeur.slice(0, 10) < d.datePreparation.slice(0, 10)) {
-      const libelle = ETAPES.find((e) => e.cle === etape)?.label ?? etape
-      setErreurAction(`« ${libelle} » : la date ${formatDate(valeur)} précède la date de préparation du dossier (${formatDate(d.datePreparation)}).`)
-      return
-    }
-    try { appliquer(await dossiersApi.majEtapes(d.id, { version: d.version, etapes: { [etape]: valeur } })) }
-    catch (err) { setErreurAction(extractErrorMessage(err, "Impossible d'enregistrer cette étape")) }
-  }
-  const appliquerLot = async (etape: EtapeDossier, date: string, ecraser: boolean) => {
-    setEnLot(true)
-    setErreurAction(null)
-    setResultatLot(null)
     try {
-      setResultatLot(await dossiersApi.appliquerLot({ ids: Array.from(selection), etape, date, ecraser }))
-      viderSelection()
-      reload()
-      synthese.reload()
-    } catch (err) { setErreurAction(extractErrorMessage(err, "Impossible d'appliquer l'étape")) }
-    finally { setEnLot(false) }
+      appliquer(await dossiersApi.demarrer(aDemarrer.id))
+    } catch (err) {
+      setErreurAction(extractErrorMessage(err, 'Impossible de démarrer ce dossier'))
+      reload()   // la liste était peut-être périmée (dossier déjà démarré par un collègue)
+    } finally {
+      setDemarrage(false)
+      setADemarrer(null)
+    }
   }
   const actualiser = () => { setErreurAction(null); reload(); synthese.reload() }
 
@@ -152,9 +113,8 @@ export function DossiersPage() {
     { value: 'A_TRAITER', label: 'À traiter', count: s?.aTraiter },
     { value: 'EN_RETARD', label: 'En retard', count: s?.enRetard },
     { value: 'EN_COURS', label: 'En cours', count: s?.enCours },
-    { value: 'TRAITES', label: 'Traités', count: s?.traites },
     { value: 'SANS_SUITE', label: 'Sans suite', count: s?.sansSuite },
-    { value: 'TOUS', label: 'Tous' },
+    { value: 'TOUS', label: 'Tous', count: s ? s.aTraiter + s.enRetard + s.enCours + s.sansSuite : undefined },
   ]
 
   return (
@@ -162,8 +122,8 @@ export function DossiersPage() {
       <div>
         <h1 className="font-display text-[20px] font-semibold text-ink">Dossiers</h1>
         <p className="mt-0.5 max-w-3xl text-[13px] text-[#6B7180]">
-          Suivi des dossiers administratifs, étape par étape. Un dossier est créé automatiquement quand sa date de préparation est atteinte
-          {s?.dateReprise ? ` (dossiers suivis à partir du ${formatDate(s.dateReprise)})` : ''}. Un dossier non démarré après son échéance reste en rouge jusqu'à son démarrage.
+          Un dossier est créé automatiquement quand sa date de préparation est atteinte
+          {s?.dateReprise ? ` (dossiers suivis à partir du ${formatDate(s.dateReprise)})` : ''}. Il est « à traiter » jusqu'à ce qu'un gestionnaire le démarre ; non démarré après son échéance, il reste en rouge.
         </p>
       </div>
 
@@ -180,7 +140,6 @@ export function DossiersPage() {
       <SegmentedControl options={options} value={vue} onChange={changerVue} ariaLabel="Vue des dossiers" />
       <p className="text-[12.5px] text-[#6B7180]">
         {AIDE_VUE[vue]}
-        {vue === 'EN_COURS' && s && s.aRelancer > 0 && <span className="font-medium text-warning"> {s.aRelancer} à relancer (plus de {s.relanceApresJours} jours sans nouvelle étape).</span>}
         {filtreActif && <span className="text-[#9CA0AC]"> Les compteurs tiennent compte du type, de la recherche et des filtres actifs.</span>}
       </p>
 
@@ -208,18 +167,9 @@ export function DossiersPage() {
         </div>
         <PastillesFiltres valeur={filtresAgents} onChange={changerFiltres} />
       </div>
+
       {error && <ErrorBanner message={error} />}
       {erreurAction && <ErrorBanner message={erreurAction} />}
-      {resultatLot && <div className={`rounded-lg border px-4 py-3 text-[13px] ${resultatLot.refuses.length > 0 ? 'border-warning/30 bg-warning-light text-warning' : 'border-success/30 bg-success-light text-success'}`}>
-        <div className="flex items-start justify-between gap-3"><p className="font-semibold">
-          {resultatLot.modifies} dossier{resultatLot.modifies > 1 ? 's' : ''} mis à jour
-          {resultatLot.inchanges > 0 && `, ${resultatLot.inchanges} déjà à cette date`}
-          {resultatLot.refuses.length > 0 && `, ${resultatLot.refuses.length} refusé${resultatLot.refuses.length > 1 ? 's' : ''}`}
-        </p><button type="button" onClick={() => setResultatLot(null)} aria-label="Fermer ce compte rendu"><X className="h-4 w-4" /></button></div>
-        {resultatLot.refuses.length > 0 && <ul className="mt-1.5 max-h-48 list-disc space-y-0.5 overflow-y-auto pl-5 text-[12.5px]">
-          {resultatLot.refuses.map((r) => <li key={r.id}><span className="font-medium">{r.libelle}</span> : {r.motif}</li>)}
-        </ul>}
-      </div>}
 
       {isLoading && !data ? <Spinner label="Chargement des dossiers…" /> : data && !error ? (
         lignes.length === 0 ? <EmptyState icon={ClipboardList} title="Aucun dossier"
@@ -228,15 +178,16 @@ export function DossiersPage() {
           <div ref={hautTableau} className="scroll-mt-4 overflow-x-auto rounded-xl border border-[#E4E6EB] bg-white">
             <table className="w-full">
               <thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr>
-                <th className="table-head-cell sticky left-0 z-[2] bg-[#FAFAFB] pl-5"><label className="flex items-center gap-2.5">
-                  <input type="checkbox" checked={pageEntiereCochee} onChange={basculerPage} aria-label="Sélectionner les dossiers de la page" className="h-4 w-4 accent-accent" />Agent
-                </label></th>
-                <th className="table-head-cell">Type</th><th className="table-head-cell">Préparation</th><th className="table-head-cell">Échéance</th>
-                {ETAPES.map((e) => <th key={e.cle} className="table-head-cell whitespace-nowrap">{e.label}</th>)}
-                <th className="table-head-cell">Statut</th>
+                <th className="table-head-cell pl-5">Agent</th>
+                <th className="table-head-cell">Type</th>
+                <th className="table-head-cell">Préparation</th>
+                <th className="table-head-cell">Échéance</th>
+                <th className="table-head-cell">État</th>
+                <th className="table-head-cell text-right">Action</th>
               </tr></thead>
-              <tbody className="divide-y divide-[#EAEBF0]">{lignes.map((d) => <LigneDossier key={d.id} d={d} selectionne={selection.has(d.id)}
-                    onToggle={() => basculer(d)} onOuvrir={() => setEdition(d)} onEtape={(etape, valeur) => enregistrerEtape(d, etape, valeur)} />)}</tbody>
+              <tbody className="divide-y divide-[#EAEBF0]">{lignes.map((d) => (
+                <LigneDossier key={d.id} d={d} onDemarrer={() => setADemarrer(d)} onOuvrir={() => setEdition(d)} />
+              ))}</tbody>
             </table>
           </div>
           <Pagination page={data.number} totalPages={data.totalPages} totalElements={data.totalElements}
@@ -244,7 +195,13 @@ export function DossiersPage() {
         </div>
       ) : null}
 
-      {selection.size > 0 && <BarreLot nb={selection.size} dateMinimum={dateMinimumLot} occupe={enLot} onAppliquer={appliquerLot} onVider={viderSelection} />}
+      <ConfirmDialog
+        isOpen={aDemarrer != null} danger={false} confirmLabel="Démarrer" title="Démarrer le dossier" isLoading={demarrage}
+        message={aDemarrer
+          ? `Démarrer le dossier « ${TYPE_LABELS[aDemarrer.type]} » de ${aDemarrer.nomComplet} (${aDemarrer.matricule}), échéance le ${formatDate(aDemarrer.dateEcheance)} ? Il passera à « En cours » et ne pourra plus revenir à « À traiter ».`
+          : ''}
+        onConfirm={confirmerDemarrage} onCancel={() => setADemarrer(null)}
+      />
       <DossierFormModal dossier={edition} onClose={() => setEdition(null)} onChange={(maj) => { appliquer(maj); setEdition(null) }} />
     </div>
   )

@@ -1,5 +1,5 @@
 import type { EffectifsDTO } from '@/types/dashboard'
-import { AlertTriangle, Ban, CheckCircle2, Clock3, RefreshCw } from 'lucide-react'
+import { AlertTriangle, Ban, Clock3, RefreshCw } from 'lucide-react'
 import { avecFiltre, type CleFiltre } from '@/utils/filtresAgents'
 import type { FiltresAgents } from '@/types/anticipation'
 
@@ -51,10 +51,9 @@ export const moisLong = (cle: string) => new Date(`${cle}-01T00:00:00`).toLocale
 
 export const ETATS_GRAPHE = [
   { cle: 'enRetard', label: 'En retard', vue: 'EN_RETARD', couleur: '#C43D4D', icone: AlertTriangle, aide: 'Échéance dépassée et dossier non démarré.' },
-  { cle: 'aTraiter', label: 'À traiter', vue: 'A_TRAITER', couleur: '#A7ADB8', icone: Clock3, aide: 'Préparation atteinte, échéance pas encore dépassée.' },
-  { cle: 'enCours', label: 'En cours', vue: 'EN_COURS', couleur: '#2A6F97', icone: RefreshCw, aide: 'Dossiers démarrés, pas encore terminés.' },
-  { cle: 'traites', label: 'Traités', vue: 'TRAITES', couleur: '#2F855A', icone: CheckCircle2, aide: 'Étape FIN renseignée.' },
-  { cle: 'sansSuite', label: 'Sans suite', vue: 'SANS_SUITE', couleur: '#805AD5', icone: Ban, aide: 'Dossiers classés sans suite.' },
+  { cle: 'aTraiter', label: 'À traiter', vue: 'A_TRAITER', couleur: '#A7ADB8', icone: Clock3, aide: 'Préparation atteinte, échéance pas encore dépassée, dossier non démarré.' },
+  { cle: 'enCours', label: 'En cours', vue: 'EN_COURS', couleur: '#2A6F97', icone: RefreshCw, aide: 'Dossiers démarrés par un gestionnaire.' },
+  { cle: 'sansSuite', label: 'Sans suite', vue: 'SANS_SUITE', couleur: '#805AD5', icone: Ban, aide: 'Dossiers abandonnés, avec leur motif.' },
 ] as const
 
 export const CHAMPS_PORTEE: readonly { cle: Extract<CleFiltre, 'ministere' | 'soa' | 'fiv'>; label: string }[] = [
