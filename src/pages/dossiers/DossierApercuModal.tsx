@@ -16,7 +16,7 @@ interface DossierApercuModalProps {
 
 export function DossierApercuModal({ cible, onClose, onMaj, onOuvrirDansDossiers }: DossierApercuModalProps) {
   return (
-    <Modal isOpen={cible != null} onClose={onClose} maxWidth="max-w-2xl" title="Aperçu du dossier">
+    <Modal isOpen={cible != null} onClose={onClose} maxWidth="max-w-4xl" dense title="Aperçu du dossier">
       {cible && <Contenu key={`${cible.matricule}|${cible.type}|${cible.dateEcheance}`} cible={cible}
         onClose={onClose} onMaj={onMaj} onOuvrirDansDossiers={onOuvrirDansDossiers} />}
     </Modal>

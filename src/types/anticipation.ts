@@ -38,6 +38,8 @@ export interface AgentFiche {
   prenoms: string | null
   statut: StatutAgent | null
   integration: IntegrationFiche
+  /** Grade suivant du grade actuel (fourni par le serveur ; absent sur un serveur plus ancien, affiché « — »). */
+  gradeSuivant?: GradeSuivantDTO | null
   dateNaissance: string | null
   sexe: string | null
   cin: string | null

@@ -9,6 +9,7 @@ import type { DossierDTO } from '@/types/dossier'
 interface LigneDossierProps {
   d: DossierDTO
   afficherNombre: boolean
+  separateur?: boolean   // filet plus marqué au-dessus : première ligne d'un agent (sauf le premier)
   onDemarrer: () => void
   onOuvrir: () => void
 }
@@ -36,11 +37,11 @@ function Precision({ d }: { d: DossierDTO }) {
   return null
 }
 
-export function LigneDossier({ d, afficherNombre, onDemarrer, onOuvrir }: LigneDossierProps) {
+export function LigneDossier({ d, afficherNombre, separateur = false, onDemarrer, onOuvrir }: LigneDossierProps) {
   const affiche = ETAT_DOSSIER[etatDe(d)]
   const demarrable = d.statut === 'EN_ATTENTE_DE_TRAITEMENT'
   return (
-    <tr className={`${d.enRetard ? 'bg-[#FDF4F4]' : 'bg-white'} hover:bg-[#F7F8FA]`}>
+    <tr className={`${d.enRetard ? 'bg-[#FDF4F4]' : 'bg-white'} hover:bg-[#F7F8FA] ${separateur ? 'border-t-2 border-t-[#D5D8E0]' : ''}`}>
       <td className={`table-cell border-l-4 ${d.enRetard ? 'border-l-danger' : 'border-l-transparent'}`}>
         <div className="flex items-center gap-2">
           <button type="button" onClick={onOuvrir} title="Ouvrir le détail du dossier"

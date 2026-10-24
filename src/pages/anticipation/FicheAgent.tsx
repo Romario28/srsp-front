@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { Fragment, type ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
@@ -78,9 +78,11 @@ export function useFicheAgent(matricule: string): EtatFiche {
   return { fiche: data, isLoading, error, reload }
 }
 
-export function FicheAgentContenu({ etat, exclus }: {
+export function FicheAgentContenu({ etat, exclus, compact = false }: {
   etat: EtatFiche
   exclus: (fiche: AgentFiche) => ReadonlySet<CleFiche>
+  /** Deux colonnes de groupes, un champ par ligne : réduit la hauteur de moitié environ. */
+  compact?: boolean
 }) {
   const { fiche, isLoading, error, reload } = etat
   if (error) return <div className="flex flex-col items-start gap-2"><ErrorBanner message={error} /><Button variant="secondary" size="sm" onClick={reload}>Réessayer</Button></div>
@@ -89,6 +91,17 @@ export function FicheAgentContenu({ etat, exclus }: {
 
   const masques = exclus(fiche)
   const groupes = GROUPES.map((g) => ({ ...g, champs: g.champs.filter((c) => !masques.has(c.cle) && (c.visible?.(fiche) ?? true)) })).filter((g) => g.champs.length > 0)
+
+  if (compact) return <div className="md:columns-2 md:gap-x-8">{groupes.map((g) => (
+    <div key={g.titre} className="mb-2.5 break-inside-avoid">
+      <h4 className="mb-1 text-[10.5px] font-semibold uppercase tracking-wide text-[#6B7180]">{g.titre}</h4>
+      <dl className="grid grid-cols-[9.5rem_minmax(0,1fr)] gap-x-2 gap-y-0.5 text-[12.5px] leading-snug">
+        {g.champs.map((c) => <Fragment key={c.cle}>
+          <dt className="text-[#6B7180]">{c.label}</dt><dd className="min-w-0 break-words text-ink">{c.valeur(fiche)}</dd>
+        </Fragment>)}
+      </dl>
+    </div>))}</div>
+
   return <div className="flex flex-col gap-4">{groupes.map((g) => <div key={g.titre}>
     <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#6B7180]">{g.titre}</h4>
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">{g.champs.map((c) => <div key={c.cle} className="min-w-0">
@@ -98,6 +111,10 @@ export function FicheAgentContenu({ etat, exclus }: {
 }
 
 /** Version autonome utilisée par la modale d'échéance. */
-export function FicheAgent({ matricule, exclus }: { matricule: string; exclus: (fiche: AgentFiche) => ReadonlySet<CleFiche> }) {
-  return <FicheAgentContenu etat={useFicheAgent(matricule)} exclus={exclus} />
+export function FicheAgent({ matricule, exclus, compact = false }: {
+  matricule: string
+  exclus: (fiche: AgentFiche) => ReadonlySet<CleFiche>
+  compact?: boolean
+}) {
+  return <FicheAgentContenu etat={useFicheAgent(matricule)} exclus={exclus} compact={compact} />
 }

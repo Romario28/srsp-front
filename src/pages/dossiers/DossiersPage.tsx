@@ -14,7 +14,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
 import { BoutonExport } from '@/components/BoutonExport'
-import { LigneDossier, NombreDossiers } from './LigneDossier'
+import { LigneDossier } from './LigneDossier'
 import { DossierFormModal } from './DossierFormModal'
 import { MenuTri } from './MenuTri'
 import { MenuFiltres } from './MenuFiltres'
@@ -36,13 +36,13 @@ const CHAMP_BARRE = 'h-8 rounded-lg border border-[#DADCE3] bg-white text-[13px]
 const bascule = (actif: boolean) => `flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-medium transition-colors ${
   actif ? 'border-accent bg-accent-light text-accent-dark' : 'border-[#DADCE3] bg-white text-[#6B7180] hover:border-accent'}`
 
-interface GroupeAgent { matricule: string; nom: string; total: number; lignes: DossierDTO[] }
+interface GroupeAgent { matricule: string; lignes: DossierDTO[] }
 function grouper(lignes: DossierDTO[]): GroupeAgent[] {
   const groupes: GroupeAgent[] = []
   for (const d of lignes) {
     const dernier = groupes[groupes.length - 1]
     if (dernier && dernier.matricule === d.matricule) dernier.lignes.push(d)
-    else groupes.push({ matricule: d.matricule, nom: d.nomComplet, total: d.nbDossiersAgent, lignes: [d] })
+    else groupes.push({ matricule: d.matricule, lignes: [d] })
   }
   return groupes
 }
@@ -113,8 +113,9 @@ export function DossiersPage() {
     { value: 'SANS_SUITE', label: 'Sans suite', count: s?.sansSuite },
     { value: 'TOUS', label: 'Tous', count: s ? s.aTraiter + s.enRetard + s.enCours + s.sansSuite : undefined },
   ]
-  const ligne = (d: DossierDTO) => (
-    <LigneDossier key={d.id} d={d} afficherNombre={!parAgent}
+  // le badge « N dossiers » n'est posé que sur la 1re ligne d'un groupe ; le filet sépare deux agents
+  const ligne = (d: DossierDTO, premierDuGroupe = true, separateur = false) => (
+    <LigneDossier key={d.id} d={d} afficherNombre={premierDuGroupe} separateur={separateur}
       onDemarrer={() => setEdition({ dossier: d, confirmer: true })} onOuvrir={() => setEdition({ dossier: d, confirmer: false })} />
   )
 
@@ -196,20 +197,11 @@ export function DossiersPage() {
                 <th className="table-head-cell">État</th>
                 <th className="table-head-cell text-right">Action</th>
               </tr></thead>
-              {groupes ? groupes.map((g) => (
+              {groupes ? groupes.map((g, i) => (
                 <tbody key={`${g.matricule}-${g.lignes[0].id}`} className="divide-y divide-[#EAEBF0]">
-                  <tr className="bg-[#FAFAFB]">
-                    <td colSpan={6} className="px-5 py-2">
-                      <span className="flex flex-wrap items-center gap-2 text-[12.5px]">
-                        <span className="font-semibold text-ink">{g.nom}</span>
-                        <span className="font-mono text-[11.5px] text-[#6B7180]">{g.matricule}</span>
-                        <NombreDossiers n={g.total} />
-                      </span>
-                    </td>
-                  </tr>
-                  {g.lignes.map(ligne)}
+                  {g.lignes.map((d, k) => ligne(d, k === 0, k === 0 && i > 0))}
                 </tbody>
-              )) : <tbody className="divide-y divide-[#EAEBF0]">{lignes.map(ligne)}</tbody>}
+              )) : <tbody className="divide-y divide-[#EAEBF0]">{lignes.map((d) => ligne(d))}</tbody>}
             </table>
           </div>
           <Pagination page={data.number} totalPages={data.totalPages} totalElements={data.totalElements}
