@@ -1,5 +1,5 @@
 export type TypeAnticipation =
-  | 'DEPART_RETRAITE' | 'AVANCEMENT' | 'TITULARISATION' | 'FIN_CONTRAT' | 'INTEGRATION' | 'ANOMALIE'
+  | 'DEPART_RETRAITE' | 'AVANCEMENT' | 'AVANCEMENT_CLASSE' | 'TITULARISATION' | 'FIN_CONTRAT' | 'INTEGRATION' | 'ANOMALIE'
 
 /** Les types avec échéance, donc une fenêtre configurable. ANOMALIE n'en a pas. */
 export type TypeEcheance = Exclude<TypeAnticipation, 'ANOMALIE'>

@@ -20,6 +20,8 @@ export interface DossierDTO {
   motifSansSuite: string | null
   enRetard: boolean
   joursRetard: number | null
+  /** Total des dossiers de l'agent, tous états confondus. */
+  nbDossiersAgent: number
 }
 
 /** Identifie le dossier d'une ligne d'agent : clé d'unicité (matricule, type, échéance). */
@@ -39,11 +41,13 @@ export interface SyntheseDossiers {
 }
 
 /** Ce qui réduit la liste, donc aussi les compteurs des onglets. */
-export type FiltresSynthese = FiltresAgents & { type?: TypeAnticipation; matricule?: string }
+export type FiltresSynthese = FiltresAgents & { type?: TypeAnticipation; matricule?: string; multiples?: boolean }
 
 export interface FiltresDossiers {
   vue: VueDossier
   inverse: boolean
+  parAgent?: boolean
+  multiples?: boolean
   type?: TypeAnticipation
   matricule?: string
   page: number

@@ -2,7 +2,7 @@ import axios from 'axios'
 import { apiClient } from './client'
 import type { ApiErrorBody } from '@/types/api'
 
-export type EcranExport = 'calendrier' | 'retraite' | 'avancement' | 'titularisation' | 'fin-contrat' | 'integration' | 'anomalies' | 'alertes' | 'dossiers'
+export type EcranExport = 'calendrier' | 'retraite' | 'avancement' | 'avancement-classe' | 'titularisation' | 'fin-contrat' | 'integration' | 'anomalies' | 'alertes' | 'dossiers'
 
 function nomDepuisEntete(entete: unknown): string | null {
   if (typeof entete !== 'string') return null

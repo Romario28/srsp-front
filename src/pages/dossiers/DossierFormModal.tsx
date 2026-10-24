@@ -4,6 +4,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
+import { FicheAgent, type CleFiche } from '@/pages/anticipation/FicheAgent'
 import { dossiersApi } from '@/api/dossiers'
 import { extractErrorMessage } from '@/api/client'
 import { formatDate } from '@/utils/date'
@@ -11,30 +12,37 @@ import { TYPE_LABELS } from '@/utils/anticipation'
 import { ETAT_DOSSIER, etatDe } from '@/utils/dossiers'
 import type { DossierDTO } from '@/types/dossier'
 
+/** Aucun champ masqué : ici l'en-tête ne montre pas le statut de l'agent, la fiche l'affiche donc en entier. */
+const AUCUN_EXCLUS: ReadonlySet<CleFiche> = new Set<CleFiche>()
+
 interface DossierFormModalProps {
   dossier: DossierDTO | null
+  /** Ouvre directement sur « Confirmer le démarrage ? » (bouton Démarrer du tableau). */
+  confirmerDemarrage?: boolean
   onClose: () => void
   onChange: (maj: DossierDTO) => void
 }
 
-export function DossierFormModal({ dossier, onClose, onChange }: DossierFormModalProps) {
+export function DossierFormModal({ dossier, confirmerDemarrage = false, onClose, onChange }: DossierFormModalProps) {
   return (
-    <Modal isOpen={dossier != null} onClose={onClose} maxWidth="max-w-lg" title="Suivi du dossier">
-      {dossier && <FormulaireDossier key={dossier.id} dossier={dossier} onClose={onClose} onChange={onChange} />}
+    <Modal isOpen={dossier != null} onClose={onClose} maxWidth="max-w-2xl" title="Suivi du dossier">
+      {dossier && <FormulaireDossier key={`${dossier.id}-${confirmerDemarrage ? 'c' : 'd'}`} dossier={dossier}
+        confirmerDemarrage={confirmerDemarrage} onClose={onClose} onChange={onChange} />}
     </Modal>
   )
 }
 
 interface FormulaireDossierProps {
   dossier: DossierDTO
+  confirmerDemarrage?: boolean
   onClose: () => void
   onChange: (maj: DossierDTO) => void
   onOuvrirDansDossiers?: () => void
 }
 
-export function FormulaireDossier({ dossier, onClose, onChange, onOuvrirDansDossiers }: FormulaireDossierProps) {
+export function FormulaireDossier({ dossier, confirmerDemarrage = false, onClose, onChange, onOuvrirDansDossiers }: FormulaireDossierProps) {
   const [motif, setMotif] = useState('')
-  const [confirmation, setConfirmation] = useState(false)
+  const [confirmation, setConfirmation] = useState(confirmerDemarrage)
   const [enCours, setEnCours] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
 
@@ -115,6 +123,14 @@ export function FormulaireDossier({ dossier, onClose, onChange, onOuvrirDansDoss
           )}
         </section>
       )}
+
+      <section className="flex flex-col gap-3 border-t border-[#EAEBF0] pt-4">
+        <div>
+          <h4 className="font-display text-[13.5px] font-semibold text-ink">Fiche agent</h4>
+          <p className="mt-0.5 text-[12px] text-[#9CA0AC]">Identité, carrière, situation administrative, affectation et références.</p>
+        </div>
+        <FicheAgent matricule={dossier.matricule} exclus={() => AUCUN_EXCLUS} />
+      </section>
 
       {!sansSuite && (
         <section className="flex flex-col gap-2 border-t border-[#EAEBF0] pt-4">

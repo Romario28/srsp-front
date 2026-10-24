@@ -3,6 +3,7 @@ import type { StatutAgent, TypeAnticipation, TypeEcheance } from '@/types/antici
 export const TYPE_LABELS: Record<TypeAnticipation, string> = {
   DEPART_RETRAITE: 'Départ à la retraite',
   AVANCEMENT: 'Avancement',
+  AVANCEMENT_CLASSE: 'Avancement de classe',
   TITULARISATION: 'Titularisation',
   FIN_CONTRAT: 'Fin de contrat',
   INTEGRATION: 'Intégration',
@@ -10,7 +11,7 @@ export const TYPE_LABELS: Record<TypeAnticipation, string> = {
 }
 
 export const TYPES_ECHEANCE: readonly TypeEcheance[] = [
-  'DEPART_RETRAITE', 'AVANCEMENT', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION',
+  'DEPART_RETRAITE', 'AVANCEMENT', 'AVANCEMENT_CLASSE', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION',
 ]
 
 const STATUT_LABELS: Record<StatutAgent, { singulier: string; pluriel: string }> = {
@@ -76,6 +77,7 @@ export function formatMois(mois: number): string {
 export const ECHEANCE_SLUGS: Record<TypeEcheance, string> = {
   DEPART_RETRAITE: 'retraite',
   AVANCEMENT: 'avancement',
+  AVANCEMENT_CLASSE: 'avancement-classe',
   TITULARISATION: 'titularisation',
   FIN_CONTRAT: 'fin-contrat',
   INTEGRATION: 'integration',
@@ -92,5 +94,6 @@ export function toneDelai(jours: number): 'danger' | 'warning' | 'neutral' {
   return jours <= 30 ? 'warning' : 'neutral'
 }
 
-/** Seuls ces deux types d'échéance correspondent à un changement de grade. */
-export const changeDeGrade = (type: TypeAnticipation) => type === 'AVANCEMENT' || type === 'TITULARISATION'
+/** Les trois types d'échéance qui correspondent à un changement de grade. */
+export const changeDeGrade = (type: TypeAnticipation) =>
+  type === 'AVANCEMENT' || type === 'AVANCEMENT_CLASSE' || type === 'TITULARISATION'

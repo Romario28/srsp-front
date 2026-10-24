@@ -21,7 +21,8 @@ import type { FiltresAgents, FiltresEcheances, TypeEcheance } from '@/types/anti
 
 const DESCRIPTIONS: Record<TypeEcheance, string> = {
   DEPART_RETRAITE: "Agents atteignant l'âge légal de départ (date de naissance + âge légal fixé côté serveur).",
-  AVANCEMENT: "Échéance = date du dernier avancement (à défaut, début de contrat) + durée requise du couple corps/grade. Même calcul pour tous les statuts, ELD compris.",
+  AVANCEMENT: "Avancement d'échelon : le grade suivant garde les deux premiers caractères du grade actuel. Échéance = date du dernier avancement (à défaut, début de contrat) + durée requise du couple corps/grade. Même calcul pour tous les statuts, ELD compris.",
+  AVANCEMENT_CLASSE: "Avancement de classe : le grade suivant change les deux premiers caractères du code (ex. 2C2E → 1C3E). Même calcul d'échéance qu'un avancement ; sa fenêtre de préparation se règle séparément (1 mois par défaut).",
   TITULARISATION: "Même calcul qu'un avancement : seul l'intitulé change, pour le grade de stagiaire.",
   FIN_CONTRAT: 'Agents dont le contrat prend fin. Un contrat sans date de fin (durée indéterminée) n’apparaît jamais.',
   INTEGRATION: "Contractuels sans date de fin de contrat : intégration (passage au statut de fonctionnaire) 2 ans après la date de début de contrat. Un contractuel sans date de début est signalé en anomalie.",
@@ -66,7 +67,7 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
     {calcul.error && <ErrorBanner message={calcul.error} />}
     {calcul.data && dernier ? <div className={`flex flex-col gap-4 transition-opacity ${calcul.isLoading ? 'opacity-50' : ''}`}>
       <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#4B4F5A]"><span className="font-medium text-ink">{calcul.data.length} échéance{calcul.data.length > 1 ? 's' : ''}</span><span>· {decrireFenetre(dernier.filtres, config)}</span><span>· calculé à {dernier.le.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>{nbFiltres(dernier.filtres) > 0 && <Badge tone="accent">{nbFiltres(dernier.filtres)} filtre{nbFiltres(dernier.filtres) > 1 ? 's' : ''} agents</Badge>}{perime && <Badge tone="warning">Filtres modifiés depuis ce calcul</Badge>}</div>
-      <div className="flex justify-end"><BoutonExport ecran={ECHEANCE_SLUGS[type] as EcranExport} params={dernier.filtres} disabled={calcul.data.length === 0} title="Exporter en Excel le résultat affiché (le filtre Statut de la barre s'applique, pas les onglets)" /></div>
+      <div className="flex justify-end"><BoutonExport ecran={ECHEANCE_SLUGS[type] as EcranExport} params={dernier.filtres} disabled={calcul.data.length === 0} title="Exporter en Excel le résultat affiché (le filtre Statut de la barre s'applique, ni les onglets ni la recherche)" /></div>
       <EcheancesResults key={dernier.version} items={calcul.data} type={type} />
     </div> : calcul.isLoading ? <Spinner label="Calcul en cours sur l'ensemble des agents en activité…" /> : !calcul.error ? <EmptyState icon={Calculator} title="Aucun calcul lancé" description="Réglez la fenêtre puis cliquez sur « Calculer »." /> : null}
   </div>

@@ -1,7 +1,7 @@
 import type { CritereDate } from '@/types/anticipation'
 import type { CalendrierJour, CategorieCalendrier } from '@/types/calendrier'
 
-export const CATEGORIES: readonly CategorieCalendrier[] = ['DEPART_RETRAITE', 'AVANCEMENT', 'ELD', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION']
+export const CATEGORIES: readonly CategorieCalendrier[] = ['DEPART_RETRAITE', 'AVANCEMENT', 'AVANCEMENT_CLASSE', 'ELD', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION']
 
 /**
  * label : forme pluriel, pour la légende et les titres.
@@ -12,6 +12,8 @@ export const CATEGORIES: readonly CategorieCalendrier[] = ['DEPART_RETRAITE', 'A
 export const CATEGORIE_INFO: Record<CategorieCalendrier, { label: string; point: string; un: string; plusieurs: string }> = {
   DEPART_RETRAITE: { label: 'Départs à la retraite', point: 'bg-violet', un: 'départ à la retraite', plusieurs: 'départs à la retraite' },
   AVANCEMENT: { label: 'Avancements', point: 'bg-accent', un: 'avancement', plusieurs: 'avancements' },
+  // Sarcelle : teinte distincte des autres types, texte blanc lisible (contraste > 5:1)
+  AVANCEMENT_CLASSE: { label: 'Avancements de classe', point: 'bg-[#0F766E]', un: 'avancement de classe', plusieurs: 'avancements de classe' },
   // Ambre du thème assombri : le texte blanc dessus tient 4,5:1 (3,6:1 avec bg-warning)
   ELD: { label: 'Avancements ELD', point: 'bg-[#9C6414]', un: 'avancement ELD', plusieurs: 'avancements ELD' },
   TITULARISATION: { label: 'Titularisations', point: 'bg-success', un: 'titularisation', plusieurs: 'titularisations' },

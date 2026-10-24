@@ -25,6 +25,7 @@ function InformationsCles({ item }: { item: AlerteAnticipation }) {
   const note = item.details ? <Ligne label="Note">{item.details}</Ligne> : null
   switch (item.type) {
     case 'AVANCEMENT':
+    case 'AVANCEMENT_CLASSE':
     case 'TITULARISATION': return <div className="flex flex-col gap-3">
       <BlocsSituation gradeActuel={item.gradeCode} dateEffetActuelle={item.avanceDate ?? item.dateDebutContrat} gradeSuivant={item.gradeSuivant} dateEffetNouvelle={item.dateEcheance} />
       <dl className={GRILLE}>{preparation}{note}</dl>
@@ -51,6 +52,7 @@ function dejaAffiches(item: AlerteAnticipation): Set<CleFiche> {
   const exclus = new Set<CleFiche>(['statut'])
   switch (item.type) {
     case 'AVANCEMENT':
+    case 'AVANCEMENT_CLASSE':
     case 'TITULARISATION':
       exclus.add('grade'); exclus.add('avanceDate')
       if (item.avanceDate == null) exclus.add('debutContrat')

@@ -56,7 +56,7 @@ function libelleDateEcheance(type: TypeAnticipation): string {
     case 'DEPART_RETRAITE': return 'Date de retraite'
     case 'FIN_CONTRAT': return 'Date de fin de contrat'
     case 'INTEGRATION': return "Date d'intégration"
-    case 'AVANCEMENT': case 'TITULARISATION': return 'Nouvelle situation dès le'
+    case 'AVANCEMENT': case 'AVANCEMENT_CLASSE': case 'TITULARISATION': return 'Nouvelle situation dès le'
     default: return 'Échéance'
   }
 }
@@ -85,7 +85,7 @@ function InformationsCles({ alerte, etat }: { alerte: AlerteDTO; etat: EtatFiche
   const preparation = <Ligne label="Préparation dès le"><Preparation date={alerte.datePreparation} suivre={alerte.statut !== 'ACQUITTEE'} /></Ligne>
   const note = alerte.details ? <Ligne label="Note">{alerte.details}</Ligne> : null
   switch (alerte.type) {
-    case 'AVANCEMENT': case 'TITULARISATION': return <Section titre="Informations clés">
+    case 'AVANCEMENT': case 'AVANCEMENT_CLASSE': case 'TITULARISATION': return <Section titre="Informations clés">
       {/* Dates et note : gap-3 (12 px). Le groupe et BlocsSituation : gap-4 (16 px). Sans note, un seul enfant → aucun espace superflu. */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3">
@@ -125,7 +125,7 @@ const memeDate = (a: string | null, b: string | null) => a != null && b != null 
 function dejaAffiches(alerte: AlerteDTO, fiche: AgentFiche): ReadonlySet<CleFiche> {
   const exclus = new Set<CleFiche>(['statut'])
   switch (alerte.type) {
-    case 'AVANCEMENT': case 'TITULARISATION': {
+    case 'AVANCEMENT': case 'AVANCEMENT_CLASSE': case 'TITULARISATION': {
       if (alerte.gradeActuel != null && fiche.grade?.code === alerte.gradeActuel) exclus.add('grade')
       const effetFiche = fiche.avanceDate ?? fiche.dateDebutContrat
       if (memeDate(alerte.dateEffetActuelle, effetFiche)) exclus.add(fiche.avanceDate != null ? 'avanceDate' : 'debutContrat')
