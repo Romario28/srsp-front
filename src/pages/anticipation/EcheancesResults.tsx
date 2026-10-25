@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { ChampRecherche } from '@/components/ui/ChampRecherche'
@@ -28,6 +28,8 @@ export function EcheancesResults({ items, type }: { items: AlerteAnticipation[];
   const groupes = useMemo(() => grouperParStatut(trouves).filter((groupe) => groupe.items.length > 0), [trouves])
   const [filtre, setFiltre] = useState<FiltreStatut>('TOUS')
   const [page, setPage] = useState(0)
+  // Nouveaux résultats : retour en haut de liste ; la recherche et l'onglet de statut sont conservés
+  useEffect(() => { setPage(0) }, [items])
   const [selection, setSelection] = useState<AlerteAnticipation | null>(null)
   if (items.length === 0) return <EmptyState title={estAnomalie ? 'Aucune anomalie' : 'Aucune échéance dans cette fenêtre'} description={estAnomalie ? 'Le calcul est possible pour tous les agents en activité.' : "Élargissez la fenêtre ou l'intervalle de dates."} />
 

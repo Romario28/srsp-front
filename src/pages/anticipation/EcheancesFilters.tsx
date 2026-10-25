@@ -1,4 +1,4 @@
-import { Calculator, Info, RotateCcw, X } from 'lucide-react'
+import { Info, Loader2, RotateCcw, X } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
@@ -18,17 +18,15 @@ interface EcheancesFiltersProps {
   onChange: (patch: Partial<EtatFiltres>) => void
   config: ConfigurationDelaiDTO | null
   erreur: string | null
-  isLoading: boolean
-  onCalculer: () => void
-  onAnnuler: () => void
+  occupe: boolean
 }
 
-export function EcheancesFilters({ etat, onChange, config, erreur, isLoading, onCalculer, onAnnuler }: EcheancesFiltersProps) {
+export function EcheancesFilters({ etat, onChange, config, erreur, occupe }: EcheancesFiltersProps) {
   const dates = datesActives(etat)
   const surPreparation = etat.critere === 'PREPARATION'
   const nomDate = surPreparation ? 'Préparation' : 'Échéance'
   return (
-    <form onSubmit={(event) => { event.preventDefault(); onCalculer() }} className="flex flex-col gap-4 rounded-xl border border-[#E4E6EB] bg-white p-5">
+    <section aria-label="Filtres du calcul" className="flex flex-col gap-4 rounded-xl border border-[#E4E6EB] bg-white p-5">
       {/* Choix global : il s'applique à la fenêtre relative comme à l'intervalle de dates */}
       <div className="flex flex-col gap-1.5 border-b border-[#EAEBF0] pb-4">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -65,10 +63,11 @@ export function EcheancesFilters({ etat, onChange, config, erreur, isLoading, on
       </div>
       {dates && <div className="flex items-start gap-2.5 rounded-lg border border-accent/30 bg-accent-light px-4 py-3 text-[13px] text-accent-dark"><Info className="mt-0.5 h-4 w-4 flex-shrink-0" /><span>Les dates remplacent la fenêtre de visibilité : la tolérance de retard configurée est ignorée et aucune limite n'est appliquée.{surPreparation && ' La date de préparation reste calculée avec le délai de préparation configuré pour ce type.'}</span></div>}
       {erreur && <ErrorBanner message={erreur} />}
-      <div className="flex justify-end gap-2">
-        {isLoading && <Button type="button" variant="secondary" onClick={onAnnuler}>Annuler</Button>}
-        <Button type="submit" isLoading={isLoading} icon={<Calculator className="h-4 w-4" />}>Calculer</Button>
-      </div>
-    </form>
+      <p className="flex items-center justify-end gap-2 text-[12.5px] text-[#6B7180]">
+        <Loader2 aria-hidden="true" className={`h-3.5 w-3.5 animate-spin text-accent ${occupe ? '' : 'invisible'}`} />
+        Les résultats se mettent à jour automatiquement.
+        <span role="status" aria-live="polite" className="sr-only">{occupe ? 'Mise à jour des résultats en cours' : ''}</span>
+      </p>
+    </section>
   )
 }
