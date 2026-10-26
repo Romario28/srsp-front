@@ -15,6 +15,12 @@
 @layer components {
   .table-cell { @apply px-4 py-3 text-sm; }
   .table-head-cell { @apply px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-[#6B7180]; }
+
+  /* tableau à défilement interne : en-tête collé, lignes fines, filets portés par les cellules */
+  .table-dense { @apply w-full border-separate border-spacing-0; }
+  .table-dense thead th { @apply sticky top-0 z-10 whitespace-nowrap border-b border-[#EAEBF0] bg-[#FAFAFB] py-2; }
+  .table-dense tbody td { @apply border-b border-[#EAEBF0] py-1.5; }
+  .table-dense tbody tr:last-child td { @apply border-b-0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

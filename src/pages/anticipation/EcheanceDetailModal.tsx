@@ -42,7 +42,7 @@ function InformationsCles({ item }: { item: AlerteAnticipation }) {
     </dl>
     case 'DEPART_RETRAITE': return <dl className={GRILLE}>
       <Ligne label="Date de naissance">{formatDate(item.dateNaissance)}</Ligne><Ligne label="Âge actuel"><Age naissance={item.dateNaissance} /></Ligne>
-      <Ligne label="Âge de départ"><AgeA naissance={item.dateNaissance} aLaDate={item.dateEcheance} /></Ligne><Ligne label="Date de retraite">{formatDate(item.dateEcheance)}</Ligne>{preparation}{note}
+      <Ligne label="Âge de départ">bonjr<AgeA naissance={item.dateNaissance} aLaDate={item.dateEcheance} /></Ligne><Ligne label="Date de retraite">{formatDate(item.dateEcheance)}</Ligne>{preparation}{note}
     </dl>
     default: return <dl className={GRILLE}><Ligne label="Raison">{item.details ?? '—'}</Ligne></dl>
   }

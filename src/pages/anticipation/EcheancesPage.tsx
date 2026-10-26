@@ -93,18 +93,34 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
   const enAttente = JSON.stringify(filtresEnvoyes(saisie, config)) !== JSON.stringify(filtresEnvoyes(stable, config))
   const occupe = enAttente || calcul.isLoading
 
-  return <div className="flex flex-col gap-5">
-    <div><h1 className="font-display text-[20px] font-semibold text-ink">{TYPE_LABELS[type]}</h1><p className="mt-0.5 text-[13px] text-[#6B7180]">{DESCRIPTIONS[type]}</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Seuls les agents en activité sont pris en compte (situation administrative « 00 » ou non renseignée).</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Date de préparation = échéance − délai de préparation du type : à partir de cette date, le dossier peut être constitué.</p></div>
-    <FiltresAgentsBar valeur={saisie.agents} onChange={changerAgents} />
-    <EcheancesFilters etat={saisie.etat} config={config} erreur={erreurSaisie} occupe={occupe} onChange={changerEtat} />
-    {calcul.error && <ErrorBanner message={calcul.error} />}
-    {calcul.data && dernier ? <div aria-busy={calcul.isLoading} className={`flex flex-col gap-4 transition-opacity ${calcul.isLoading ? 'opacity-50' : ''}`}>
-      <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#4B4F5A]"><span className="font-medium text-ink">{calcul.data.length} échéance{calcul.data.length > 1 ? 's' : ''}</span><span>· {decrireFenetre(dernier.filtres, config)}</span><span>· calculé à {dernier.le.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>{nbFiltres(dernier.filtres) > 0 && <Badge tone="accent">{nbFiltres(dernier.filtres)} filtre{nbFiltres(dernier.filtres) > 1 ? 's' : ''} agents</Badge>}
-        {erreurSaisie && <Badge tone="warning">Résultats précédents : filtres invalides</Badge>}
+  return <div className="flex h-[calc(100vh_-_7.5rem)] min-h-[30rem] flex-col gap-3">
+    <header className="flex-shrink-0">
+      <h1 className="font-display text-[20px] font-semibold text-ink">{TYPE_LABELS[type]}</h1>
+      <p className="mt-0.5 text-[13px] text-[#6B7180]">{DESCRIPTIONS[type]}</p>
+      <details className="mt-1 text-[12px] text-[#9CA0AC]">
+        <summary className="w-fit cursor-pointer select-none hover:text-[#6B7180]">Règles communes</summary>
+        <p className="mt-1">Seuls les agents en activité sont pris en compte (situation administrative « 00 » ou non renseignée).</p>
+        <p>Date de préparation = échéance − délai de préparation du type : à partir de cette date, le dossier peut être constitué.</p>
+      </details>
+    </header>
+    <div className="flex-shrink-0"><FiltresAgentsBar valeur={saisie.agents} onChange={changerAgents} /></div>
+    <div className="flex-shrink-0"><EcheancesFilters etat={saisie.etat} config={config} erreur={erreurSaisie} occupe={occupe} onChange={changerEtat} /></div>
+    {calcul.error && <div className="flex-shrink-0"><ErrorBanner message={calcul.error} /></div>}
+    {calcul.data && dernier
+      ? <div aria-busy={calcul.isLoading} className={`flex min-h-0 flex-1 flex-col gap-2 transition-opacity ${calcul.isLoading ? 'opacity-50' : ''}`}>
+        <div className="flex flex-shrink-0 flex-wrap items-center gap-2 text-[13px] text-[#4B4F5A]">
+          <span className="font-medium text-ink">{calcul.data.length} échéance{calcul.data.length > 1 ? 's' : ''}</span>
+          <span>· {decrireFenetre(dernier.filtres, config)}</span>
+          <span>· calculé à {dernier.le.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+          {nbFiltres(dernier.filtres) > 0 && <Badge tone="accent">{nbFiltres(dernier.filtres)} filtre{nbFiltres(dernier.filtres) > 1 ? 's' : ''} agents</Badge>}
+          {erreurSaisie && <Badge tone="warning">Résultats précédents : filtres invalides</Badge>}
+          <div className="ml-auto">
+            <BoutonExport ecran={ECHEANCE_SLUGS[type] as EcranExport} params={dernier.filtres} disabled={calcul.data.length === 0}
+              title="Exporter en Excel le résultat affiché (le filtre Statut de la barre s'applique, ni les onglets ni la recherche)" />
+          </div>
+        </div>
+        <EcheancesResults items={calcul.data} type={type} />
       </div>
-      <div className="flex justify-end"><BoutonExport ecran={ECHEANCE_SLUGS[type] as EcranExport} params={dernier.filtres} disabled={calcul.data.length === 0} title="Exporter en Excel le résultat affiché (le filtre Statut de la barre s'applique, ni les onglets ni la recherche)" /></div>
-      <EcheancesResults items={calcul.data} type={type} />
-    </div>
-    : !calcul.error ? <Spinner label="Calcul en cours sur l'ensemble des agents en activité…" /> : null}
+      : !calcul.error ? <Spinner label="Calcul en cours sur l'ensemble des agents en activité…" /> : null}
   </div>
 }
