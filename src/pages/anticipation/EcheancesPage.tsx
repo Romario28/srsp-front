@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Calculator } from 'lucide-react'
 import { useFetch } from '@/hooks/useFetch'
 import { useAction } from '@/hooks/useAction'
 import { useDebounce } from '@/hooks/useDebounce'
 import { anticipationApi } from '@/api/anticipation'
 import { anticipationConfigApi } from '@/api/anticipationConfig'
 import { Spinner } from '@/components/ui/Spinner'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Badge } from '@/components/ui/Badge'
 import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
@@ -19,6 +17,7 @@ import { EcheancesFilters } from './EcheancesFilters'
 import { EcheancesResults } from './EcheancesResults'
 import { FILTRES_VIDES, construireFiltres, decrireFenetre, validerFiltres, type EtatFiltres } from './filtres'
 import type { FiltresAgents, FiltresEcheances, TypeEcheance } from '@/types/anticipation'
+import type { ConfigurationDelaiDTO } from '@/types/configurationDelai'
 
 const DESCRIPTIONS: Record<TypeEcheance, string> = {
   DEPART_RETRAITE: "Agents atteignant l'âge légal de départ (date de naissance + âge légal fixé côté serveur).",
@@ -34,20 +33,21 @@ interface DernierCalcul { filtres: FiltresEcheances; le: Date }
 interface Saisie {
   etat: EtatFiltres
   agents: FiltresAgents
-  /** Faux tant que l'utilisateur n'a rien choisi : l'écran d'invite reste affiché, aucun calcul ne part. */
-  touche: boolean
 }
 const DELAI_MS = 500
+
+/** Filtres réellement envoyés au serveur : deux saisies qui donnent les mêmes sont équivalentes
+ * (ex. des mois saisis égaux aux mois configurés ne sont pas envoyés). */
+function filtresEnvoyes(saisie: Saisie, config: ConfigurationDelaiDTO | null): FiltresEcheances {
+  return { ...construireFiltres(saisie.etat, config), ...saisie.agents }
+}
 
 export function EcheancesPage({ type }: { type: TypeEcheance }) {
   const [params] = useSearchParams()
   const { data: configs } = useFetch(() => anticipationConfigApi.lister())
   const config = useMemo(() => configs?.find((item) => item.type === type) ?? null, [configs, type])
 
-  const [saisie, setSaisie] = useState<Saisie>(() => {
-    const agents = filtresDepuisUrl(params)
-    return { etat: FILTRES_VIDES, agents, touche: nbFiltres(agents) > 0 }
-  })
+  const [saisie, setSaisie] = useState<Saisie>(() => ({ etat: FILTRES_VIDES, agents: filtresDepuisUrl(params) }))
   const stable = useDebounce(saisie, DELAI_MS)
   const [dernier, setDernier] = useState<DernierCalcul | null>(null)
   const calcul = useAction((signal, filtres: FiltresEcheances) => anticipationApi.echeances(type, filtres, signal), 'Calcul impossible')
@@ -56,11 +56,12 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
   const sequence = useRef(0)
 
   const changerEtat = (patch: Partial<EtatFiltres>) =>
-    setSaisie((c) => ({ ...c, touche: true, etat: { ...c.etat, ...patch } }))
+    setSaisie((c) => ({ ...c, etat: { ...c.etat, ...patch } }))
   const changerAgents = (agents: FiltresAgents) =>
-    setSaisie((c) => ({ ...c, touche: true, agents }))
+    setSaisie((c) => ({ ...c, agents }))
 
-  // Pré-remplissage depuis la configuration : ce n'est pas un choix de l'utilisateur, `touche` ne change pas
+  // Pré-remplissage depuis la configuration : les champs affichent les valeurs configurées.
+  // Les filtres envoyés sont identiques (valeur = configuration), donc aucun nouveau calcul.
   useEffect(() => {
     if (!config) return
     setSaisie((c) => {
@@ -74,10 +75,10 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
   // Remontage (mode strict de React en dev) : on repart d'un écran vierge
   useEffect(() => () => { signatureEnvoyee.current = null }, [])
 
-  // Calcul automatique, une fois la saisie stabilisée
+  // Calcul automatique : au premier affichage, puis à chaque changement stabilisé de la saisie
   useEffect(() => {
-    if (!stable.touche || validerFiltres(stable.etat) !== null) return
-    const filtres: FiltresEcheances = { ...construireFiltres(stable.etat, config), ...stable.agents }
+    if (validerFiltres(stable.etat) !== null) return
+    const filtres = filtresEnvoyes(stable, config)
     const signature = JSON.stringify(filtres)
     if (signature === signatureEnvoyee.current) return
     signatureEnvoyee.current = signature
@@ -88,8 +89,9 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
     })
   }, [stable, config, run])
 
-  const erreurSaisie = stable.touche ? validerFiltres(stable.etat) : null
-  const occupe = saisie.touche && (stable !== saisie || calcul.isLoading)
+  const erreurSaisie = validerFiltres(stable.etat)
+  const enAttente = JSON.stringify(filtresEnvoyes(saisie, config)) !== JSON.stringify(filtresEnvoyes(stable, config))
+  const occupe = enAttente || calcul.isLoading
 
   return <div className="flex flex-col gap-5">
     <div><h1 className="font-display text-[20px] font-semibold text-ink">{TYPE_LABELS[type]}</h1><p className="mt-0.5 text-[13px] text-[#6B7180]">{DESCRIPTIONS[type]}</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Seuls les agents en activité sont pris en compte (situation administrative « 00 » ou non renseignée).</p><p className="mt-0.5 text-[12.5px] text-[#9CA0AC]">Date de préparation = échéance − délai de préparation du type : à partir de cette date, le dossier peut être constitué.</p></div>
@@ -102,6 +104,7 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
       </div>
       <div className="flex justify-end"><BoutonExport ecran={ECHEANCE_SLUGS[type] as EcranExport} params={dernier.filtres} disabled={calcul.data.length === 0} title="Exporter en Excel le résultat affiché (le filtre Statut de la barre s'applique, ni les onglets ni la recherche)" /></div>
       <EcheancesResults items={calcul.data} type={type} />
-    </div> : (calcul.isLoading || occupe) ? <Spinner label="Calcul en cours sur l'ensemble des agents en activité…" /> : !calcul.error ? <EmptyState icon={Calculator} title="Aucun calcul lancé" description="Modifiez un filtre, ou cliquez sur « Valeurs configurées » : le calcul se lance automatiquement." /> : null}
+    </div>
+    : !calcul.error ? <Spinner label="Calcul en cours sur l'ensemble des agents en activité…" /> : null}
   </div>
 }

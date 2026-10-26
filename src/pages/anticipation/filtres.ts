@@ -12,7 +12,7 @@ export interface EtatFiltres {
   critere: CritereDate
 }
 
-export const FILTRES_VIDES: EtatFiltres = { prevenance: '', retard: '', dateDebut: '', dateFin: '', critere: 'ECHEANCE' }
+export const FILTRES_VIDES: EtatFiltres = { prevenance: '', retard: '', dateDebut: '', dateFin: '', critere: 'PREPARATION' }
 export const datesActives = (etat: EtatFiltres) => etat.dateDebut !== '' || etat.dateFin !== ''
 const estMoisValide = (valeur: string) => /^\d+$/.test(valeur.trim()) && Number(valeur) <= MAX_MOIS
 
