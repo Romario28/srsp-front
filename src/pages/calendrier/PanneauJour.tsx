@@ -85,7 +85,7 @@ function Groupe({ categorie, lignes, critere, onSelect }: {
 }) {
   const colonnes = COLONNES[categorie]
   return (
-    <section className="flex flex-col gap-2">
+    <section className="flex flex-shrink-0 flex-col gap-2">
       <h4 className="flex items-center gap-2 text-[13px] font-semibold text-ink">
         <span aria-hidden="true" className={`h-2.5 w-2.5 rounded-full ${CATEGORIE_INFO[categorie].point}`} />
         {CATEGORIE_INFO[categorie].label}
@@ -149,8 +149,8 @@ export function PanneauJour({ portee, critere, actifs, chargerDetail, detailEnCa
   const quand = portee.genre === 'JOUR' ? 'ce jour' : 'ce mois'
 
   return (
-    <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-[#E4E6EB] bg-white p-5">
-      <header>
+    <section className="flex min-w-0 flex-col rounded-xl border border-[#E4E6EB] bg-white lg:h-full lg:min-h-0">
+      <header className="flex-shrink-0 border-b border-[#EAEBF0] px-5 py-3">
         <h3 className="font-display text-[16px] font-semibold text-ink">{titre}</h3>
         {lignes.length > 0 && (
           <p className="mt-0.5 text-[12.5px] text-[#6B7180]">
@@ -166,20 +166,22 @@ export function PanneauJour({ portee, critere, actifs, chargerDetail, detailEnCa
         )}
       </header>
 
-      {error && !agents ? (
-        <div className="flex flex-col items-start gap-2">
-          <ErrorBanner message={error} />
-          <Button variant="secondary" size="sm" onClick={reload}>Réessayer</Button>
-        </div>
-      ) : isLoading && !agents ? (
-        <Spinner label="Chargement des agents…" />
-      ) : lignes.length === 0 ? (
-        <EmptyState icon={Users} title={`Aucune échéance ${quand}`} description="Aucun agent ne correspond aux types affichés." />
-      ) : (
-        groupes.map((g) => (
-          <Groupe key={g.categorie} categorie={g.categorie} lignes={g.items} critere={critere} onSelect={onSelect} />
-        ))
-      )}
+      <div className="flex min-h-0 flex-1 flex-col gap-4 px-5 py-4 lg:overflow-y-auto">
+        {error && !agents ? (
+          <div className="flex flex-col items-start gap-2">
+            <ErrorBanner message={error} />
+            <Button variant="secondary" size="sm" onClick={reload}>Réessayer</Button>
+          </div>
+        ) : isLoading && !agents ? (
+          <Spinner label="Chargement des agents…" />
+        ) : lignes.length === 0 ? (
+          <EmptyState icon={Users} title={`Aucune échéance ${quand}`} description="Aucun agent ne correspond aux types affichés." />
+        ) : (
+          groupes.map((g) => (
+            <Groupe key={g.categorie} categorie={g.categorie} lignes={g.items} critere={critere} onSelect={onSelect} />
+          ))
+        )}
+      </div>
     </section>
   )
 }

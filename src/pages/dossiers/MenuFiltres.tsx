@@ -13,14 +13,15 @@ import type { FiltresAgents, OptionFiltre, OptionsFiltres } from '@/types/antici
 interface MenuFiltresProps {
   valeur: FiltresAgents
   onChange: (valeur: FiltresAgents) => void
+  libelle?: string
 }
 
-export function MenuFiltres({ valeur, onChange }: MenuFiltresProps) {
+export function MenuFiltres({ valeur, onChange, libelle = 'Filtrer' }: MenuFiltresProps) {
   // Chargement au montage de l'écran, pour que l'ouverture du menu soit immédiate.
   const options = useFetch(() => anticipationApi.optionsFiltres())
   const n = nbFiltres(valeur)
   return <MenuDeroulant icon={<Filter className="h-3.5 w-3.5" />}
-    libelle={<>Filtrer{n > 0 && <span className="rounded-full bg-accent px-1.5 text-[11px] font-semibold leading-4 text-white">{n}</span>}</>}
+    libelle={<>{libelle}{n > 0 && <span className="rounded-full bg-accent px-1.5 text-[11px] font-semibold leading-4 text-white">{n}</span>}</>}
     largeur="w-[28rem] max-w-[calc(100vw_-_2rem)]">
     {() => <Panneau valeur={valeur} onChange={onChange} options={options.data} isLoading={options.isLoading}
       error={options.error} onReessayer={options.reload} />}
