@@ -20,6 +20,7 @@ import { VueMois } from './VueMois'
 import { VueAnnee } from './VueAnnee'
 import { DetailJour } from './DetailJour'
 import { EffectifsMois } from './EffectifsMois'
+import { BlocsDefilants } from './BlocsDefilants'
 import { PanneauJour } from './PanneauJour'
 import type { AlerteAnticipation, CritereDate, FiltresAgents } from '@/types/anticipation'
 import type { CategorieCalendrier } from '@/types/calendrier'
@@ -221,16 +222,29 @@ export function CalendrierPage() {
                   Agrandir
                 </Button>
               </div>
-              <div className="flex-shrink-0">
-                <VueMois compact annee={annee} mois={mois} parJour={parJour} selection={jourChoisi} onJour={choisirJour} />
-              </div>
-              <div className="flex-shrink-0">
-                <DetailJour
-                  portee={portee} critere={critere}
-                  pastilles={portee.genre === 'JOUR' ? parJour.get(portee.iso) ?? [] : pastillesDe(comptes[mois])}
-                />
-              </div>
-              <EffectifsMois effectifs={effectifs} critere={critere} selection={jourChoisi} onJour={choisirJour} />
+              <BlocsDefilants
+                ariaLabel="Blocs de gauche : calendrier et effectifs du mois"
+                blocs={[
+                  {
+                    cle: 'calendrier', titre: 'Calendrier',
+                    contenu: <>
+                      <div className="flex-shrink-0">
+                        <VueMois compact annee={annee} mois={mois} parJour={parJour} selection={jourChoisi} onJour={choisirJour} />
+                      </div>
+                      <div className="flex-shrink-0">
+                        <DetailJour
+                          portee={portee} critere={critere}
+                          pastilles={portee.genre === 'JOUR' ? parJour.get(portee.iso) ?? [] : pastillesDe(comptes[mois])}
+                        />
+                      </div>
+                    </>,
+                  },
+                  {
+                    cle: 'effectifs', titre: 'Effectifs du mois',
+                    contenu: <EffectifsMois effectifs={effectifs} critere={critere} selection={jourChoisi} onJour={choisirJour} />,
+                  },
+                ]}
+              />
             </div>
             <PanneauJour
               key={`${clePortee(portee)}|${critere}|${cleFiltres(filtres)}`} portee={portee} critere={critere} actifs={actifs}

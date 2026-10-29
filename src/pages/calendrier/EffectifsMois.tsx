@@ -12,11 +12,21 @@ interface EffectifsMoisProps {
 /** Effectifs du mois affiché : une ligne par date, avec le détail par type et le total. */
 export function EffectifsMois({ effectifs, critere, selection, onJour }: EffectifsMoisProps) {
   const total = effectifs.reduce((somme, e) => somme + e.total, 0)
-  const liste = useRef<HTMLUListElement>(null)
+  const listeRef = useRef<HTMLUListElement>(null)
+
+  // Le jour choisi reste visible dans la liste. Pas de scrollIntoView : il défilerait aussi la zone
+  // horizontale et ramènerait sur ce bloc à chaque clic dans le calendrier. Seule la liste bouge ici.
   useEffect(() => {
     if (!selection) return
-    liste.current?.querySelector('[aria-current="date"]')?.scrollIntoView({ block: 'nearest' })
+    const liste = listeRef.current
+    const ligne = liste?.querySelector<HTMLElement>('[aria-current="date"]')
+    if (!liste || !ligne) return
+    const cadre = liste.getBoundingClientRect()
+    const rect = ligne.getBoundingClientRect()
+    if (rect.top < cadre.top) liste.scrollTop += rect.top - cadre.top
+    else if (rect.bottom > cadre.bottom) liste.scrollTop += rect.bottom - cadre.bottom
   }, [selection])
+
   return (
     <section className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-[#E4E6EB] bg-white lg:min-h-[6rem] lg:flex-1">
       <div className="flex flex-shrink-0 items-baseline justify-between gap-2 border-b border-[#EAEBF0] px-3 py-2">
@@ -31,7 +41,7 @@ export function EffectifsMois({ effectifs, critere, selection, onJour }: Effecti
       {effectifs.length === 0 ? (
         <p className="px-3 py-3 text-[12.5px] text-[#6B7180]">Aucune échéance ce mois-ci pour les types affichés.</p>
       ) : (
-        <ul ref={liste} className="max-h-72 min-h-0 flex-1 divide-y divide-[#EAEBF0] overflow-y-auto lg:max-h-none">
+        <ul ref={listeRef} className="max-h-72 min-h-0 flex-1 divide-y divide-[#EAEBF0] overflow-y-auto lg:max-h-none">
           {effectifs.map((e) => {
             const choisi = e.iso === selection
             return (

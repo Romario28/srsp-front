@@ -16,26 +16,25 @@ function titre(portee: Portee): string {
 /** Détail de la période choisie : le mode (préparations ou échéances) et le nombre d'agents par type. */
 export function DetailJour({ portee, critere, pastilles }: DetailJourProps) {
   return (
-    <section className="rounded-xl border border-[#E4E6EB] bg-white px-3 py-2">
-      <div className="flex items-baseline justify-between gap-2">
+    <section className="rounded-xl border border-[#E4E6EB] bg-white">
+      <div className="flex items-baseline justify-between gap-2 border-b border-[#EAEBF0] px-3 py-2">
         <h3 className="font-display text-[13px] font-semibold text-ink">
           <time dateTime={clePortee(portee)}>{titre(portee)}</time>
         </h3>
         <p className="text-[11.5px] text-[#9CA0AC]">{titreMode(critere)}</p>
       </div>
       {pastilles.length === 0 ? (
-        <p className="mt-1 text-[12.5px] text-[#6B7180]">
+        <p className="px-3 py-2.5 text-[12.5px] text-[#6B7180]">
           {portee.genre === 'JOUR' ? 'Aucun type affiché pour cette date.' : 'Aucun type affiché pour ce mois.'}
         </p>
       ) : (
-        <ul className="mt-1.5 flex flex-wrap gap-1">
+        <ul className="flex flex-col gap-1.5 px-3 py-2.5">
           {pastilles.map((p) => (
-            <li
-              key={p.categorie} title={CATEGORIE_INFO[p.categorie].label}
-              className={`inline-flex h-5 items-center gap-1.5 rounded-full px-2 text-[11px] font-medium text-white ${CATEGORIE_INFO[p.categorie].point}`}
-            >
-              {CATEGORIE_INFO[p.categorie].label}
-              <span className="font-bold tabular-nums">{p.nombre}</span>
+            <li key={p.categorie} className="flex items-center justify-between gap-3">
+              <span className={`inline-flex h-5 min-w-0 items-center rounded-full px-2.5 text-[11.5px] font-medium text-white ${CATEGORIE_INFO[p.categorie].point}`}>
+                <span className="truncate">{CATEGORIE_INFO[p.categorie].label}</span>
+              </span>
+              <span className="flex-shrink-0 text-[14px] font-bold tabular-nums text-ink">{p.nombre}</span>
             </li>
           ))}
         </ul>
