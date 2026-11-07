@@ -1,32 +1,46 @@
-import { Users, Network, KeyRound } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useFetch } from '@/hooks/useFetch'
-import { employesApi } from '@/api/employes'
-import { departementsApi } from '@/api/departements'
-import { porteesDelegueesApi } from '@/api/porteesDeleguees'
 import { isAdmin } from '@/utils/roles'
-import { Spinner } from '@/components/ui/Spinner'
-import { StatCard } from '@/components/ui/StatCard'
+import { Badge } from '@/components/ui/Badge'
 import { TableauDeBordAdmin } from './dashboard/TableauDeBordAdmin'
 
 export function DashboardPage() {
   const { user } = useAuth()
-  return isAdmin(user?.roles) ? <TableauDeBordAdmin /> : <TableauDeBordUtilisateur />
+  return isAdmin(user?.roles) ? <TableauDeBordAdmin /> : <MonCompte />
 }
 
-/** Tableau des comptes non-ADMIN : identique à leur écran précédent. */
-function TableauDeBordUtilisateur() {
+/** Écran des comptes non-ADMIN : leur périmètre, seule source de leurs droits. */
+function MonCompte() {
   const { user } = useAuth()
-  const employes = useFetch(() => employesApi.getAll(0, 1))
-  const departements = useFetch(() => departementsApi.getAll())
-  const delegations = useFetch(() => user?.id != null ? porteesDelegueesApi.getPourUtilisateur(user.id) : Promise.resolve([]), [user?.id])
-  if (employes.isLoading || departements.isLoading) return <Spinner label="Chargement du tableau de bord…" />
-  return <div className="flex flex-col gap-7">
-    <div><h1 className="font-display text-[22px] font-semibold text-ink">Bonjour {user?.nomComplet?.split(' ')[0]} 👋</h1><p className="mt-1 text-[13.5px] text-[#6B7180]">Voici ce qui est visible depuis votre position dans l'organigramme.</p></div>
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <StatCard icon={Users} label="Employés visibles" value={employes.data?.totalElements ?? 0} to="/employes" />
-      <StatCard icon={Network} label="Départements" value={departements.data?.length ?? 0} to="/departements" />
-      <StatCard icon={KeyRound} label="Mes délégations" value={delegations.data?.length ?? 0} to="/delegations" sub="voir le détail" />
+  if (!user) return null
+  const p = user.perimetre
+  const axes: [string, string[]][] = [['Ministères', p.ministeres], ['SOA', p.soas], ['Localités (FIV)', p.fivs]]
+  const aucun = axes.every(([, codes]) => codes.length === 0)
+  return (
+    <div className="flex flex-col gap-5">
+      <div>
+        <h1 className="font-display text-[22px] font-semibold text-ink">Bonjour {user.nomComplet.split(' ')[0]}</h1>
+        {user.matriculeAgent && <p className="mt-1 text-[13px] text-[#6B7180]">Matricule {user.matriculeAgent}</p>}
+      </div>
+      <section className="flex max-w-xl flex-col gap-3 rounded-xl border border-[#E4E6EB] bg-white p-5">
+        <h2 className="font-display text-[15px] font-semibold text-ink">Votre périmètre</h2>
+        {aucun ? (
+          <p className="rounded-lg border border-warning/30 bg-warning-light px-3 py-2 text-[13px] text-warning">
+            Aucune valeur : votre compte ne donne accès à aucun agent pour l'instant. Contactez un administrateur.
+          </p>
+        ) : (
+          <dl className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[13px]">
+            {axes.map(([label, codes]) => (
+              <div key={label} className="contents">
+                <dt className="text-[#6B7180]">{label}</dt>
+                <dd>{codes.length === 0 ? <span className="text-[#9CA0AC]">Toutes</span>
+                  : <span className="flex flex-wrap gap-1">{codes.map((c) => <Badge key={c}><span className="font-mono">{c}</span></Badge>)}</span>}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {/* [TEMPORAIRE] à retirer quand les écrans d'anticipation s'ouvriront aux gestionnaires */}
+        <p className="text-[12px] text-[#9CA0AC]">Les écrans d'anticipation ne sont pas encore ouverts à votre compte.</p>
+      </section>
     </div>
-  </div>
+  )
 }

@@ -8,13 +8,10 @@ import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { extractErrorMessage } from '@/api/client'
 import { APP_NAME, APP_NAME_LONG } from '@/config/app'
 
-// Comptes seedés par DataInitializer — un par scénario de visibilité du cahier des charges.
 const DEMO_ACCOUNTS = [
-  { email: 'admin@entreprise.mg', password: 'Admin123!', label: 'ADMIN — tout voir' },
-  { email: 'sophie.martin@entreprise.mg', password: 'Chef123!', label: 'Chef (Direction Finances)' },
-  { email: 'fidy.rakoto@entreprise.mg', password: 'Employe123!', label: 'Employé — lui-même' },
-  { email: 'voahangy.rasoamanana@entreprise.mg', password: 'Delegue123!', label: '« RH central » (délégation racine)' },
-  { email: 'hanta.rabe@entreprise.mg', password: 'Delegue123!', label: '« RH local » (délégation DFI)' },
+  { email: 'admin@entreprise.mg', password: 'Admin123!', label: 'ADMIN : tout voir' },
+  { email: 'jean.rakoto@entreprise.mg', password: 'Gest123!', label: 'Gestionnaire lié à un agent' },
+  { email: 'hanta.rabe@entreprise.mg', password: 'Gest123!', label: 'Gestionnaire sans lien' },
 ]
 
 const SHOW_DEMO_ACCOUNTS = import.meta.env.VITE_SHOW_DEMO_ACCOUNTS === 'true'
@@ -69,11 +66,10 @@ export function LoginPage() {
 
         <div className="max-w-sm">
           <h1 className="font-display text-[28px] font-semibold leading-[1.25]">
-            Un organigramme réel, une visibilité qui suit la hiérarchie.
+            Anticipation des carrières et gestion des accès.
           </h1>
           <p className="mt-3 text-[14px] leading-relaxed text-white/60">
-            Chaque chef voit son sous-arbre. Les délégations couvrent l'intérim, l'audit,
-            et l'autorité RH — centrale ou locale — sans rôle dédié à retenir.
+            Un périmètre précis par ministère, SOA et localité pour chaque gestionnaire, et un accès complet pour les administrateurs.
           </p>
         </div>
 
@@ -124,7 +120,7 @@ export function LoginPage() {
           {SHOW_DEMO_ACCOUNTS && <div className="mt-8 rounded-xl border border-[#E4E6EB] bg-white p-4">
             <p className="text-[12px] font-medium text-ink">Comptes de démonstration</p>
             <p className="mt-0.5 text-[11.5px] text-[#6B7180]">
-              Un par scénario de visibilité — cliquez pour pré-remplir.
+              Cliquez pour pré-remplir.
             </p>
             <div className="mt-3 flex flex-col gap-1.5">
               {DEMO_ACCOUNTS.map((acc) => (

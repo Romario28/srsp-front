@@ -3,9 +3,6 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
-import { EmployesListPage } from '@/pages/employes/EmployesListPage'
-import { DepartementsPage } from '@/pages/departements/DepartementsPage'
-import { DelegationsPage } from '@/pages/delegations/DelegationsPage'
 import { UtilisateursListPage } from '@/pages/utilisateurs/UtilisateursListPage'
 import { AuditListPage } from '@/pages/audit/AuditListPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
@@ -34,15 +31,6 @@ function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-
-        {/* GET /api/employes : ouvert à tout utilisateur authentifié, déjà filtré par portée côté backend */}
-        <Route path="employes" element={<EmployesListPage />} />
-
-        {/* GET /api/departements : ouvert à tout utilisateur authentifié (lecture de l'organigramme) */}
-        <Route path="departements" element={<DepartementsPage />} />
-
-        {/* /api/portees-deleguees/** : ouvert (accorder dépend de la portée d'écriture, vérifié côté service) */}
-        <Route path="delegations" element={<DelegationsPage />} />
 
         {/* /api/utilisateurs/** et /api/audit/** : ADMIN uniquement côté backend */}
         <Route

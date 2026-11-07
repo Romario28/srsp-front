@@ -1,5 +1,6 @@
 import type { EtatDossier } from '@/types/anticipation'
 import type { DossierDTO, VueDossier } from '@/types/dossier'
+import type { MeResponse } from '@/types/auth'
 
 /** Rouge = retard uniquement ; le reste est neutre, bleu ou violet. */
 export const ETAT_DOSSIER: Record<EtatDossier, { label: string; tone: 'neutral' | 'danger' | 'accent' | 'violet' }> = {
@@ -44,3 +45,7 @@ export function lienDossiers(d: Pick<DossierDTO, 'matricule' | 'statut' | 'enRet
   const params = new URLSearchParams({ matricule: d.matricule, vue: VUE_DE_ETAT[etatDe(d)] })
   return `/anticipation/dossiers?${params.toString()}`
 }
+
+/** Dossier de l'utilisateur connecté, sans dispense de rôle : démarrer, classer et rouvrir lui sont interdits (le serveur tranche). */
+export const estMonDossier = (user: MeResponse | null, matricule: string) =>
+  !!user && user.matriculeAgent !== '' && user.matriculeAgent === matricule && !user.peutTraiterSonDossier

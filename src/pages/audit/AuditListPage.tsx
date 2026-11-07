@@ -11,14 +11,15 @@ import { Badge } from '@/components/ui/Badge'
 const ACTION_TONES: Record<string, 'success' | 'warning' | 'danger' | 'accent' | 'neutral'> = {
   CREATE_EMPLOYE: 'success',
   CREATE_USER: 'success',
+  UPDATE_USER: 'accent',
   UPDATE_EMPLOYE: 'accent',
   CHANGE_STATUT: 'warning',
   DELETE_EMPLOYE: 'danger',
   LOGIN: 'neutral',
   LOGOUT: 'neutral',
-  UPDATE_CONFIG_DELAI: 'accent',    // AJOUTÉ
-  RESET_CONFIG_DELAI: 'warning',    // AJOUTÉ
-  IMPORT_EXCEL: 'accent',           // AJOUTÉ
+  UPDATE_CONFIG_DELAI: 'accent',
+  RESET_CONFIG_DELAI: 'warning',
+  IMPORT_EXCEL: 'accent',
   EXPORT_EXCEL: 'accent',
   DOSSIER_ETAPE: 'accent',
   DOSSIER_DEMARRE: 'accent',
@@ -39,7 +40,7 @@ export function AuditListPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return sorted
-    return sorted.filter((e) => [e.email, e.action, e.details, e.adresseIp].some((v) => v?.toLowerCase().includes(q)))
+    return sorted.filter((e) => [e.acteur, e.email, e.action, e.details, e.adresseIp].some((v) => v?.toLowerCase().includes(q)))
   }, [sorted, search])
 
   return (
@@ -57,7 +58,7 @@ export function AuditListPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Filtrer par email, action, IP…"
+          placeholder="Filtrer par nom, matricule, e-mail, action, IP…"
           className="h-10 w-full rounded-lg border border-[#DADCE3] bg-white pl-9 pr-3 text-sm text-ink placeholder:text-[#9CA0AC] focus:border-accent"
         />
       </div>
@@ -88,7 +89,7 @@ export function AuditListPage() {
               {filtered.map((entry) => (
                 <tr key={entry.id} className="hover:bg-[#FAFAFB]">
                   <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDateTime(entry.dateAction)}</td>
-                  <td className="table-cell font-medium text-ink">{entry.email ?? 'Système'}</td>
+                  <td className="table-cell font-medium text-ink"><span title={entry.email ?? undefined}>{entry.acteur}</span></td>
                   <td className="table-cell">
                     <Badge tone={ACTION_TONES[entry.action] ?? 'neutral'}>{entry.action}</Badge>
                   </td>
@@ -100,12 +101,6 @@ export function AuditListPage() {
           </table>
         </div>
       )}
-
-      <div className="rounded-lg border border-warning/30 bg-warning-light px-4 py-3 text-[12.5px] text-warning">
-        Les créations/déplacements de département et les octrois/révocations de délégation
-        ne sont pas encore journalisés côté backend — seuls les employés, comptes et
-        connexions apparaissent ici pour l'instant.
-      </div>
     </div>
   )
 }

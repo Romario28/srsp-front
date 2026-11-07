@@ -4,11 +4,12 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
+import { useAuth } from '@/hooks/useAuth'
 import { FicheAgentContenu, useFicheAgent } from '@/pages/anticipation/FicheAgent'
 import { dossiersApi } from '@/api/dossiers'
 import { extractErrorMessage } from '@/api/client'
 import { TYPE_LABELS, statutAgentLabel } from '@/utils/anticipation'
-import { ETAT_DOSSIER, etatDe } from '@/utils/dossiers'
+import { ETAT_DOSSIER, estMonDossier, etatDe } from '@/utils/dossiers'
 import { InfosClesDossier, dejaAffichesDossier } from './InfosClesDossier'
 import type { DossierDTO } from '@/types/dossier'
 
@@ -47,6 +48,8 @@ export function FormulaireDossier({ dossier, confirmerDemarrage = false, onClose
   const affiche = ETAT_DOSSIER[etatDe(dossier)]
   const sansSuite = dossier.statut === 'SANS_SUITE'
   const demarrable = dossier.statut === 'EN_ATTENTE_DE_TRAITEMENT'
+  const { user } = useAuth()
+  const propre = estMonDossier(user, dossier.matricule)
 
   const executer = async (action: () => Promise<DossierDTO>, repli: string) => {
     setOccupe(true)
@@ -78,11 +81,15 @@ export function FormulaireDossier({ dossier, confirmerDemarrage = false, onClose
         <section className={`flex flex-col gap-2.5 rounded-lg border p-3 ${demarrable && dossier.enRetard ? 'border-danger/30 bg-danger-light' : 'border-[#E4E6EB] bg-[#FAFAFB]'}`}>
           <h4 className="font-display text-[13px] font-semibold text-ink">Suivi du dossier</h4>
 
+          {propre && <p role="note" className="rounded-lg border border-warning/30 bg-warning-light px-3 py-2 text-[12.5px] text-warning">
+            Ce dossier est le vôtre (matricule {dossier.matricule}) : conflit d'intérêts, vous ne pouvez ni le démarrer, ni le classer sans suite, ni le rouvrir.
+          </p>}
+
           {sansSuite && (
             <>
               <p className="text-[13px] text-ink"><span className="font-semibold">Classé sans suite.</span> Motif : {dossier.motifSansSuite}</p>
               <div>
-                <Button variant="secondary" size="sm" isLoading={occupe}
+                <Button variant="secondary" size="sm" isLoading={occupe} disabled={propre}
                   onClick={() => void executer(() => dossiersApi.reouvrir(dossier.id), 'Impossible de rouvrir le dossier')}>
                   Rouvrir le dossier
                 </Button>
@@ -90,7 +97,7 @@ export function FormulaireDossier({ dossier, confirmerDemarrage = false, onClose
             </>
           )}
 
-          {demarrable && (!confirmation ? (
+          {demarrable && !propre && (!confirmation ? (
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-[12.5px] text-[#6B7180]">Le dossier passera « En cours ».</p>
               <Button size="sm" icon={<Play className="h-3.5 w-3.5" />} onClick={() => setConfirmation(true)} disabled={occupe}>Démarrer le dossier</Button>
@@ -110,10 +117,10 @@ export function FormulaireDossier({ dossier, confirmerDemarrage = false, onClose
             </>
           ))}
 
-          {!sansSuite && (
+          {!sansSuite && !propre && (
             <div className={`flex flex-col gap-1.5 ${demarrable ? 'border-t border-black/5 pt-2.5' : ''}`}>
               <p className="text-[12.5px] font-medium text-ink">
-                Classer sans suite <span className="font-normal text-[#6B7180]">· motif obligatoire (ex. agent démissionnaire)</span>
+                Classer sans suite <span className="font-normal text-[#6B7180]">— motif obligatoire (ex. agent démissionnaire)</span>
               </p>
               <div className="flex items-end gap-2">
                 <textarea value={motif} onChange={(e) => setMotif(e.target.value)} maxLength={500} rows={2} aria-label="Motif du classement sans suite"

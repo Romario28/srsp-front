@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, Network, KeyRound, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin } from '@/utils/roles'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
@@ -15,16 +15,12 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Tableau de bord', icon: LayoutDashboard },
-  { to: '/employes', label: 'Employés', icon: Users },
-  { to: '/departements', label: 'Organigramme', icon: Network },
-  { to: '/delegations', label: 'Délégations', icon: KeyRound },
   { to: '/utilisateurs', label: 'Comptes utilisateurs', icon: UserCog, adminOnly: true },
   { to: '/audit', label: "Journal d'audit", icon: ScrollText, adminOnly: true },
 ]
 
 const NAV_GROUPS = [
   { titre: undefined, items: NAV_ITEMS.filter((item) => item.to === '/') },
-  { titre: 'Organisation', items: NAV_ITEMS.filter((item) => ['/employes', '/departements', '/delegations'].includes(item.to)) },
   { titre: 'Anticipation RH', items: [
     { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, adminOnly: true, badge: true },
     { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, adminOnly: true },

@@ -26,7 +26,7 @@ export function Topbar() {
         <div className="text-right">
           <p className="text-[13.5px] font-medium text-ink">{user.nomComplet}</p>
           <p className="text-[12px] text-[#6B7180]">
-            {isAdmin(user.roles) ? 'Administrateur' : user.nomDepartement || 'Aucun département'}
+            {isAdmin(user.roles) ? 'Administrateur' : user.matriculeAgent ? `Gestionnaire · matricule ${user.matriculeAgent}` : 'Gestionnaire'}
           </p>
         </div>
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-light text-[13px] font-semibold text-accent-dark">
