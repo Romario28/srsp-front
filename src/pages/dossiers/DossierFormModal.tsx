@@ -9,23 +9,25 @@ import { FicheAgentContenu, useFicheAgent } from '@/pages/anticipation/FicheAgen
 import { dossiersApi } from '@/api/dossiers'
 import { extractErrorMessage } from '@/api/client'
 import { TYPE_LABELS, statutAgentLabel } from '@/utils/anticipation'
-import { ETAT_DOSSIER, estMonDossier, etatDe } from '@/utils/dossiers'
+import { ETAT_DOSSIER, restrictionDossier, etatDe } from '@/utils/dossiers'
 import { InfosClesDossier, dejaAffichesDossier } from './InfosClesDossier'
+import type { AgentFiche } from '@/types/anticipation'
 import type { DossierDTO } from '@/types/dossier'
 
 interface DossierFormModalProps {
   dossier: DossierDTO | null
   /** Ouvre directement sur « Confirmer le démarrage ? » (bouton Démarrer du tableau). */
   confirmerDemarrage?: boolean
+  fichePrechargee?: AgentFiche | null
   onClose: () => void
   onChange: (maj: DossierDTO) => void
 }
 
-export function DossierFormModal({ dossier, confirmerDemarrage = false, onClose, onChange }: DossierFormModalProps) {
+export function DossierFormModal({ dossier, confirmerDemarrage = false, fichePrechargee = null, onClose, onChange }: DossierFormModalProps) {
   return (
     <Modal isOpen={dossier != null} onClose={onClose} maxWidth="max-w-4xl" dense title="Suivi du dossier">
       {dossier && <FormulaireDossier key={`${dossier.id}-${confirmerDemarrage ? 'c' : 'd'}`} dossier={dossier}
-        confirmerDemarrage={confirmerDemarrage} onClose={onClose} onChange={onChange} />}
+        confirmerDemarrage={confirmerDemarrage} fichePrechargee={fichePrechargee} onClose={onClose} onChange={onChange} />}
     </Modal>
   )
 }
@@ -33,13 +35,14 @@ export function DossierFormModal({ dossier, confirmerDemarrage = false, onClose,
 interface FormulaireDossierProps {
   dossier: DossierDTO
   confirmerDemarrage?: boolean
+  fichePrechargee?: AgentFiche | null
   onClose: () => void
   onChange: (maj: DossierDTO) => void
   onOuvrirDansDossiers?: () => void
 }
 
-export function FormulaireDossier({ dossier, confirmerDemarrage = false, onClose, onChange, onOuvrirDansDossiers }: FormulaireDossierProps) {
-  const fiche = useFicheAgent(dossier.matricule)   // une seule requête, partagée par les informations clés et la fiche
+export function FormulaireDossier({ dossier, confirmerDemarrage = false, fichePrechargee = null, onClose, onChange, onOuvrirDansDossiers }: FormulaireDossierProps) {
+  const fiche = useFicheAgent(dossier.matricule, fichePrechargee)
   const [motif, setMotif] = useState('')
   const [confirmation, setConfirmation] = useState(confirmerDemarrage)
   const [occupe, setOccupe] = useState(false)
@@ -49,7 +52,8 @@ export function FormulaireDossier({ dossier, confirmerDemarrage = false, onClose
   const sansSuite = dossier.statut === 'SANS_SUITE'
   const demarrable = dossier.statut === 'EN_ATTENTE_DE_TRAITEMENT'
   const { user } = useAuth()
-  const propre = estMonDossier(user, dossier.matricule)
+  const restriction = restrictionDossier(user, dossier.matricule)
+  const propre = restriction !== null
 
   const executer = async (action: () => Promise<DossierDTO>, repli: string) => {
     setOccupe(true)
@@ -81,19 +85,17 @@ export function FormulaireDossier({ dossier, confirmerDemarrage = false, onClose
         <section className={`flex flex-col gap-2.5 rounded-lg border p-3 ${demarrable && dossier.enRetard ? 'border-danger/30 bg-danger-light' : 'border-[#E4E6EB] bg-[#FAFAFB]'}`}>
           <h4 className="font-display text-[13px] font-semibold text-ink">Suivi du dossier</h4>
 
-          {propre && <p role="note" className="rounded-lg border border-warning/30 bg-warning-light px-3 py-2 text-[12.5px] text-warning">
-            Ce dossier est le vôtre (matricule {dossier.matricule}) : conflit d'intérêts, vous ne pouvez ni le démarrer, ni le classer sans suite, ni le rouvrir.
-          </p>}
+          {restriction && <p role="note" className="rounded-lg border border-warning/30 bg-warning-light px-3 py-2 text-[12.5px] text-warning">{restriction}</p>}
 
           {sansSuite && (
             <>
               <p className="text-[13px] text-ink"><span className="font-semibold">Classé sans suite.</span> Motif : {dossier.motifSansSuite}</p>
-              <div>
-                <Button variant="secondary" size="sm" isLoading={occupe} disabled={propre}
+              {!propre && <div>
+                <Button variant="secondary" size="sm" isLoading={occupe}
                   onClick={() => void executer(() => dossiersApi.reouvrir(dossier.id), 'Impossible de rouvrir le dossier')}>
                   Rouvrir le dossier
                 </Button>
-              </div>
+              </div>}
             </>
           )}
 

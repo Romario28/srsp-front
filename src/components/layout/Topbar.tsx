@@ -1,7 +1,7 @@
 import { LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { isAdmin } from '@/utils/roles'
+import { roleLabel } from '@/utils/roles'
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/)
@@ -26,7 +26,7 @@ export function Topbar() {
         <div className="text-right">
           <p className="text-[13.5px] font-medium text-ink">{user.nomComplet}</p>
           <p className="text-[12px] text-[#6B7180]">
-            {isAdmin(user.roles) ? 'Administrateur' : user.matriculeAgent ? `Gestionnaire · matricule ${user.matriculeAgent}` : 'Gestionnaire'}
+            {[roleLabel(user.roles[0] ?? ''), user.matriculeAgent && `matricule ${user.matriculeAgent}`].filter(Boolean).join(' · ')}
           </p>
         </div>
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-light text-[13px] font-semibold text-accent-dark">

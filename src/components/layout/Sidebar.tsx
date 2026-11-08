@@ -1,51 +1,50 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList, User } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { isAdmin } from '@/utils/roles'
+import { isAdmin, isAgent, peutVoirAnticipation, peutVoirUtilisateurs } from '@/utils/roles'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
 import { APP_NAME, APP_NAME_LONG, APP_VERSION } from '@/config/app'
 
+type Visible = (roles: string[] | undefined) => boolean
 interface NavItem {
   to: string
   label: string
   icon: typeof LayoutDashboard
-  adminOnly?: boolean
+  visible: Visible
   badge?: boolean
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Tableau de bord', icon: LayoutDashboard },
-  { to: '/utilisateurs', label: 'Comptes utilisateurs', icon: UserCog, adminOnly: true },
-  { to: '/audit', label: "Journal d'audit", icon: ScrollText, adminOnly: true },
-]
-
-const NAV_GROUPS = [
-  { titre: undefined, items: NAV_ITEMS.filter((item) => item.to === '/') },
+const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
+  { items: [
+    { to: '/', label: 'Tableau de bord', icon: LayoutDashboard, visible: peutVoirAnticipation },
+    { to: '/mon-espace', label: 'Mon Espace', icon: User, visible: isAgent },
+  ] },
   { titre: 'Anticipation RH', items: [
-    { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, adminOnly: true, badge: true },
-    { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, adminOnly: true },
-    { to: '/anticipation/calendrier', label: 'Calendrier', icon: CalendarDays, adminOnly: true },
-    { to: '/anticipation/retraite', label: 'Départs à la retraite', icon: Hourglass, adminOnly: true },
-    { to: '/anticipation/avancement', label: 'Avancements', icon: TrendingUp, adminOnly: true },
-    { to: '/anticipation/avancement-classe', label: 'Avancements de classe', icon: GraduationCap, adminOnly: true },
-    { to: '/anticipation/titularisation', label: 'Titularisations', icon: BadgeCheck, adminOnly: true },
-    { to: '/anticipation/fin-contrat', label: 'Fins de contrat', icon: CalendarClock, adminOnly: true },
-    { to: '/anticipation/integration', label: 'Intégrations', icon: UserPlus, adminOnly: true },
-    { to: '/anticipation/anomalies', label: 'Anomalies', icon: AlertTriangle, adminOnly: true },
-    { to: '/anticipation/configuration', label: 'Configuration', icon: SlidersHorizontal, adminOnly: true },
+    { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, visible: peutVoirAnticipation, badge: true },
+    { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, visible: peutVoirAnticipation },
+    { to: '/anticipation/calendrier', label: 'Calendrier', icon: CalendarDays, visible: peutVoirAnticipation },
+    { to: '/anticipation/retraite', label: 'Départs à la retraite', icon: Hourglass, visible: peutVoirAnticipation },
+    { to: '/anticipation/avancement', label: 'Avancements', icon: TrendingUp, visible: peutVoirAnticipation },
+    { to: '/anticipation/avancement-classe', label: 'Avancements de classe', icon: GraduationCap, visible: peutVoirAnticipation },
+    { to: '/anticipation/titularisation', label: 'Titularisations', icon: BadgeCheck, visible: peutVoirAnticipation },
+    { to: '/anticipation/fin-contrat', label: 'Fins de contrat', icon: CalendarClock, visible: peutVoirAnticipation },
+    { to: '/anticipation/integration', label: 'Intégrations', icon: UserPlus, visible: peutVoirAnticipation },
+    { to: '/anticipation/anomalies', label: 'Anomalies', icon: AlertTriangle, visible: peutVoirAnticipation },
+    { to: '/anticipation/configuration', label: 'Configuration', icon: SlidersHorizontal, visible: isAdmin },
   ] },
   { titre: 'Administration', items: [
-    ...NAV_ITEMS.filter((item) => item.to === '/utilisateurs'),
-    { to: '/imports', label: 'Imports', icon: Upload, adminOnly: true },
-    ...NAV_ITEMS.filter((item) => item.to === '/audit'),
+    { to: '/utilisateurs', label: 'Gestion des utilisateurs', icon: UserCog, visible: peutVoirUtilisateurs },
+    { to: '/imports', label: 'Imports', icon: Upload, visible: isAdmin },
+    { to: '/audit', label: "Journal d'audit", icon: ScrollText, visible: isAdmin },
   ] },
 ]
 
 export function Sidebar() {
   const { user } = useAuth()
-  const admin = isAdmin(user?.roles)
   const { count } = useAlertesNouvelles()
-  const groupes = NAV_GROUPS.map((groupe) => ({ ...groupe, items: groupe.items.filter((item) => !item.adminOnly || admin) })).filter((groupe) => groupe.items.length > 0)
+  const groupes = NAV_GROUPS
+    .map((groupe) => ({ ...groupe, items: groupe.items.filter((item) => item.visible(user?.roles)) }))
+    .filter((groupe) => groupe.items.length > 0)
 
   return (
     <aside className="flex h-screen w-64 flex-shrink-0 flex-col bg-ink text-white">

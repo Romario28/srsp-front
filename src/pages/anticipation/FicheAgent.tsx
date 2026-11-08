@@ -67,14 +67,15 @@ export interface EtatFiche {
   reload: () => void
 }
 
-export function useFicheAgent(matricule: string): EtatFiche {
+export function useFicheAgent(matricule: string, prechargee?: AgentFiche | null): EtatFiche {
   const { data, isLoading, error, reload } = useFetch<AgentFiche | null>(
-    () => anticipationApi.fiche(matricule).catch((err) => {
+    () => prechargee ? Promise.resolve(prechargee) : anticipationApi.fiche(matricule).catch((err) => {
       if (extractErrorCode(err) === 'AGENT_INTROUVABLE') return null
       throw err
     }),
-    [matricule],
+    [matricule, prechargee?.matricule],
   )
+  if (prechargee) return { fiche: prechargee, isLoading: false, error: null, reload }
   return { fiche: data, isLoading, error, reload }
 }
 

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/hooks/useAuth'
 import { formatDate, joursRestantsDepuis } from '@/utils/date'
 import { TYPE_LABELS, libelleEcheance } from '@/utils/anticipation'
-import { ETAT_DOSSIER, estMonDossier, etatDe } from '@/utils/dossiers'
+import { ETAT_DOSSIER, restrictionDossier, etatDe } from '@/utils/dossiers'
 import type { DossierDTO } from '@/types/dossier'
 
 interface LigneDossierProps {
@@ -40,7 +40,7 @@ function Precision({ d }: { d: DossierDTO }) {
 
 export function LigneDossier({ d, afficherNombre, separateur = false, onDemarrer, onOuvrir }: LigneDossierProps) {
   const { user } = useAuth()
-  const propre = estMonDossier(user, d.matricule)
+  const restriction = restrictionDossier(user, d.matricule)
   const affiche = ETAT_DOSSIER[etatDe(d)]
   const demarrable = d.statut === 'EN_ATTENTE_DE_TRAITEMENT'
   return (
@@ -69,8 +69,8 @@ export function LigneDossier({ d, afficherNombre, separateur = false, onDemarrer
         <div className="flex items-center justify-end gap-1.5">
           {demarrable && (
             <Button size="sm" icon={<Play className="h-3.5 w-3.5" />} onClick={onDemarrer}
-              disabled={propre}
-              title={propre ? 'Conflit d’intérêts : vous ne pouvez pas démarrer votre propre dossier' : undefined}
+              disabled={restriction !== null}
+              title={restriction ?? undefined}
               aria-label={`Démarrer le dossier de ${d.nomComplet}`}>Démarrer</Button>
           )}
           <Button size="sm" variant="ghost" onClick={onOuvrir}>Détails</Button>

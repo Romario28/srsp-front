@@ -46,6 +46,19 @@ export function lienDossiers(d: Pick<DossierDTO, 'matricule' | 'statut' | 'enRet
   return `/anticipation/dossiers?${params.toString()}`
 }
 
-/** Dossier de l'utilisateur connecté, sans dispense de rôle : démarrer, classer et rouvrir lui sont interdits (le serveur tranche). */
-export const estMonDossier = (user: MeResponse | null, matricule: string) =>
-  !!user && user.matriculeAgent !== '' && user.matriculeAgent === matricule && !user.peutTraiterSonDossier
+/**
+ * Raison pour laquelle l'utilisateur ne peut pas démarrer, classer sans suite ni rouvrir ce dossier ; null s'il le peut.
+ * L'écran reflète la règle, le serveur la fait respecter.
+ */
+export function restrictionDossier(user: MeResponse | null, matricule: string): string | null {
+  if (!user) return 'Session expirée.'
+  const mien = user.matriculeAgent !== '' && user.matriculeAgent === matricule
+  if (user.roles.includes('ROLE_AGENT')) {
+    if (!mien) return 'Un agent ne traite que son propre dossier.'
+    return user.agirSurSonDossier ? null
+      : 'Votre compte est en lecture seule : vous pouvez consulter votre dossier, pas le modifier. Un administrateur peut vous accorder ce droit.'
+  }
+  return mien && !user.peutTraiterSonDossier
+    ? `Ce dossier est le vôtre (matricule ${matricule}) : conflit d'intérêts, vous ne pouvez ni le démarrer, ni le classer sans suite, ni le rouvrir.`
+    : null
+}

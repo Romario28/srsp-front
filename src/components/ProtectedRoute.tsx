@@ -1,16 +1,15 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { isAdmin } from '@/utils/roles'
 import { Spinner } from '@/components/ui/Spinner'
 
 interface ProtectedRouteProps {
   children: ReactNode
-  /** Seule distinction de rôle qui existe encore côté backend : ADMIN ou non. */
-  adminOnly?: boolean
+  /** Profils admis. Absent : tout compte authentifié. */
+  autorise?: (roles: string[] | undefined) => boolean
 }
 
-export function ProtectedRoute({ children, adminOnly }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, autorise }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useAuth()
   const location = useLocation()
 
@@ -26,7 +25,7 @@ export function ProtectedRoute({ children, adminOnly }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (adminOnly && !isAdmin(user?.roles)) {
+  if (autorise && !autorise(user?.roles)) {
     return <Navigate to="/interdit" replace />
   }
 

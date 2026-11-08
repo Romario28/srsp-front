@@ -7,17 +7,19 @@ import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { extractErrorMessage } from '@/api/client'
 import { APP_NAME, APP_NAME_LONG } from '@/config/app'
+import { isAgent } from '@/utils/roles'
 
 const DEMO_ACCOUNTS = [
-  { email: 'admin@entreprise.mg', password: 'Admin123!', label: 'ADMIN : tout voir' },
-  { email: 'jean.rakoto@entreprise.mg', password: 'Gest123!', label: 'Gestionnaire lié à un agent' },
-  { email: 'hanta.rabe@entreprise.mg', password: 'Gest123!', label: 'Gestionnaire sans lien' },
+  { email: 'admin@entreprise.mg', password: 'Admin123!', label: 'Administrateur' },
+  { email: 'sophie.martin@entreprise.mg', password: 'Chef123!', label: 'Chef · ministère 05' },
+  { email: 'hanta.rabe@entreprise.mg', password: 'Rh123!', label: 'RH · 05 + L01' },
+  { email: 'jean.rakoto@entreprise.mg', password: 'Agent123!', label: 'Agent · lecture seule' },
 ]
 
 const SHOW_DEMO_ACCOUNTS = import.meta.env.VITE_SHOW_DEMO_ACCOUNTS === 'true'
 
 export function LoginPage() {
-  const { login, isAuthenticated, isLoading } = useAuth()
+  const { login, isAuthenticated, isLoading, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -28,7 +30,7 @@ export function LoginPage() {
 
   if (!isLoading && isAuthenticated) {
     const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
-    return <Navigate to={from} replace />
+    return <Navigate to={isAgent(user?.roles) ? '/mon-espace' : from} replace />
   }
 
   const handleSubmit = async (e: FormEvent) => {

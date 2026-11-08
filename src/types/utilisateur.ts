@@ -27,6 +27,7 @@ export interface UtilisateurDTO {
   matriculeAgent: string | null
   roles: string[]
   perimetre: PerimetreDTO
+  agirSurSonDossier: boolean
 }
 
 /** Miroir de UtilisateurDetailDTO.java (fiche). */
@@ -42,6 +43,7 @@ export interface UtilisateurDetailDTO {
   roles: string[]
   perimetre: PerimetreDTO
   agentLie: AgentLieDTO | null
+  agirSurSonDossier: boolean
 }
 
 export interface UpdateUtilisateurRequest {
@@ -50,6 +52,7 @@ export interface UpdateUtilisateurRequest {
   matriculeAgent: string   // vide = pas de lien
   roles: string[]
   perimetre: PerimetreDTO
+  agirSurSonDossier: boolean
 }
 export interface CreateUtilisateurRequest extends UpdateUtilisateurRequest { email: string; password: string }
 

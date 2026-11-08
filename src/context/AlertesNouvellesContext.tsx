@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { alertesApi } from '@/api/alertes'
 import { useAuth } from '@/hooks/useAuth'
-import { isAdmin } from '@/utils/roles'
+import { peutVoirAnticipation } from '@/utils/roles'
 
 interface AlertesNouvellesValue { count: number | null; refresh: () => void }
 // eslint-disable-next-line react-refresh/only-export-components
@@ -9,25 +9,25 @@ export const AlertesNouvellesContext = createContext<AlertesNouvellesValue | und
 
 export function AlertesNouvellesProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const admin = isAdmin(user?.roles)
+  const actif = peutVoirAnticipation(user?.roles)
   const [count, setCount] = useState<number | null>(null)
   const dernierAppel = useRef(0)
   const refresh = useCallback(() => {
-    if (!admin) return
+    if (!actif) return
     const appel = ++dernierAppel.current
     alertesApi.compter({ statut: 'NOUVELLE' })
       .then((n) => { if (appel === dernierAppel.current) setCount(n) })
       .catch(() => { /* Pastille indicative : conserver la dernière valeur connue. */ })
-  }, [admin])
+  }, [actif])
 
   useEffect(() => {
-    if (!admin) { setCount(null); return }
+    if (!actif) { setCount(null); return }
     refresh()
     const surRetourOnglet = () => { if (document.visibilityState === 'visible') refresh() }
     document.addEventListener('visibilitychange', surRetourOnglet)
     return () => document.removeEventListener('visibilitychange', surRetourOnglet)
-  }, [admin, refresh])
+  }, [actif, refresh])
 
-  const value = useMemo(() => ({ count: admin ? count : null, refresh }), [admin, count, refresh])
+  const value = useMemo(() => ({ count: actif ? count : null, refresh }), [actif, count, refresh])
   return <AlertesNouvellesContext.Provider value={value}>{children}</AlertesNouvellesContext.Provider>
 }

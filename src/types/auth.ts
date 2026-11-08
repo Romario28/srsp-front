@@ -24,9 +24,9 @@ export interface MeResponse {
   matriculeAgent: string            // [NOUVEAU] chaîne vide si le compte n'est lié à aucun agent
   roles: string[]
   dateDerniereConnexion: string
-  peutTraiterSonDossier: boolean    // [NOUVEAU] vrai si son rôle est dispensé de la règle du dossier propre
-  perimetre: PerimetreMe            // [NOUVEAU]
+  peutTraiterSonDossier: boolean    // vrai si son rôle est dispensé de la règle du dossier propre
+  agirSurSonDossier: boolean        // profil Agent : droit accordé par un administrateur
+  perimetre: PerimetreMe
 }
 
-// [MODIFIÉ]
-export type Role = 'ROLE_ADMIN' | 'ROLE_GESTIONNAIRE'
+export type Role = 'ROLE_ADMIN' | 'ROLE_CHEF' | 'ROLE_RH' | 'ROLE_AGENT'
