@@ -15,7 +15,7 @@ export function BarrePortee({ valeur, onChange }: BarrePorteeProps) {
     <span className="flex items-center gap-1.5 self-end pb-2 text-[13px] font-semibold text-ink"><MapPin className="h-4 w-4 text-accent" aria-hidden="true" />Périmètre</span>
     {CHAMPS_PORTEE.map(({ cle, label }) => {
       const choisie = valeur[cle]
-      const connues = optionsDe(cle, options)
+      const connues = optionsDe(cle, options, valeur)
       const liste: OptionFiltre[] = choisie && !connues.some((o) => o.code === choisie) ? [{ code: choisie, libelle: null }, ...connues] : connues
       return <label key={cle} className="flex min-w-0 flex-col gap-1"><span className="text-[12px] font-medium text-[#6B7180]">{label}</span>
         <select value={choisie ?? ''} disabled={isLoading && !options} onChange={(e) => onChange(avecFiltre(valeur, cle, e.target.value))}

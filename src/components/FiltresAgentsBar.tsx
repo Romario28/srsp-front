@@ -43,7 +43,7 @@ export function ChampsFiltresAgents({ valeur, onChange, grille = 'grid-cols-2 md
       {error && <div className="flex flex-col items-start gap-2"><ErrorBanner message={error} /><Button variant="secondary" size="sm" onClick={reload}>Réessayer</Button></div>}
       <div className={`grid gap-3 ${grille}`}>
         {CHAMPS_FILTRES.map((champ) => <Champ key={champ.cle} cle={champ.cle} label={champ.label} valeur={valeur[champ.cle]}
-          options={optionsDe(champ.cle, options)} attente={isLoading && champ.cle !== 'statutAgent'}
+          options={optionsDe(champ.cle, options, valeur)} attente={isLoading && champ.cle !== 'statutAgent'}
           onChange={(v) => onChange(avecFiltre(valeur, champ.cle, v))} />)}
       </div>
     </div>

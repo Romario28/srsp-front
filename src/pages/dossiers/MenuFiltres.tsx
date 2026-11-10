@@ -40,7 +40,7 @@ function Panneau({ valeur, onChange, options, isLoading, error, onReessayer }: P
   const champ = CHAMPS_FILTRES.find((c) => c.cle === courante) ?? CHAMPS_FILTRES[0]
   const choisie = valeur[courante]
   const n = nbFiltres(valeur)
-  const connues = optionsDe(courante, options)
+  const connues = optionsDe(courante, options, valeur)
   const liste: OptionFiltre[] = choisie && !connues.some((o) => o.code === choisie) ? [{ code: choisie, libelle: null }, ...connues] : connues
   const dependDesListes = courante !== 'statutAgent'
   const enAttente = dependDesListes && options == null && isLoading

@@ -52,7 +52,7 @@ export interface UpdateUtilisateurRequest {
   matriculeAgent: string   // vide = pas de lien
   roles: string[]
   perimetre: PerimetreDTO
-  agirSurSonDossier: boolean
+  agirSurSonDossier?: boolean
 }
 export interface CreateUtilisateurRequest extends UpdateUtilisateurRequest { email: string; password: string }
 

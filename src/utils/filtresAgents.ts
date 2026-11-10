@@ -20,14 +20,30 @@ export const FILTRES_VIDES: FiltresAgents = {}
 const STATUTS: OptionFiltre[] = (['FONCTIONNAIRE', 'CONTRACTUEL', 'ELD'] as StatutAgent[])
   .map((code) => ({ code, libelle: statutAgentLabel(code) }))
 
-export function optionsDe(cle: CleFiltre, options: OptionsFiltres | null): OptionFiltre[] {
+/**
+ * Ministère d'un SOA : le 2e segment de son code, séparé par « - » (« 00-21-9-110 » → « 21 »).
+ * null si le code n'a pas de 2e segment exploitable.
+ */
+export function ministereDuSoa(codeSoa: string): string | null {
+  const segment = codeSoa.split('-')[1]?.trim()
+  return segment ? segment : null
+}
+
+/** Vrai si le 2e segment du code SOA est ce ministère (comparaison exacte, casse comprise, comme l'import et le serveur). */
+export const soaDuMinistere = (codeSoa: string, ministere: string): boolean => ministereDuSoa(codeSoa) === ministere.trim()
+
+export function optionsDe(cle: CleFiltre, options: OptionsFiltres | null, filtres?: FiltresAgents): OptionFiltre[] {
   switch (cle) {
     case 'statutAgent': return STATUTS
     case 'corps': return options?.corps ?? []
     case 'grade': return options?.grades ?? []
     case 'categorie': return options?.categories ?? []
     case 'fiv': return options?.fiv ?? []
-    case 'soa': return options?.soa ?? []
+    case 'soa': {
+      const soas = options?.soa ?? []
+      const ministere = filtres?.ministere
+      return ministere ? soas.filter((o) => soaDuMinistere(o.code, ministere)) : soas
+    }
     case 'region': return options?.regions ?? []
     case 'ministere': return options?.ministeres ?? []
   }
@@ -43,13 +59,14 @@ export function texteOption(cle: CleFiltre, option: OptionFiltre): string {
 export const valeurAffichee = (cle: CleFiltre, code: string) =>
   cle === 'statutAgent' ? statutAgentLabel(code as StatutAgent) : code
 
-/** Nouveau jeu de filtres avec un critère changé ; valeur vide = critère retiré. Les clés restent canoniques. */
+/** Nouveau jeu de filtres avec un critère changé ; valeur vide = critère retiré ; un SOA incompatible avec le ministère est retiré aussi. Les clés restent canoniques. */
 export function avecFiltre(filtres: FiltresAgents, cle: CleFiltre, valeur: string): FiltresAgents {
   const suivant: FiltresAgents = {}
   for (const champ of CHAMPS_FILTRES) {
     const v = champ.cle === cle ? valeur : filtres[champ.cle]
     if (v) Object.assign(suivant, { [champ.cle]: v })
   }
+  if (suivant.ministere && suivant.soa && !soaDuMinistere(suivant.soa, suivant.ministere)) delete suivant.soa
   return suivant
 }
 
