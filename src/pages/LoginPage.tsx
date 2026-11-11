@@ -1,19 +1,19 @@
-import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { ShieldCheck, ArrowRight } from 'lucide-react'
+﻿import { useState, type FormEvent } from 'react'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { ShieldCheck, ArrowRight, Info } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { extractErrorCode, extractErrorMessage } from '@/api/client'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
-import { extractErrorMessage } from '@/api/client'
 import { APP_NAME, APP_NAME_LONG } from '@/config/app'
 import { isAgent } from '@/utils/roles'
 
 const DEMO_ACCOUNTS = [
   { email: 'admin@entreprise.mg', password: 'Admin123!', label: 'Administrateur' },
-  { email: 'sophie.martin@entreprise.mg', password: 'Chef123!', label: 'Chef · ministère 05' },
-  { email: 'hanta.rabe@entreprise.mg', password: 'Rh123!', label: 'RH · 05 + L01' },
-  { email: 'jean.rakoto@entreprise.mg', password: 'Agent123!', label: 'Agent · lecture seule' },
+  { email: 'sophie.martin@entreprise.mg', password: 'Chef123!', label: 'Chef — ministère 05' },
+  { email: 'hanta.rabe@entreprise.mg', password: 'Rh123!', label: 'RH — 05 + L01' },
+  { email: 'jean.rakoto@entreprise.mg', password: 'Agent123!', label: 'Agent — lecture seule' },
 ]
 
 const SHOW_DEMO_ACCOUNTS = import.meta.env.VITE_SHOW_DEMO_ACCOUNTS === 'true'
@@ -26,6 +26,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [attente, setAttente] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (!isLoading && isAuthenticated) {
@@ -36,12 +37,17 @@ export function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
+    setAttente(null)
     setIsSubmitting(true)
     try {
       await login({ email, password })
       navigate('/', { replace: true })
     } catch (err) {
-      setError(extractErrorMessage(err, 'Email ou mot de passe incorrect'))
+      if (extractErrorCode(err) === 'COMPTE_EN_ATTENTE') {
+        setAttente(extractErrorMessage(err, "Votre demande de compte est en cours d'examen."))
+      } else {
+        setError(extractErrorMessage(err, 'Email ou mot de passe incorrect'))
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -51,6 +57,7 @@ export function LoginPage() {
     setEmail(acc.email)
     setPassword(acc.password)
     setError(null)
+    setAttente(null)
   }
 
   return (
@@ -104,6 +111,12 @@ export function LoginPage() {
 
           <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
             {error && <ErrorBanner message={error} />}
+            {attente && (
+              <div role="status" className="flex items-start gap-2.5 rounded-lg border border-accent/30 bg-accent-light px-4 py-3 text-[13px] text-accent-dark">
+                <Info className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                <span>{attente}</span>
+              </div>
+            )}
             <Input
               label="Adresse e-mail" type="email" autoComplete="username" required
               value={email} onChange={(e) => setEmail(e.target.value)}
@@ -118,6 +131,11 @@ export function LoginPage() {
               Se connecter{!isSubmitting && <ArrowRight className="h-4 w-4" />}
             </Button>
           </form>
+
+          <p className="mt-5 text-center text-[13px] text-[#6B7180]">
+            Pas encore de compte ?{' '}
+            <Link to="/demande-compte" className="font-medium text-accent hover:underline">Demander un compte</Link>
+          </p>
 
           {SHOW_DEMO_ACCOUNTS && <div className="mt-8 rounded-xl border border-[#E4E6EB] bg-white p-4">
             <p className="text-[12px] font-medium text-ink">Comptes de démonstration</p>

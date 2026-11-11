@@ -1,10 +1,12 @@
-import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
+﻿import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { LoginPage } from '@/pages/LoginPage'
+import { DemandeComptePage } from '@/pages/DemandeComptePage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { MonEspacePage } from '@/pages/MonEspacePage'
 import { UtilisateursListPage } from '@/pages/utilisateurs/UtilisateursListPage'
+import { DemandesComptesPage } from '@/pages/utilisateurs/DemandesComptesPage'
 import { AuditListPage } from '@/pages/audit/AuditListPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -23,6 +25,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/demande-compte" element={<DemandeComptePage />} />
       <Route path="/interdit" element={<ForbiddenPage />} />
 
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
@@ -31,6 +34,7 @@ function App() {
         <Route path="mon-espace" element={<ProtectedRoute autorise={isAgent}><MonEspacePage /></ProtectedRoute>} />
 
         <Route path="utilisateurs" element={<ProtectedRoute autorise={peutVoirUtilisateurs}><UtilisateursListPage /></ProtectedRoute>} />
+        <Route path="demandes-comptes" element={<ProtectedRoute autorise={peutVoirUtilisateurs}><DemandesComptesPage /></ProtectedRoute>} />
         <Route path="audit" element={<ProtectedRoute autorise={isAdmin}><AuditListPage /></ProtectedRoute>} />
         <Route path="imports" element={<ProtectedRoute autorise={isAdmin}><ImportsPage /></ProtectedRoute>} />
 

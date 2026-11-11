@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Search, ScrollText } from 'lucide-react'
 import { useFetch } from '@/hooks/useFetch'
 import { auditApi } from '@/api/audit'
@@ -26,6 +26,9 @@ const ACTION_TONES: Record<string, 'success' | 'warning' | 'danger' | 'accent' |
   DOSSIER_SANS_SUITE: 'warning',
   DOSSIER_REOUVERT: 'accent',
   DOSSIER_GENERATION: 'neutral',
+  DEMANDE_COMPTE: 'neutral',
+  APPROBATION_COMPTE: 'success',
+  REFUS_COMPTE: 'warning',
 }
 
 export function AuditListPage() {

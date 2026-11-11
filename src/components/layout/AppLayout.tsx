@@ -1,11 +1,13 @@
-import { Outlet } from 'react-router-dom'
+﻿import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { AlertesNouvellesProvider } from '@/context/AlertesNouvellesContext'
+import { DemandesComptesProvider } from '@/context/DemandesComptesContext'
 import { DossierApercuProvider } from '@/context/DossierApercuContext'
 
 export function AppLayout() {
   return (
+    <DemandesComptesProvider>
     <AlertesNouvellesProvider>
     <DossierApercuProvider>
     <div className="flex h-screen overflow-hidden bg-canvas">
@@ -19,5 +21,6 @@ export function AppLayout() {
     </div>
     </DossierApercuProvider>
     </AlertesNouvellesProvider>
+    </DemandesComptesProvider>
   )
 }

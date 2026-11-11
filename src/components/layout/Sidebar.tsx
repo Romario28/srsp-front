@@ -1,17 +1,24 @@
-import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, UserCog, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList, User } from 'lucide-react'
+﻿import { NavLink } from 'react-router-dom'
+import { LayoutDashboard, UserCog, UserCheck, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList, User } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin, isAgent, peutVoirAnticipation, peutVoirUtilisateurs } from '@/utils/roles'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
+import { useDemandesComptes } from '@/hooks/useDemandesComptes'
 import { APP_NAME, APP_NAME_LONG, APP_VERSION } from '@/config/app'
 
 type Visible = (roles: string[] | undefined) => boolean
+type CleBadge = 'alertes' | 'demandes'
 interface NavItem {
   to: string
   label: string
   icon: typeof LayoutDashboard
   visible: Visible
-  badge?: boolean
+  badge?: CleBadge
+}
+
+const LIBELLE_BADGE: Record<CleBadge, (n: number) => string> = {
+  alertes: (n) => `${n} alerte${n > 1 ? 's' : ''} nouvelle${n > 1 ? 's' : ''}`,
+  demandes: (n) => `${n} demande${n > 1 ? 's' : ''} de compte en attente`,
 }
 
 const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
@@ -20,7 +27,7 @@ const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
     { to: '/mon-espace', label: 'Mon Espace', icon: User, visible: isAgent },
   ] },
   { titre: 'Anticipation RH', items: [
-    { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, visible: peutVoirAnticipation, badge: true },
+    { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, visible: peutVoirAnticipation, badge: 'alertes' },
     { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, visible: peutVoirAnticipation },
     { to: '/anticipation/calendrier', label: 'Calendrier', icon: CalendarDays, visible: peutVoirAnticipation },
     { to: '/anticipation/retraite', label: 'Départs à la retraite', icon: Hourglass, visible: peutVoirAnticipation },
@@ -34,6 +41,7 @@ const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
   ] },
   { titre: 'Administration', items: [
     { to: '/utilisateurs', label: 'Gestion des utilisateurs', icon: UserCog, visible: peutVoirUtilisateurs },
+    { to: '/demandes-comptes', label: 'Demandes de comptes', icon: UserCheck, visible: peutVoirUtilisateurs, badge: 'demandes' },
     { to: '/imports', label: 'Imports', icon: Upload, visible: isAdmin },
     { to: '/audit', label: "Journal d'audit", icon: ScrollText, visible: isAdmin },
   ] },
@@ -41,7 +49,9 @@ const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
 
 export function Sidebar() {
   const { user } = useAuth()
-  const { count } = useAlertesNouvelles()
+  const { count: alertes } = useAlertesNouvelles()
+  const { count: demandes } = useDemandesComptes()
+  const compteurs: Record<CleBadge, number | null> = { alertes, demandes }
   const groupes = NAV_GROUPS
     .map((groupe) => ({ ...groupe, items: groupe.items.filter((item) => item.visible(user?.roles)) }))
     .filter((groupe) => groupe.items.length > 0)
@@ -60,14 +70,17 @@ export function Sidebar() {
           <div key={groupe.titre ?? 'principal'}>
             {groupe.titre && <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wide text-white/50">{groupe.titre}</p>}
             <div className="space-y-1">
-              {groupe.items.map((item) => (
-                <NavLink key={item.to} to={item.to} end={item.to === '/'} className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13.5px] font-medium transition-colors ${isActive ? 'bg-ink-light text-white' : 'text-white/65 hover:bg-ink-light hover:text-white'}`
-                }>
-                  <item.icon className="h-[17px] w-[17px]" />{item.label}
-                  {item.badge && count != null && count > 0 && <span aria-label={`${count} alerte${count > 1 ? 's' : ''} nouvelle${count > 1 ? 's' : ''}`} className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold leading-none text-white">{count > 99 ? '99+' : count}</span>}
-                </NavLink>
-              ))}
+              {groupe.items.map((item) => {
+                const n = item.badge ? compteurs[item.badge] : null
+                return (
+                  <NavLink key={item.to} to={item.to} end={item.to === '/'} className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13.5px] font-medium transition-colors ${isActive ? 'bg-ink-light text-white' : 'text-white/65 hover:bg-ink-light hover:text-white'}`
+                  }>
+                    <item.icon className="h-[17px] w-[17px]" />{item.label}
+                    {item.badge && n != null && n > 0 && <span aria-label={LIBELLE_BADGE[item.badge](n)} className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold leading-none text-white">{n > 99 ? '99+' : n}</span>}
+                  </NavLink>
+                )
+              })}
             </div>
           </div>
         ))}
