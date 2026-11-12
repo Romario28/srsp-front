@@ -9,6 +9,7 @@ export interface DemandeCompteRequest {
   email: string
   password: string
   profil: string
+  departementId: number   // [NOUVEAU]
 }
 
 export interface DemandeCompteDTO {
@@ -21,4 +22,5 @@ export interface DemandeCompteDTO {
   dateDemande: string
   agentLie: AgentLieDTO
   perimetreSuggere: PerimetreDTO
+  departement: string | null   // [NOUVEAU] libellé déclaré ; null pour une demande antérieure
 }

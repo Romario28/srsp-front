@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react'
-import { AlertTriangle, Check, CheckCircle2, Info, X } from 'lucide-react'
+import { AlertTriangle, Building2, Check, CheckCircle2, Info, X } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -29,14 +29,21 @@ const DEMANDE_INTROUVABLE = 'DEMANDE_INTROUVABLE'
 
 function EnTete({ demande }: { demande: DemandeCompteDTO }) {
   return (
-    <header className="flex flex-wrap items-start justify-between gap-3">
-      <div className="min-w-0">
-        <h3 className="font-display text-[16px] font-semibold text-ink">{demande.prenom} {demande.nom}</h3>
-        <p className="text-[12.5px] text-[#6B7180]">{demande.email}</p>
-        <p className="font-mono text-[12px] text-[#6B7180]">Matricule {demande.matricule} · demandée le {formatDateTime(demande.dateDemande)}</p>
-      </div>
-      <Badge tone="accent">{roleLabel(demande.profil)}</Badge>
-    </header>
+    <div className="flex flex-col gap-2.5">
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="font-display text-[16px] font-semibold text-ink">{demande.prenom} {demande.nom}</h3>
+          <p className="text-[12.5px] text-[#6B7180]">{demande.email}</p>
+          <p className="font-mono text-[12px] text-[#6B7180]">Matricule {demande.matricule} · demandée le {formatDateTime(demande.dateDemande)}</p>
+        </div>
+        <Badge tone="accent">{roleLabel(demande.profil)}</Badge>
+      </header>
+      {/* [NOUVEAU] département déclaré : information, il ne détermine pas le périmètre accordé */}
+      <p className="flex items-center gap-2 rounded-lg border border-[#E4E6EB] bg-[#FAFAFB] px-3 py-2 text-[13px] text-[#4B4F5A]">
+        <Building2 className="h-4 w-4 flex-shrink-0 text-accent" aria-hidden="true" />
+        <span>Département déclaré : <span className="font-semibold text-ink">{demande.departement ?? 'Non renseigné'}</span></span>
+      </p>
+    </div>
   )
 }
 

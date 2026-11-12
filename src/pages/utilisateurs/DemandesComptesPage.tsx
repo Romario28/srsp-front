@@ -39,7 +39,7 @@ export function DemandesComptesPage() {
 
   // Les plus anciennes en premier : ce sont celles qui attendent depuis le plus longtemps
   const demandes = useMemo(() => [...(data ?? [])].sort((a, b) => a.dateDemande.localeCompare(b.dateDemande)), [data])
-  const trouvees = useMemo(() => demandes.filter((d) => correspond(recherche, d.nom, d.prenom, d.email, d.matricule)), [demandes, recherche])
+  const trouvees = useMemo(() => demandes.filter((d) => correspond(recherche, d.nom, d.prenom, d.email, d.matricule, d.departement)), [demandes, recherche])
 
   const actualiser = () => { reload(); rafraichirPastille() }
   const apresDecision = (message: string) => { setDecision(null); setConfirmation(message); actualiser() }
@@ -91,7 +91,7 @@ export function DemandesComptesPage() {
                 <table className="w-full">
                   <thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr>
                     <th className="table-head-cell">Demandeur</th><th className="table-head-cell">Matricule</th>
-                    <th className="table-head-cell">Profil</th><th className="table-head-cell">Identité</th>
+                    <th className="table-head-cell">Profil</th><th className="table-head-cell">Département</th><th className="table-head-cell">Identité</th>
                     <th className="table-head-cell">Demandée le</th><th className="table-head-cell text-right">Décision</th>
                   </tr></thead>
                   <tbody className="divide-y divide-[#EAEBF0]">{trouvees.map((d) => {
@@ -105,6 +105,7 @@ export function DemandesComptesPage() {
                         </td>
                         <td className="table-cell whitespace-nowrap font-mono text-[12.5px] text-[#4B4F5A]">{d.matricule}</td>
                         <td className="table-cell"><Badge tone="accent">{roleLabel(d.profil)}</Badge></td>
+                        <td className="table-cell max-w-[16rem] text-[13px] text-[#4B4F5A]"><span className="block truncate" title={d.departement ?? undefined}>{d.departement ?? '—'}</span></td>
                         <td className="table-cell"><span title={identite.titre}><Badge tone={identite.tone}>{identite.label}</Badge></span></td>
                         <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDateTime(d.dateDemande)}</td>
                         <td className="table-cell">

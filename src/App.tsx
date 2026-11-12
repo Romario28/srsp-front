@@ -7,6 +7,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { MonEspacePage } from '@/pages/MonEspacePage'
 import { UtilisateursListPage } from '@/pages/utilisateurs/UtilisateursListPage'
 import { DemandesComptesPage } from '@/pages/utilisateurs/DemandesComptesPage'
+import { DepartementsPage } from '@/pages/departements/DepartementsPage'
 import { AuditListPage } from '@/pages/audit/AuditListPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -35,6 +36,7 @@ function App() {
 
         <Route path="utilisateurs" element={<ProtectedRoute autorise={peutVoirUtilisateurs}><UtilisateursListPage /></ProtectedRoute>} />
         <Route path="demandes-comptes" element={<ProtectedRoute autorise={peutVoirUtilisateurs}><DemandesComptesPage /></ProtectedRoute>} />
+        <Route path="departements" element={<ProtectedRoute autorise={isAdmin}><DepartementsPage /></ProtectedRoute>} />
         <Route path="audit" element={<ProtectedRoute autorise={isAdmin}><AuditListPage /></ProtectedRoute>} />
         <Route path="imports" element={<ProtectedRoute autorise={isAdmin}><ImportsPage /></ProtectedRoute>} />
 

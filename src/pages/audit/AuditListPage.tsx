@@ -29,6 +29,9 @@ const ACTION_TONES: Record<string, 'success' | 'warning' | 'danger' | 'accent' |
   DEMANDE_COMPTE: 'neutral',
   APPROBATION_COMPTE: 'success',
   REFUS_COMPTE: 'warning',
+  CREATE_DEPARTEMENT: 'success',
+  UPDATE_DEPARTEMENT: 'accent',
+  DELETE_DEPARTEMENT: 'danger',
 }
 
 export function AuditListPage() {

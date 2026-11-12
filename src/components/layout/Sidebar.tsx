@@ -1,5 +1,5 @@
 ﻿import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, UserCog, UserCheck, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList, User } from 'lucide-react'
+import { LayoutDashboard, Building2, UserCog, UserCheck, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList, User } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin, isAgent, peutVoirAnticipation, peutVoirUtilisateurs } from '@/utils/roles'
 import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
@@ -42,6 +42,7 @@ const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
   { titre: 'Administration', items: [
     { to: '/utilisateurs', label: 'Gestion des utilisateurs', icon: UserCog, visible: peutVoirUtilisateurs },
     { to: '/demandes-comptes', label: 'Demandes de comptes', icon: UserCheck, visible: peutVoirUtilisateurs, badge: 'demandes' },
+    { to: '/departements', label: 'Départements', icon: Building2, visible: isAdmin },
     { to: '/imports', label: 'Imports', icon: Upload, visible: isAdmin },
     { to: '/audit', label: "Journal d'audit", icon: ScrollText, visible: isAdmin },
   ] },
