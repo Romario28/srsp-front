@@ -1,4 +1,4 @@
-export type CleFonction = 'SECRETAIRE' | 'COMPTABLE' | 'CHEF_BUREAU' | 'CHEF_DIVISION' | 'CHEF_SERVICE' | 'AUTRES'
+﻿export type CleFonction = 'SECRETAIRE' | 'COMPTABLE' | 'CHEF_BUREAU' | 'CHEF_DIVISION' | 'CHEF_SERVICE' | 'AUTRES'
 export type CleTache = 'CONSULTATION' | 'TRAITEMENT' | 'VALIDATION' | 'MIGRATION' | 'AUTRES'
 
 export const FONCTIONS: readonly { cle: CleFonction; label: string }[] = [
@@ -27,9 +27,8 @@ export const ENTETE_ADMINISTRATION = [
 ] as const
 export const DESTINATAIRE_DEMANDE = 'CHEF DE SERVICE DE LA SOLDE ET DES PENSIONS'
 
-// Lieux inscrits dans le modèle : « Fianarantsoa, le » sur la demande, « Antananarivo, le » sur la lettre
-export const LIEU_DEMANDE = 'Fianarantsoa'
-export const LIEU_LETTRE = 'Antananarivo'
+// [MODIFIÉ] un seul lieu pour les deux documents (était : LIEU_DEMANDE = 'Fianarantsoa' et LIEU_LETTRE = 'Antananarivo')
+export const LIEU_DOCUMENTS = 'Fianarantsoa'
 
 // Nom de l'application cité dans la lettre (le modèle contient « Système de Gestion de la Solde et des Pensions »)
 export const LIBELLE_APPLICATION_LETTRE = 'Système de Gestion de la Solde et des Pensions'

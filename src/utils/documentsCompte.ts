@@ -1,7 +1,7 @@
 ﻿import type { jsPDF } from 'jspdf'
 import { APP_NAME } from '@/config/app'
 import {
-  DESTINATAIRE_DEMANDE, ENTETE_ADMINISTRATION, FONCTIONS, LIBELLE_APPLICATION_LETTRE, LIEU_DEMANDE, LIEU_LETTRE, LOGO_URL, TACHES,
+  DESTINATAIRE_DEMANDE, ENTETE_ADMINISTRATION, FONCTIONS, LIBELLE_APPLICATION_LETTRE, LIEU_DOCUMENTS, LOGO_URL, TACHES,   // [MODIFIÉ] LIEU_DOCUMENTS remplace LIEU_DEMANDE et LIEU_LETTRE
   type CleFonction, type CleTache,
 } from '@/config/documents'
 
@@ -20,6 +20,8 @@ export interface DonneesDocuments {
   tachesPrecision: string
 }
 
+type Logo = { data: string; format: 'PNG' | 'JPEG' } | null   // [NOUVEAU]
+
 const MARGE = 20
 const LARGEUR_PAGE = 210
 
@@ -31,7 +33,7 @@ async function nouveauDocument(): Promise<jsPDF> {
 }
 
 /** Le serveur de développement renvoie index.html (code 200) pour un fichier absent : on contrôle donc le type. */
-async function chargerLogo(): Promise<{ data: string; format: 'PNG' | 'JPEG' } | null> {
+async function chargerLogo(): Promise<Logo> {
   try {
     const reponse = await fetch(LOGO_URL)
     const type = reponse.headers.get('content-type') ?? ''
@@ -53,7 +55,7 @@ async function chargerLogo(): Promise<{ data: string; format: 'PNG' | 'JPEG' } |
 const dateDuJour = () => new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 const nomFichier = (prefixe: string, matricule: string) => `${prefixe}_${matricule.replace(/[^A-Za-z0-9]/g, '') || 'agent'}.pdf`
 
-// [NOUVEAU] « FALITIANA rakoto » : nom en majuscules, prénom tel que saisi, séparés par un simple espace
+// « FALITIANA rakoto » : nom en majuscules, prénom tel que saisi, séparés par un simple espace
 function identite(d: DonneesDocuments): string {
   return `${d.nom.toUpperCase()} ${d.prenom}`.trim()
 }
@@ -81,9 +83,8 @@ function caseACocher(doc: jsPDF, x: number, y: number, cochee: boolean) {
   }
 }
 
-/** Logo, bloc administratif à gauche, lieu et date à droite. Renvoie l'ordonnée où poursuivre. */
-async function enTete(doc: jsPDF, lieu: string, avecDestinataire: boolean): Promise<number> {
-  const logo = await chargerLogo()
+/** [MODIFIÉ] logo déjà chargé, lieu commun aux deux documents. Renvoie l'ordonnée où poursuivre. */
+function enTete(doc: jsPDF, logo: Logo, avecDestinataire: boolean): number {
   let y = 18
   if (logo) {
     const props = doc.getImageProperties(logo.data)
@@ -93,6 +94,7 @@ async function enTete(doc: jsPDF, lieu: string, avecDestinataire: boolean): Prom
     y = 10 + hauteur + 8
   }
 
+  doc.setFont('times', 'normal')
   doc.setFontSize(9)
   let yGauche = y
   for (const ligne of ENTETE_ADMINISTRATION) {
@@ -103,7 +105,7 @@ async function enTete(doc: jsPDF, lieu: string, avecDestinataire: boolean): Prom
   }
 
   doc.setFontSize(10)
-  doc.text(`${lieu}, le ${dateDuJour()}`, 125, y)
+  doc.text(`${LIEU_DOCUMENTS}, le ${dateDuJour()}`, 125, y)
   let yDroite = y
   if (avecDestinataire) {
     doc.setFontSize(9)
@@ -124,18 +126,19 @@ function ligneChamp(doc: jsPDF, label: string, valeur: string, y: number, xValeu
   doc.text(valeur, xValeur, y)
 }
 
-// ── Demande de création ou de modification de login ─────────────────────────
+// ── Page : demande de création ou de modification de login ──────────────────
+// [MODIFIÉ] dessine sur le document reçu, sans le créer ni l'enregistrer
 
-export async function genererDemandeLogin(d: DonneesDocuments): Promise<void> {
-  const doc = await nouveauDocument()
-  let y = await enTete(doc, LIEU_DEMANDE, true)
+function dessinerDemandeLogin(doc: jsPDF, logo: Logo, d: DonneesDocuments) {
+  doc.setFont('times', 'normal')
+  doc.setLineWidth(0.2)
+  let y = enTete(doc, logo, true)
 
   doc.setFontSize(11)
   texteSouligne(doc, `Demande de création ou de modification de login ${APP_NAME}`, LARGEUR_PAGE / 2, y, { align: 'center' })
   y += 10
 
   ligneChamp(doc, 'IM :', d.matricule, y); y += 8
-  // [MODIFIÉ] était : ligneChamp(doc, 'NOM(S) :', d.nom, y) puis doc.text(d.prenom, 125, y)
   ligneChamp(doc, 'NOM(S) :', identite(d), y); y += 8
   ligneChamp(doc, 'CIN :', d.cin, y); y += 8
   ligneChamp(doc, 'CONTACT :', d.contact, y); y += 8
@@ -192,26 +195,25 @@ export async function genererDemandeLogin(d: DonneesDocuments): Promise<void> {
   doc.setFontSize(10)
   doc.rect(MARGE, ySignature, 70, 28)
   doc.text(doc.splitTextToSize('Signature du Supérieur Hiérarchique', 66) as string[], MARGE + 2, ySignature + 5)
-
-  doc.save(nomFichier('demande-login', d.matricule))
 }
 
-// ── Lettre d'engagement ─────────────────────────────────────────────────────
+// ── Page : lettre d'engagement ──────────────────────────────────────────────
 
-export async function genererLettreEngagement(d: DonneesDocuments): Promise<void> {
-  const doc = await nouveauDocument()
-  let y = await enTete(doc, LIEU_LETTRE, false)
+function dessinerLettreEngagement(doc: jsPDF, logo: Logo, d: DonneesDocuments) {
+  doc.setFont('times', 'normal')
+  doc.setLineWidth(0.2)
+  let y = enTete(doc, logo, false)
 
   doc.setFontSize(12)
   texteSouligne(doc, "LETTRE D'ENGAGEMENT", LARGEUR_PAGE / 2, y + 4, { align: 'center' })
   y += 20
 
-  const nomComplet = identite(d)   // [MODIFIÉ] était : const identite = `${d.nom.toUpperCase()} ${d.prenom}`.trim()
+  const nomComplet = identite(d)
   doc.setFont('times', 'normal')
   doc.text('Je soussigné(e) ', MARGE + 5, y)
   const decalage = doc.getTextWidth('Je soussigné(e) ')
   doc.setFont('times', 'bold')
-  doc.text(nomComplet, MARGE + 5 + decalage, y)   // [MODIFIÉ]
+  doc.text(nomComplet, MARGE + 5 + decalage, y)
   doc.setFont('times', 'normal')
   y += 9
 
@@ -230,6 +232,15 @@ export async function genererLettreEngagement(d: DonneesDocuments): Promise<void
 
   doc.text('Le responsable hiérarchique', MARGE, y)
   doc.text("L'intéressé(e)", LARGEUR_PAGE - MARGE - 10, y, { align: 'right' })
+}
 
-  doc.save(nomFichier('lettre-engagement', d.matricule))
+// ── Fichier unique ──────────────────────────────────────────────────────────
+
+/** [NOUVEAU] remplace genererDemandeLogin et genererLettreEngagement : un seul PDF, demande en page 1, lettre en page 2. */
+export async function genererDocuments(d: DonneesDocuments): Promise<void> {
+  const [doc, logo] = await Promise.all([nouveauDocument(), chargerLogo()])
+  dessinerDemandeLogin(doc, logo, d)
+  doc.addPage()
+  dessinerLettreEngagement(doc, logo, d)
+  doc.save(nomFichier('documents-compte', d.matricule))
 }
