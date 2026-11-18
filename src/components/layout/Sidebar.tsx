@@ -1,13 +1,15 @@
 ﻿import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Building2, UserCog, UserCheck, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, Bell, SlidersHorizontal, Upload, UserPlus, ClipboardList, User } from 'lucide-react'
+// MODIFIÉ : « Bell » retiré (icône des alertes)
+import { LayoutDashboard, UserCog, UserCheck, Building2, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, SlidersHorizontal, Upload, UserPlus, ClipboardList, User } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin, isAgent, peutVoirAnticipation, peutVoirUtilisateurs } from '@/utils/roles'
-import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
+// SUPPRIMÉ : import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
 import { useDemandesComptes } from '@/hooks/useDemandesComptes'
 import { APP_NAME, APP_NAME_LONG, APP_VERSION } from '@/config/app'
 
 type Visible = (roles: string[] | undefined) => boolean
-type CleBadge = 'alertes' | 'demandes'
+// SUPPRIMÉ : type CleBadge = 'alertes' | 'demandes'
+type CleBadge = 'demandes'   // MODIFIÉ
 interface NavItem {
   to: string
   label: string
@@ -17,7 +19,7 @@ interface NavItem {
 }
 
 const LIBELLE_BADGE: Record<CleBadge, (n: number) => string> = {
-  alertes: (n) => `${n} alerte${n > 1 ? 's' : ''} nouvelle${n > 1 ? 's' : ''}`,
+  // SUPPRIMÉ : alertes: (n) => `${n} alerte${n > 1 ? 's' : ''} nouvelle${n > 1 ? 's' : ''}`,
   demandes: (n) => `${n} demande${n > 1 ? 's' : ''} de compte en attente`,
 }
 
@@ -27,7 +29,7 @@ const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
     { to: '/mon-espace', label: 'Mon Espace', icon: User, visible: isAgent },
   ] },
   { titre: 'Anticipation RH', items: [
-    { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, visible: peutVoirAnticipation, badge: 'alertes' },
+    // SUPPRIMÉ : { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, visible: peutVoirAnticipation, badge: 'alertes' },
     { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, visible: peutVoirAnticipation },
     { to: '/anticipation/calendrier', label: 'Calendrier', icon: CalendarDays, visible: peutVoirAnticipation },
     { to: '/anticipation/retraite', label: 'Départs à la retraite', icon: Hourglass, visible: peutVoirAnticipation },
@@ -50,9 +52,10 @@ const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
 
 export function Sidebar() {
   const { user } = useAuth()
-  const { count: alertes } = useAlertesNouvelles()
+  // SUPPRIMÉ : const { count: alertes } = useAlertesNouvelles()
   const { count: demandes } = useDemandesComptes()
-  const compteurs: Record<CleBadge, number | null> = { alertes, demandes }
+  // SUPPRIMÉ : const compteurs: Record<CleBadge, number | null> = { alertes, demandes }
+  const compteurs: Record<CleBadge, number | null> = { demandes }   // MODIFIÉ
   const groupes = NAV_GROUPS
     .map((groupe) => ({ ...groupe, items: groupe.items.filter((item) => item.visible(user?.roles)) }))
     .filter((groupe) => groupe.items.length > 0)

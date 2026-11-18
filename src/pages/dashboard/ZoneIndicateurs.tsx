@@ -1,21 +1,26 @@
-import { Link } from 'react-router-dom'
-import { AlertTriangle, Bell, CalendarClock, CheckCircle2, Users } from 'lucide-react'
+﻿// SUPPRIMÉ : import { Link } from 'react-router-dom'
+// SUPPRIMÉ : import { AlertTriangle, Bell, CalendarClock, CheckCircle2, Users } from 'lucide-react'
+import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardList, Users } from 'lucide-react'   // MODIFIÉ : Bell → ClipboardList
 import { formatDate } from '@/utils/date'
 import { nombreFr, pluriel } from '@/utils/dashboard'
 import { lienAvecPortee, nbFiltres } from '@/utils/filtresAgents'
 import { CarteKpi } from './CarteKpi'
 import type { FiltresAgents } from '@/types/anticipation'
-import type { CompteursAlertes, EcheancesAVenirDTO, EffectifsDTO, EtatChargement, Urgences } from '@/types/dashboard'
+// SUPPRIMÉ : import type { CompteursAlertes, EcheancesAVenirDTO, EffectifsDTO, EtatChargement, Urgences } from '@/types/dashboard'
+import type { EcheancesAVenirDTO, EffectifsDTO, EtatChargement, Urgences } from '@/types/dashboard'   // MODIFIÉ
 import type { SyntheseDossiers } from '@/types/dossier'
 
-const LIEN = 'font-medium text-accent hover:underline'
+// SUPPRIMÉ : const LIEN = 'font-medium text-accent hover:underline'   (servait au lien « dont N anomalies »)
 interface ZoneIndicateursProps {
   effectifs: EtatChargement<EffectifsDTO>; synthese: EtatChargement<SyntheseDossiers>; urgences: EtatChargement<Urgences>
-  alertes: EtatChargement<CompteursAlertes>; echeances: EtatChargement<EcheancesAVenirDTO>; portee: FiltresAgents
+  // SUPPRIMÉ : alertes: EtatChargement<CompteursAlertes>;
+  echeances: EtatChargement<EcheancesAVenirDTO>; portee: FiltresAgents
 }
 
-export function ZoneIndicateurs({ effectifs, synthese, urgences, alertes, echeances, portee }: ZoneIndicateursProps) {
-  const e = effectifs.data; const s = synthese.data; const a = alertes.data; const ech = echeances.data
+// MODIFIÉ : le paramètre « alertes » est retiré
+export function ZoneIndicateurs({ effectifs, synthese, urgences, echeances, portee }: ZoneIndicateursProps) {
+  const e = effectifs.data; const s = synthese.data; const ech = echeances.data
+  // SUPPRIMÉ : const a = alertes.data
   const lien = (chemin: string, extra?: Record<string, string>) => lienAvecPortee(chemin, portee, extra)
   const restreint = nbFiltres(portee) > 0
   const retards = s?.enRetard ?? null
@@ -30,10 +35,13 @@ export function ZoneIndicateurs({ effectifs, synthese, urgences, alertes, echean
       aide="Échéance dépassée et dossier non démarré" precision={retards === 0 ? 'Aucun retard' : plusAncien != null ? `le plus ancien : ${pluriel(plusAncien, 'jour', 'jours')}` : undefined}
       to={lien('/anticipation/dossiers', { vue: 'EN_RETARD' })}
       chargement={synthese.isLoading && !s} erreur={synthese.error} onReessayer={synthese.reload} />
-    <CarteKpi libelle="Alertes nouvelles" icone={Bell} valeur={a?.nouvelles ?? null}
-      aide="Alertes du calcul de nuit qui n'ont pas encore été ouvertes" to={lien('/anticipation/alertes')}
-      pied={a ? a.anomalies > 0 ? <Link to={lien('/anticipation/alertes', { type: 'ANOMALIE' })} className={LIEN}>dont {pluriel(a.anomalies, 'anomalie', 'anomalies')}</Link> : <span className="text-[#6B7180]">dont 0 anomalie</span> : undefined}
-      chargement={alertes.isLoading && !a} erreur={alertes.error} onReessayer={alertes.reload} />
+    {/* SUPPRIMÉ : carte « Alertes nouvelles » (icône Bell, valeur a?.nouvelles, lien /anticipation/alertes, pied « dont N anomalies »,
+        chargement={alertes.isLoading && !a} erreur={alertes.error} onReessayer={alertes.reload}) */}
+    {/* AJOUTÉ */}
+    <CarteKpi libelle="Dossiers à traiter" icone={ClipboardList} valeur={s?.aTraiter ?? null}
+      aide="Dossiers dont la préparation est atteinte, non démarrés, et dont l'échéance n'est pas dépassée."
+      precision={s ? 'à démarrer' : undefined} to={lien('/anticipation/dossiers', { vue: 'A_TRAITER' })}
+      chargement={synthese.isLoading && !s} erreur={synthese.error} onReessayer={synthese.reload} />
     <CarteKpi libelle="Échéances à venir" icone={CalendarClock} valeur={ech?.total ?? null}
       aide={ech ? `Toutes catégories, selon la date d'échéance, du ${formatDate(ech.du)} au ${formatDate(ech.au)}. Le calendrier affiche le mois civil : ses totaux diffèrent.` : "Toutes catégories, selon la date d'échéance."}
       precision={ech ? `dans les ${ech.jours} prochains jours` : undefined} to={lien('/anticipation/calendrier', { critere: 'ECHEANCE' })}

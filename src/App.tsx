@@ -13,7 +13,6 @@ import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { EcheancesPage } from '@/pages/anticipation/EcheancesPage'
 import { AnomaliesPage } from '@/pages/anticipation/AnomaliesPage'
-import { AlertesPage } from '@/pages/anticipation/alertes/AlertesPage'
 import { ConfigurationPage } from '@/pages/anticipation/ConfigurationPage'
 import { GardeBaseAgents } from '@/pages/anticipation/GardeBaseAgents'
 import { CalendrierPage } from '@/pages/calendrier/CalendrierPage'
@@ -41,11 +40,11 @@ function App() {
         <Route path="imports" element={<ProtectedRoute autorise={isAdmin}><ImportsPage /></ProtectedRoute>} />
 
         <Route path="anticipation" element={<ProtectedRoute autorise={peutVoirAnticipation}><Outlet /></ProtectedRoute>}>
-          <Route index element={<Navigate to="alertes" replace />} />
+          <Route index element={<Navigate to="dossiers" replace />} />
           <Route path="configuration" element={<ProtectedRoute autorise={isAdmin}><ConfigurationPage /></ProtectedRoute>} />
           <Route path="dossiers" element={<DossiersPage />} />
+          <Route path="alertes" element={<Navigate to="/anticipation/dossiers" replace />} />
           <Route element={<GardeBaseAgents />}>
-            <Route path="alertes" element={<AlertesPage />} />
             <Route path="calendrier" element={<CalendrierPage />} />
             {TYPES_ECHEANCE.map((type) => <Route key={type} path={ECHEANCE_SLUGS[type]} element={<EcheancesPage key={type} type={type} />} />)}
             <Route path="anomalies" element={<AnomaliesPage />} />

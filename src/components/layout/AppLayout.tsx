@@ -1,14 +1,14 @@
 ﻿import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
-import { AlertesNouvellesProvider } from '@/context/AlertesNouvellesContext'
+// SUPPRIMÉ : import { AlertesNouvellesProvider } from '@/context/AlertesNouvellesContext'
 import { DemandesComptesProvider } from '@/context/DemandesComptesContext'
 import { DossierApercuProvider } from '@/context/DossierApercuContext'
 
 export function AppLayout() {
   return (
     <DemandesComptesProvider>
-    <AlertesNouvellesProvider>
+    {/* SUPPRIMÉ : <AlertesNouvellesProvider> */}
     <DossierApercuProvider>
     <div className="flex h-screen overflow-hidden bg-canvas">
       <Sidebar />
@@ -20,7 +20,7 @@ export function AppLayout() {
       </div>
     </div>
     </DossierApercuProvider>
-    </AlertesNouvellesProvider>
+    {/* SUPPRIMÉ : </AlertesNouvellesProvider> */}
     </DemandesComptesProvider>
   )
 }

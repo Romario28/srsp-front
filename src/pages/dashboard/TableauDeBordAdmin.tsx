@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useFetch } from '@/hooks/useFetch'
-import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
+// SUPPRIMÉ : import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
 import { useDossierApercu } from '@/hooks/useDossierApercu'
 import { dashboardApi } from '@/api/dashboard'
 import { dossiersApi } from '@/api/dossiers'
@@ -28,16 +28,17 @@ export function TableauDeBordAdmin() {
   const effectifs = useFetch(() => dashboardApi.effectifs(portee), [cle])
   const synthese = useFetch(() => dossiersApi.synthese({ ...portee }), [cle])
   const urgences = useFetch(() => dashboardApi.urgences(portee), [cle])
-  const alertes = useFetch(() => dashboardApi.alertes(portee), [cle])
+  // SUPPRIMÉ : const alertes = useFetch(() => dashboardApi.alertes(portee), [cle])
   const echeances = useFetch(() => dashboardApi.echeances(30, portee), [cle])
-  const { refresh: rafraichirBadge } = useAlertesNouvelles()
+  // SUPPRIMÉ : const { refresh: rafraichirBadge } = useAlertesNouvelles()
   const { version } = useDossierApercu()
   const [actualiseA, setActualiseA] = useState(() => new Date())
-  const blocs = [effectifs, synthese, urgences, alertes, echeances]
+  // SUPPRIMÉ : const blocs = [effectifs, synthese, urgences, alertes, echeances]
+  const blocs = [effectifs, synthese, urgences, echeances]   // MODIFIÉ
   const enChargement = blocs.some((b) => b.isLoading)
   const rafraichissement = enChargement && blocs.some((b) => b.data != null)
 
-  useEffect(() => { rafraichirBadge() }, [rafraichirBadge])
+  // SUPPRIMÉ : useEffect(() => { rafraichirBadge() }, [rafraichirBadge])
   useEffect(() => { setActualiseA(new Date()) }, [cle])
   const versionInitiale = useRef(version)
   useEffect(() => {
@@ -48,8 +49,9 @@ export function TableauDeBordAdmin() {
   }, [version, synthese.reload, urgences.reload])
 
   const actualiser = () => {
-    effectifs.reload(); synthese.reload(); urgences.reload(); alertes.reload(); echeances.reload()
-    rafraichirBadge()
+    // SUPPRIMÉ : effectifs.reload(); synthese.reload(); urgences.reload(); alertes.reload(); echeances.reload()
+    effectifs.reload(); synthese.reload(); urgences.reload(); echeances.reload()   // MODIFIÉ
+    // SUPPRIMÉ : rafraichirBadge()
     setActualiseA(new Date())
   }
   return <div className="flex flex-col gap-6">
@@ -60,7 +62,8 @@ export function TableauDeBordAdmin() {
     <BarrePortee valeur={portee} onChange={changerPortee} />
     <div aria-busy={enChargement} className={`flex flex-col gap-6 transition-opacity ${rafraichissement ? 'opacity-60' : ''}`}>
       {synthese.data && !synthese.data.dateReprise && <div className="rounded-lg border border-warning/30 bg-warning-light px-4 py-3 text-[13px] text-warning">La date de reprise (<code>dossiers.date-reprise</code>) n'est pas définie : aucun dossier n'est créé automatiquement, donc les indicateurs de dossiers restent vides.</div>}
-      <ZoneIndicateurs effectifs={effectifs} synthese={synthese} urgences={urgences} alertes={alertes} echeances={echeances} portee={portee} />
+      {/* SUPPRIMÉ : <ZoneIndicateurs effectifs={effectifs} synthese={synthese} urgences={urgences} alertes={alertes} echeances={echeances} portee={portee} /> */}
+      <ZoneIndicateurs effectifs={effectifs} synthese={synthese} urgences={urgences} echeances={echeances} portee={portee} />{/* MODIFIÉ */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2"><RepartitionTypes etat={echeances} /><EcheancesImminentes etat={echeances} /></div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-12">
         <GraphiqueAges etat={effectifs} className="xl:col-span-5" />

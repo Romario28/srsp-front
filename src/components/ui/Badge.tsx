@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
 
 type Tone = 'success' | 'warning' | 'danger' | 'neutral' | 'accent' | 'violet'
 
@@ -36,12 +36,13 @@ export function TypeAccesBadge({ typeAcces }: { typeAcces: string }) {
     : <Badge tone="neutral">Lecture seule</Badge>
 }
 
-export function StatutAlerteBadge({ statut }: { statut: string }) {
-  const map: Record<string, { tone: Tone; label: string }> = {
-    NOUVELLE: { tone: 'accent', label: 'Nouvelle' },
-    VUE: { tone: 'neutral', label: 'Vue' },
-    ACQUITTEE: { tone: 'success', label: 'Acquittée' },
-  }
-  const config = map[statut] ?? { tone: 'neutral', label: statut }
-  return <Badge tone={config.tone}>{config.label}</Badge>
-}
+// SUPPRIMÉ : utilisé seulement par les écrans d'alertes
+// export function StatutAlerteBadge({ statut }: { statut: string }) {
+//   const map: Record<string, { tone: Tone; label: string }> = {
+//     NOUVELLE: { tone: 'accent', label: 'Nouvelle' },
+//     VUE: { tone: 'neutral', label: 'Vue' },
+//     ACQUITTEE: { tone: 'success', label: 'Acquittée' },
+//   }
+//   const config = map[statut] ?? { tone: 'neutral', label: statut }
+//   return <Badge tone={config.tone}>{config.label}</Badge>
+// }

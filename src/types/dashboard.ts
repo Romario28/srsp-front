@@ -1,7 +1,7 @@
-import type { DossierDTO } from './dossier'
+﻿import type { DossierDTO } from './dossier'
 import type { Page } from './api'
 
-export interface CompteursAlertes { nouvelles: number; anomalies: number }
+// SUPPRIMÉ : export interface CompteursAlertes { nouvelles: number; anomalies: number }
 export interface EcheancesAVenirDTO {
   jours: number
   du: string
