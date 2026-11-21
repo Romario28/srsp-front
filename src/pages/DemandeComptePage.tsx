@@ -11,7 +11,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { APP_NAME, APP_NAME_LONG } from '@/config/app'
-import { FONCTIONS, TACHES, type CleFonction, type CleTache } from '@/config/documents'
+import { TACHES, type CleTache } from '@/config/documents'
 import { genererDocuments, type DonneesDocuments } from '@/utils/documentsCompte'
 import { ROLE_LABELS } from '@/utils/roles'
 
@@ -23,7 +23,7 @@ const PROFILS = [
 
 // champs obligatoires, dans l'ordre du formulaire : libellé affiché dans l'aide, identifiant pour y placer le curseur
 type Cle = 'matricule' | 'prenom' | 'nom' | 'email' | 'password' | 'confirmation' | 'departement'
-  | 'cin' | 'contact' | 'region' | 'fonction' | 'fonctionPrecision' | 'taches' | 'tachesPrecision'
+  | 'cin' | 'contact' | 'region' | 'fonction' | 'taches' | 'tachesPrecision'
 const CHAMPS: readonly { cle: Cle; label: string; id: string }[] = [
   { cle: 'matricule', label: 'Matricule', id: 'champ-matricule' },
   { cle: 'cin', label: 'CIN', id: 'champ-cin' },
@@ -36,10 +36,9 @@ const CHAMPS: readonly { cle: Cle; label: string; id: string }[] = [
   { cle: 'departement', label: 'Département', id: 'champ-departement' },
   { cle: 'region', label: 'Région', id: 'champ-region' },
   { cle: 'fonction', label: 'Fonction', id: 'champ-fonction' },
-  { cle: 'fonctionPrecision', label: 'Précision de la fonction', id: 'champ-fonctionPrecision' },
   { cle: 'taches', label: 'Tâches', id: 'champ-taches' },
   { cle: 'tachesPrecision', label: 'Précision des autres tâches', id: 'champ-tachesPrecision' },
-]   // [MODIFIÉ] ordre aligné sur la nouvelle disposition (CIN et Contact rejoignent l'identité)
+]
 
 /** Place le curseur sur le champ ; pour un groupe (fonction, tâches), sur son premier choix. */
 function focaliser(id: string) {
@@ -48,7 +47,7 @@ function focaliser(id: string) {
   cible?.focus()
 }
 
-// [NOUVEAU] bloc visuel : titre, courte aide, contenu
+// bloc visuel : titre, courte aide, contenu
 function Bloc({ titre, aide, children }: { titre: string; aide?: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-2.5 rounded-xl border border-[#E4E6EB] bg-white px-4 py-3">
@@ -61,7 +60,7 @@ function Bloc({ titre, aide, children }: { titre: string; aide?: string; childre
   )
 }
 
-// [NOUVEAU] deux champs côte à côte dès la petite largeur, empilés sur mobile
+// deux champs côte à côte dès la petite largeur, empilés sur mobile
 const PAIRE = 'grid grid-cols-1 gap-x-3 gap-y-2.5 sm:grid-cols-2'
 
 interface Envoi { message: string; donnees: DonneesDocuments }
@@ -81,8 +80,7 @@ export function DemandeComptePage() {
   const [cin, setCin] = useState('')
   const [contact, setContact] = useState('')
   const [region, setRegion] = useState('')
-  const [fonction, setFonction] = useState<CleFonction | ''>('')
-  const [fonctionPrecision, setFonctionPrecision] = useState('')
+  const [fonction, setFonction] = useState('')
   const [taches, setTaches] = useState<CleTache[]>([])
   const [tachesPrecision, setTachesPrecision] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -112,8 +110,7 @@ export function DemandeComptePage() {
     cin: cin.trim() === '',
     contact: contact.trim() === '',
     region: region.trim() === '',
-    fonction: fonction === '',
-    fonctionPrecision: fonction === 'AUTRES' && fonctionPrecision.trim() === '',
+    fonction: fonction.trim() === '',
     taches: taches.length === 0,
     tachesPrecision: taches.includes('AUTRES') && tachesPrecision.trim() === '',
   }
@@ -136,7 +133,7 @@ export function DemandeComptePage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const choisi = liste.find((d) => String(d.id) === departementId)
-    if (!valide || fonction === '' || !choisi) return
+    if (!valide || !choisi) return
     setError(null)
     setEnvoi(true)
     try {
@@ -148,7 +145,8 @@ export function DemandeComptePage() {
       const donnees: DonneesDocuments = {
         matricule: matricule.trim(), nom: nom.trim(), prenom: prenom.trim(), cin: cin.trim(), contact: contact.trim(),
         email: email.trim(), departement: choisi.libelle, region: region.trim(),
-        fonction, fonctionPrecision: fonctionPrecision.trim(), taches, tachesPrecision: tachesPrecision.trim(),
+        fonction: fonction.trim(),
+        taches, tachesPrecision: tachesPrecision.trim(),
       }
       setPassword('')
       setConfirmation('')
@@ -160,7 +158,6 @@ export function DemandeComptePage() {
     }
   }
 
-  // [MODIFIÉ] un seul fichier
   const telecharger = async () => {
     if (!envoye) return
     setPdfEnCours(true)
@@ -175,7 +172,6 @@ export function DemandeComptePage() {
     }
   }
 
-  // [MODIFIÉ] page alignée en haut (pas centrée verticalement), marges réduites, largeur selon l'écran affiché
   return (
     <div className="flex min-h-screen items-start justify-center bg-canvas px-4 py-5">
       <div className={`w-full ${envoye ? 'max-w-lg' : 'max-w-3xl'}`}>
@@ -213,7 +209,6 @@ export function DemandeComptePage() {
           </>
         ) : (
           <>
-            {/* [MODIFIÉ] en-tête sur une seule ligne : logo, nom, titre ; l'intitulé long n'apparaît plus ici */}
             <header className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1" title={APP_NAME_LONG}>
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink"><ShieldCheck className="h-4.5 w-4.5 text-white" /></div>
               <span className="font-display text-[14px] font-semibold tracking-wide text-ink">{APP_NAME}</span>
@@ -249,7 +244,6 @@ export function DemandeComptePage() {
                 </div>
               </Bloc>
 
-              {/* [MODIFIÉ] ligne 1 : mots de passe ; ligne 2 : profil et département côte à côte */}
               <Bloc titre="Compte et sécurité" aide="Mot de passe : 8 caractères minimum. Le département est transmis avec la demande ; il n'accorde aucun droit.">
                 <div className={PAIRE}>
                   <Input id="champ-password" label="Mot de passe" type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
@@ -263,7 +257,6 @@ export function DemandeComptePage() {
                   <Select label="Profil demandé" required value={profil} onChange={(e) => setProfil(e.target.value)}>
                     {PROFILS.map(({ role }) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
                   </Select>
-                  {/* [DÉPLACÉ] était dans « Informations professionnelles » ; title : libellé complet au survol, car la liste est étroite */}
                   <Select id="champ-departement" label="Département" required value={departementId} onChange={(e) => setDepartementId(e.target.value)}
                     onBlur={() => toucher('departement')} error={erreurChamp('departement', 'Choisissez un département.')}
                     title={liste.find((d) => String(d.id) === departementId)?.libelle}
@@ -286,34 +279,15 @@ export function DemandeComptePage() {
                 )}
               </Bloc>
 
-              {/* [MODIFIÉ] le département n'est plus ici : Région et Fonction à gauche, Tâches à droite */}
               <Bloc titre="Informations professionnelles"
                 aide="Ces informations servent uniquement à préremplir vos documents : elles ne sont ni envoyées ni conservées, et n'accordent aucun droit.">
                 <div className="grid grid-cols-1 gap-x-4 gap-y-2.5 md:grid-cols-2">
                   <div className="flex flex-col gap-2.5">
                     <Input id="champ-region" label="Région" required value={region} onChange={(e) => setRegion(e.target.value)} maxLength={100}
                       onBlur={() => toucher('region')} error={erreurChamp('region')} placeholder="Haute Matsiatra" />
-
-                    <div className="flex flex-col gap-1.5">
-                      <div id="champ-fonction" role="radiogroup" aria-label="Fonction" aria-invalid={afficher('fonction')}
-                        className={`flex flex-col gap-1 rounded-lg border p-1.5 ${afficher('fonction') ? 'border-danger bg-danger-light/40' : 'border-transparent'}`}>
-                        <span className="text-[13px] font-medium text-ink">Fonction <span className="text-danger">*</span></span>
-                        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                          {FONCTIONS.map((f) => (
-                            <label key={f.cle} className="flex items-center gap-2 text-[13px] text-ink">
-                              <input type="radio" name="fonction" checked={fonction === f.cle} onChange={() => setFonction(f.cle)} className="h-4 w-4 accent-accent" />
-                              {f.label}
-                            </label>
-                          ))}
-                        </div>
-                        {afficher('fonction') && <p role="alert" className="text-[12px] text-danger">Choisissez une fonction.</p>}
-                      </div>
-                      {fonction === 'AUTRES' && (
-                        <Input id="champ-fonctionPrecision" label="Précisez la fonction" required value={fonctionPrecision}
-                          onChange={(e) => setFonctionPrecision(e.target.value)} maxLength={100}
-                          onBlur={() => toucher('fonctionPrecision')} error={erreurChamp('fonctionPrecision')} />
-                      )}
-                    </div>
+                    {/* [MODIFIÉ] champ de saisie libre à la place des boutons radio */}
+                    <Input id="champ-fonction" label="Fonction" required value={fonction} onChange={(e) => setFonction(e.target.value)} maxLength={100}
+                      onBlur={() => toucher('fonction')} error={erreurChamp('fonction')} placeholder="Ex. : Chef de bureau" autoComplete="organization-title" />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
@@ -337,7 +311,6 @@ export function DemandeComptePage() {
                 </div>
               </Bloc>
 
-              {/* [MODIFIÉ] bouton et aide sur une même zone, sans marge supplémentaire */}
               <div className="flex flex-col gap-1.5">
                 <Button type="submit" isLoading={envoi} disabled={!valide} className="w-full">Envoyer la demande</Button>
                 {!valide && (

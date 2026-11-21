@@ -1,8 +1,8 @@
 ﻿import type { jsPDF } from 'jspdf'
 import { APP_NAME } from '@/config/app'
 import {
-  DESTINATAIRE_DEMANDE, ENTETE_ADMINISTRATION, FONCTIONS, LIBELLE_APPLICATION_LETTRE, LIEU_DOCUMENTS, LOGO_URL, TACHES,   // [MODIFIÉ] LIEU_DOCUMENTS remplace LIEU_DEMANDE et LIEU_LETTRE
-  type CleFonction, type CleTache,
+  DESTINATAIRE_DEMANDE, ENTETE_ADMINISTRATION, LIBELLE_APPLICATION_LETTRE, LIEU_DOCUMENTS, LOGO_URL, TACHES,
+  type CleTache,
 } from '@/config/documents'
 
 export interface DonneesDocuments {
@@ -14,19 +14,18 @@ export interface DonneesDocuments {
   email: string
   departement: string
   region: string
-  fonction: CleFonction
-  fonctionPrecision: string
+  fonction: string
   taches: CleTache[]
   tachesPrecision: string
 }
 
-type Logo = { data: string; format: 'PNG' | 'JPEG' } | null   // [NOUVEAU]
+type Logo = { data: string; format: 'PNG' | 'JPEG' } | null
 
 const MARGE = 20
 const LARGEUR_PAGE = 210
 
 async function nouveauDocument(): Promise<jsPDF> {
-  const { jsPDF: JsPdf } = await import('jspdf')   // chargé à la demande : hors du paquet principal
+  const { jsPDF: JsPdf } = await import('jspdf')
   const doc = new JsPdf({ unit: 'mm', format: 'a4' })
   doc.setFont('times', 'normal')
   return doc
@@ -60,11 +59,6 @@ function identite(d: DonneesDocuments): string {
   return `${d.nom.toUpperCase()} ${d.prenom}`.trim()
 }
 
-function libelleFonction(d: DonneesDocuments): string {
-  if (d.fonction === 'AUTRES') return d.fonctionPrecision.trim()
-  return FONCTIONS.find((f) => f.cle === d.fonction)?.label ?? ''
-}
-
 function texteSouligne(doc: jsPDF, texte: string, x: number, y: number, options?: { align?: 'center' }) {
   doc.text(texte, x, y, options)
   const largeur = doc.getTextWidth(texte)
@@ -83,7 +77,7 @@ function caseACocher(doc: jsPDF, x: number, y: number, cochee: boolean) {
   }
 }
 
-/** [MODIFIÉ] logo déjà chargé, lieu commun aux deux documents. Renvoie l'ordonnée où poursuivre. */
+/** logo déjà chargé, lieu commun aux deux documents. Renvoie l'ordonnée où poursuivre. */
 function enTete(doc: jsPDF, logo: Logo, avecDestinataire: boolean): number {
   let y = 18
   if (logo) {
@@ -127,7 +121,6 @@ function ligneChamp(doc: jsPDF, label: string, valeur: string, y: number, xValeu
 }
 
 // ── Page : demande de création ou de modification de login ──────────────────
-// [MODIFIÉ] dessine sur le document reçu, sans le créer ni l'enregistrer
 
 function dessinerDemandeLogin(doc: jsPDF, logo: Logo, d: DonneesDocuments) {
   doc.setFont('times', 'normal')
@@ -154,7 +147,7 @@ function dessinerDemandeLogin(doc: jsPDF, logo: Logo, d: DonneesDocuments) {
   const largeur = 170
   const xSeparation = x0 + 70
   const hauteurEntete = 7
-  const hauteurCorps = 76
+  const hauteurCorps = 50   // [MODIFIÉ] était 76 : il n'y a plus que trois tâches
   doc.setLineWidth(0.2)
   doc.rect(x0, y, largeur, hauteurEntete + hauteurCorps)
   doc.line(xSeparation, y, xSeparation, y + hauteurEntete + hauteurCorps)
@@ -163,17 +156,9 @@ function dessinerDemandeLogin(doc: jsPDF, logo: Logo, d: DonneesDocuments) {
   doc.text('Fonction', x0 + 35, y + 4.8, { align: 'center' })
   doc.text('Tâches', xSeparation + 50, y + 4.8, { align: 'center' })
 
+  // [MODIFIÉ] la fonction saisie s'écrit telle quelle, à la ligne si elle est longue (plus de cases à cocher)
   doc.setFontSize(10)
-  FONCTIONS.forEach((f, i) => {
-    const yy = y + hauteurEntete + 9 + i * 10
-    caseACocher(doc, x0 + 4, yy, d.fonction === f.cle)
-    doc.text(f.label, x0 + 10, yy)
-    if (f.cle === 'AUTRES' && d.fonction === 'AUTRES' && d.fonctionPrecision.trim()) {
-      doc.setFontSize(8)
-      doc.text(doc.splitTextToSize(d.fonctionPrecision.trim(), 55) as string[], x0 + 10, yy + 4.5)
-      doc.setFontSize(10)
-    }
-  })
+  doc.text(doc.splitTextToSize(d.fonction.trim(), 62) as string[], x0 + 4, y + hauteurEntete + 9)
 
   TACHES.forEach((t, i) => {
     const yy = y + hauteurEntete + 9 + i * 14
@@ -217,7 +202,7 @@ function dessinerLettreEngagement(doc: jsPDF, logo: Logo, d: DonneesDocuments) {
   doc.setFont('times', 'normal')
   y += 9
 
-  const corps = `IM ${d.matricule}, agissant en qualité de ${libelleFonction(d)}, au sein du ${d.departement}, `
+  const corps = `IM ${d.matricule}, agissant en qualité de ${d.fonction.trim()}, au sein du ${d.departement}, `
     + `m'engage à utiliser l'application ${LIBELLE_APPLICATION_LETTRE} (${APP_NAME}) en veillant à son usage personnel `
     + 'à des fins strictement professionnelles avec la préservation de la confidentialité de l\'information qui en découle '
     + 'et à éviter toute utilisation abusive.'
@@ -236,7 +221,7 @@ function dessinerLettreEngagement(doc: jsPDF, logo: Logo, d: DonneesDocuments) {
 
 // ── Fichier unique ──────────────────────────────────────────────────────────
 
-/** [NOUVEAU] remplace genererDemandeLogin et genererLettreEngagement : un seul PDF, demande en page 1, lettre en page 2. */
+/** remplace genererDemandeLogin et genererLettreEngagement : un seul PDF, demande en page 1, lettre en page 2. */
 export async function genererDocuments(d: DonneesDocuments): Promise<void> {
   const [doc, logo] = await Promise.all([nouveauDocument(), chargerLogo()])
   dessinerDemandeLogin(doc, logo, d)
