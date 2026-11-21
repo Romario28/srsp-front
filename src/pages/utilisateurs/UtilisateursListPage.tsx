@@ -75,7 +75,7 @@ export function UtilisateursListPage() {
               <tr>
                 <th className="table-head-cell">Compte</th>
                 <th className="table-head-cell">Agent lié</th>
-                <th className="table-head-cell">Rôles</th>
+                <th className="table-head-cell">Rôle</th>   {/* [MODIFIÉ] était : Rôles */}
                 <th className="table-head-cell">Périmètre</th>
                 <th className="table-head-cell">Dernière connexion</th>
                 <th className="table-head-cell">Statut</th>
@@ -84,7 +84,7 @@ export function UtilisateursListPage() {
             </thead>
             <tbody className="divide-y divide-[#EAEBF0]">
               {utilisateurs.map((u) => {
-                const admin = u.roles.includes('ROLE_ADMIN')
+                const admin = u.role === 'ROLE_ADMIN'   // [MODIFIÉ] était : u.roles.includes('ROLE_ADMIN')
                 return (
                   <tr key={u.id} className="hover:bg-[#FAFAFB]">
                     <td className="table-cell">
@@ -92,7 +92,8 @@ export function UtilisateursListPage() {
                       {u.nomComplet && <p className="text-[12px] text-[#9CA0AC]">{u.email}</p>}
                     </td>
                     <td className="table-cell whitespace-nowrap font-mono text-[12.5px] text-[#4B4F5A]">{u.matriculeAgent ?? '—'}</td>
-                    <td className="table-cell"><div className="flex flex-wrap gap-1">{u.roles.map((r) => <Badge key={r} tone="accent">{roleLabel(r)}</Badge>)}</div></td>
+                    {/* [MODIFIÉ] était : <div className="flex flex-wrap gap-1">{u.roles.map(...)}</div> */}
+                    <td className="table-cell"><Badge tone="accent">{roleLabel(u.role)}</Badge></td>
                     <td className="table-cell text-[13px]"><ResumePerimetre perimetre={u.perimetre} admin={admin} /></td>
                     <td className="table-cell whitespace-nowrap text-[#4B4F5A]">{formatDateTime(u.dateDerniereConnexion)}</td>
                     <td className="table-cell">

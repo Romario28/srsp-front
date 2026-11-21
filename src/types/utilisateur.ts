@@ -25,7 +25,7 @@ export interface UtilisateurDTO {
   dateDerniereConnexion: string | null
   nomComplet: string
   matriculeAgent: string | null
-  roles: string[]
+  role: string   // [MODIFIÉ] un seul rôle (était : roles: string[])
   perimetre: PerimetreDTO
   agirSurSonDossier: boolean
 }
@@ -40,7 +40,7 @@ export interface UtilisateurDetailDTO {
   nom: string | null
   prenom: string | null
   matriculeAgent: string | null
-  roles: string[]
+  role: string   // [MODIFIÉ] un seul rôle (était : roles: string[])
   perimetre: PerimetreDTO
   agentLie: AgentLieDTO | null
   agirSurSonDossier: boolean
@@ -50,7 +50,7 @@ export interface UpdateUtilisateurRequest {
   nom: string
   prenom: string
   matriculeAgent: string   // vide = pas de lien
-  roles: string[]
+  role: string             // [MODIFIÉ] un seul rôle (était : roles: string[])
   perimetre: PerimetreDTO
   agirSurSonDossier?: boolean
 }

@@ -45,7 +45,8 @@ function Contenu({ id, onClose, onModifier }: { id: number; onClose: () => void;
   if (!data) return null
 
   const nomComplet = [data.prenom, data.nom].filter(Boolean).join(' ')
-  const admin = data.roles.includes('ROLE_ADMIN')
+  // [MODIFIÉ] était : const admin = data.roles.includes('ROLE_ADMIN')
+  const admin = data.role === 'ROLE_ADMIN'
   return (
     <div className="flex flex-col gap-4">
       <header className="flex flex-wrap items-start justify-between gap-3">
@@ -57,7 +58,8 @@ function Contenu({ id, onClose, onModifier }: { id: number; onClose: () => void;
         <h4 className="font-display text-[13px] font-semibold text-ink">Compte</h4>
         <dl className="grid grid-cols-[8.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 text-[13px]">
           {nomComplet && <Ligne label="E-mail">{data.email}</Ligne>}
-          <Ligne label="Rôles"><span className="flex flex-wrap gap-1">{data.roles.map((r) => <Badge key={r} tone="accent">{roleLabel(r)}</Badge>)}</span></Ligne>
+          {/* [MODIFIÉ] un seul rôle (était : <Ligne label="Rôles"> avec data.roles.map(...)) */}
+          <Ligne label="Rôle"><Badge tone="accent">{roleLabel(data.role)}</Badge></Ligne>
           <Ligne label="Créé le">{formatDateTime(data.dateCreation)}</Ligne>
           <Ligne label="Dernière connexion">{formatDateTime(data.dateDerniereConnexion)}</Ligne>
         </dl>
@@ -78,7 +80,7 @@ function Contenu({ id, onClose, onModifier }: { id: number; onClose: () => void;
               ))}
             </dl>
             {perimetreVide(data.perimetre) && (
-              <p className="rounded-lg border border-warning/30 bg-warning-light px-3 py-2 text-[12.5px] text-warning">Aucune valeur : ce compte ne voit aucun agent.</p>
+              <p className="rounded-lg border border-warning/30 bg-warning-light px-3 py-2 text-[12.5px] text-warning">Aucune valeur : ce compte ne verra aucun agent.</p>
             )}
           </>
         )}
