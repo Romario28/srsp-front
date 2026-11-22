@@ -1,41 +1,43 @@
-﻿import { NavLink } from 'react-router-dom'
-// MODIFIÉ : « Bell » retiré (icône des alertes)
-import { LayoutDashboard, UserCog, UserCheck, Building2, ScrollText, ShieldCheck, Hourglass, TrendingUp, GraduationCap, BadgeCheck, CalendarClock, CalendarDays, AlertTriangle, SlidersHorizontal, Upload, UserPlus, ClipboardList, User } from 'lucide-react'
+﻿import { useEffect, useId, useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { LayoutDashboard, UserCog, UserCheck, Building2, ScrollText, ShieldCheck, Hourglass, TrendingUp, CalendarClock, CalendarDays, AlertTriangle, SlidersHorizontal, Upload, UserPlus, ClipboardList, User, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin, isAgent, peutVoirAnticipation, peutVoirUtilisateurs } from '@/utils/roles'
-// SUPPRIMÉ : import { useAlertesNouvelles } from '@/hooks/useAlertesNouvelles'
 import { useDemandesComptes } from '@/hooks/useDemandesComptes'
-import { APP_NAME, APP_NAME_LONG, APP_VERSION } from '@/config/app'
+import { APP_NAME, APP_NAME_LONG } from '@/config/app'
 
 type Visible = (roles: string[] | undefined) => boolean
-// SUPPRIMÉ : type CleBadge = 'alertes' | 'demandes'
-type CleBadge = 'demandes'   // MODIFIÉ
-interface NavItem {
+type CleBadge = 'demandes'
+interface NavFeuille {
   to: string
   label: string
   icon: typeof LayoutDashboard
   visible: Visible
   badge?: CleBadge
 }
+interface NavEnfant { to: string; label: string; visible: Visible }
+interface NavParent { label: string; icon: typeof LayoutDashboard; enfants: NavEnfant[] }
+type NavEntree = NavFeuille | NavParent
+const estParent = (entree: NavEntree): entree is NavParent => 'enfants' in entree
 
 const LIBELLE_BADGE: Record<CleBadge, (n: number) => string> = {
-  // SUPPRIMÉ : alertes: (n) => `${n} alerte${n > 1 ? 's' : ''} nouvelle${n > 1 ? 's' : ''}`,
   demandes: (n) => `${n} demande${n > 1 ? 's' : ''} de compte en attente`,
 }
 
-const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
+const NAV_GROUPS: { titre?: string; items: NavEntree[] }[] = [
   { items: [
     { to: '/', label: 'Tableau de bord', icon: LayoutDashboard, visible: peutVoirAnticipation },
     { to: '/mon-espace', label: 'Mon Espace', icon: User, visible: isAgent },
   ] },
   { titre: 'Anticipation RH', items: [
-    // SUPPRIMÉ : { to: '/anticipation/alertes', label: 'Alertes', icon: Bell, visible: peutVoirAnticipation, badge: 'alertes' },
     { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, visible: peutVoirAnticipation },
     { to: '/anticipation/calendrier', label: 'Calendrier', icon: CalendarDays, visible: peutVoirAnticipation },
     { to: '/anticipation/retraite', label: 'Départs à la retraite', icon: Hourglass, visible: peutVoirAnticipation },
-    { to: '/anticipation/avancement', label: 'Avancements', icon: TrendingUp, visible: peutVoirAnticipation },
-    { to: '/anticipation/avancement-classe', label: 'Avancements de classe', icon: GraduationCap, visible: peutVoirAnticipation },
-    { to: '/anticipation/titularisation', label: 'Titularisations', icon: BadgeCheck, visible: peutVoirAnticipation },
+    { label: 'Avancements', icon: TrendingUp, enfants: [
+      { to: '/anticipation/avancement', label: "Avancements d'échelon", visible: peutVoirAnticipation },
+      { to: '/anticipation/avancement-classe', label: 'Avancements de classe', visible: peutVoirAnticipation },
+      { to: '/anticipation/titularisation', label: 'Titularisations', visible: peutVoirAnticipation },
+    ] },
     { to: '/anticipation/fin-contrat', label: 'Fins de contrat', icon: CalendarClock, visible: peutVoirAnticipation },
     { to: '/anticipation/integration', label: 'Intégrations', icon: UserPlus, visible: peutVoirAnticipation },
     { to: '/anticipation/anomalies', label: 'Anomalies', icon: AlertTriangle, visible: peutVoirAnticipation },
@@ -50,14 +52,48 @@ const NAV_GROUPS: { titre?: string; items: NavItem[] }[] = [
   ] },
 ]
 
+/**
+ * Menu parent : le chevron indique qu'il se déroule. Il reste ouvert, avec l'état actif,
+ * tant que l'on est sur l'une de ses pages (même règle que NavLink : adresse identique ou sous-adresse).
+ */
+function MenuParent({ parent, roles }: { parent: NavParent; roles: string[] | undefined }) {
+  const { pathname } = useLocation()
+  const enfants = parent.enfants.filter((enfant) => enfant.visible(roles))
+  const actif = enfants.some((enfant) => pathname === enfant.to || pathname.startsWith(`${enfant.to}/`))
+  const [ouvert, setOuvert] = useState(actif)
+  const idPanneau = useId()
+  useEffect(() => { if (actif) setOuvert(true) }, [actif])
+  const affiche = ouvert || actif
+  return (
+    <div>
+      <button type="button" aria-expanded={affiche} aria-controls={idPanneau}
+        onClick={() => { if (!actif) setOuvert((courant) => !courant) }}
+        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13.5px] font-medium transition-colors ${actif ? 'bg-ink-light text-white' : 'text-white/65 hover:bg-ink-light hover:text-white'}`}>
+        <parent.icon className="h-[17px] w-[17px]" />{parent.label}
+        <ChevronDown aria-hidden="true" className={`ml-auto h-4 w-4 transition-transform ${affiche ? 'rotate-180' : ''}`} />
+      </button>
+      {affiche && (
+        <div id={idPanneau} className="mt-1 space-y-1">
+          {enfants.map((enfant) => (
+            <NavLink key={enfant.to} to={enfant.to} className={({ isActive }) =>
+              `flex items-center rounded-lg py-2 pl-10 pr-3 text-[13px] font-medium transition-colors ${isActive ? 'bg-ink-lighter text-white' : 'text-white/60 hover:bg-ink-light hover:text-white'}`
+            }>{enfant.label}</NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function Sidebar() {
   const { user } = useAuth()
-  // SUPPRIMÉ : const { count: alertes } = useAlertesNouvelles()
   const { count: demandes } = useDemandesComptes()
-  // SUPPRIMÉ : const compteurs: Record<CleBadge, number | null> = { alertes, demandes }
-  const compteurs: Record<CleBadge, number | null> = { demandes }   // MODIFIÉ
+  const compteurs: Record<CleBadge, number | null> = { demandes }
   const groupes = NAV_GROUPS
-    .map((groupe) => ({ ...groupe, items: groupe.items.filter((item) => item.visible(user?.roles)) }))
+    .map((groupe) => ({
+      ...groupe,
+      items: groupe.items.filter((item) => estParent(item) ? item.enfants.some((enfant) => enfant.visible(user?.roles)) : item.visible(user?.roles)),
+    }))
     .filter((groupe) => groupe.items.length > 0)
 
   return (
@@ -69,12 +105,13 @@ export function Sidebar() {
         <p className="font-display text-[16px] font-semibold leading-none tracking-wide">{APP_NAME}</p>
       </div>
 
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3">
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-4">
         {groupes.map((groupe) => (
           <div key={groupe.titre ?? 'principal'}>
             {groupe.titre && <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wide text-white/50">{groupe.titre}</p>}
             <div className="space-y-1">
               {groupe.items.map((item) => {
+                if (estParent(item)) return <MenuParent key={item.label} parent={item} roles={user?.roles} />
                 const n = item.badge ? compteurs[item.badge] : null
                 return (
                   <NavLink key={item.to} to={item.to} end={item.to === '/'} className={({ isActive }) =>
@@ -89,10 +126,6 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-
-      <div className="border-t border-white/10 px-5 py-4">
-        <p className="text-[11px] text-white/40">{APP_NAME} - v{APP_VERSION}</p>
-      </div>
     </aside>
   )
 }
