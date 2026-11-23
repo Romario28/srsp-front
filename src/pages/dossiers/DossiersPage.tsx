@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AlertTriangle, ClipboardList, Layers, RefreshCw, Search, Users, X } from 'lucide-react'
 import { useFetch } from '@/hooks/useFetch'
+import { useCompteursMenu } from '@/hooks/useCompteursMenu'   // [NOUVEAU]
 import { dossiersApi } from '@/api/dossiers'
 import { TYPE_LABELS, TYPES_ECHEANCE } from '@/utils/anticipation'
 import { filtresDepuisUrl, nbFiltres } from '@/utils/filtresAgents'
@@ -49,6 +50,7 @@ function grouper(lignes: DossierDTO[]): GroupeAgent[] {
 
 export function DossiersPage() {
   const [params] = useSearchParams()
+  const { refresh: rafraichirMenu } = useCompteursMenu()   // [NOUVEAU]
   const matriculeUrl = (params.get('matricule') ?? '').trim()
   const [vue, setVue] = useState<VueDossier>(() => VUES_DOSSIER.find((v) => v === params.get('vue')) ?? 'A_TRAITER')
   const [inverse, setInverse] = useState(false)
@@ -103,8 +105,9 @@ export function DossiersPage() {
   const appliquer = (maj: DossierDTO) => {
     setSurcharges((c) => ({ ...c, [maj.id]: maj }))
     synthese.reload()
+    rafraichirMenu('dossiers')   // [NOUVEAU] la pastille suit aussitôt un démarrage ou un classement sans suite
   }
-  const actualiser = () => { reload(); synthese.reload() }
+  const actualiser = () => { reload(); synthese.reload(); rafraichirMenu('dossiers') }   // [MODIFIÉ] + rafraîchissement du menu
 
   const options: { value: VueDossier; label: string; count?: number }[] = [
     { value: 'A_TRAITER', label: 'À traiter', count: s?.aTraiter },

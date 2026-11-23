@@ -1,15 +1,15 @@
 ﻿import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
-// SUPPRIMÉ : import { AlertesNouvellesProvider } from '@/context/AlertesNouvellesContext'
+import { CompteursMenuProvider } from '@/context/CompteursMenuContext'   // [NOUVEAU]
 import { DemandesComptesProvider } from '@/context/DemandesComptesContext'
 import { DossierApercuProvider } from '@/context/DossierApercuContext'
 
 export function AppLayout() {
   return (
     <DemandesComptesProvider>
-    {/* SUPPRIMÉ : <AlertesNouvellesProvider> */}
     <DossierApercuProvider>
+    <CompteursMenuProvider>{/* [NOUVEAU] sous DossierApercuProvider : il en lit la version */}
     <div className="flex h-screen overflow-hidden bg-canvas">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
@@ -19,8 +19,8 @@ export function AppLayout() {
         </main>
       </div>
     </div>
+    </CompteursMenuProvider>
     </DossierApercuProvider>
-    {/* SUPPRIMÉ : </AlertesNouvellesProvider> */}
     </DemandesComptesProvider>
   )
 }

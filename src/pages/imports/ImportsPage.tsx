@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Info } from 'lucide-react'
 import { importsApi } from '@/api/imports'
 import { estErreurReseau, extractErrorMessage } from '@/api/client'
+import { useCompteursMenu } from '@/hooks/useCompteursMenu'   // [NOUVEAU]
 import { ETAPES, IMPORT_SPECS, REGLES_COMMUNES } from './importSpecs'
 import { analyserRapport } from './rapport'
 import { ImportCard } from './ImportCard'
 import type { EtatImport, ImportKey } from '@/types/import'
 
 export function ImportsPage() {
+  const { refresh: rafraichirMenu } = useCompteursMenu()   // [NOUVEAU]
   const [ouvert, setOuvert] = useState<ImportKey | null>('grade')
   const [fichiers, setFichiers] = useState<Partial<Record<ImportKey, File | null>>>({})
   const [etats, setEtats] = useState<Partial<Record<ImportKey, EtatImport>>>({})
@@ -36,6 +38,7 @@ export function ImportsPage() {
       const rapport = await importsApi.importer(cle, fichier)
       majEtat(cle, { phase: 'termine', ...base, dureeMs: Date.now() - debut, rapport })
       setFichiers((current) => ({ ...current, [cle]: null }))
+      rafraichirMenu()   // [NOUVEAU] un import change les anomalies (et, au passage planifié, les dossiers)
     } catch (err) {
       majEtat(cle, { phase: 'echec', ...base, dureeMs: Date.now() - debut, erreur: extractErrorMessage(err, 'Import impossible'), erreurReseau: estErreurReseau(err) })
     }

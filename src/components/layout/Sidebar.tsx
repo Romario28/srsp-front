@@ -3,11 +3,12 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { LayoutDashboard, UserCog, UserCheck, Building2, ScrollText, ShieldCheck, Hourglass, TrendingUp, CalendarClock, CalendarDays, AlertTriangle, SlidersHorizontal, Upload, UserPlus, ClipboardList, User, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isAdmin, isAgent, peutVoirAnticipation, peutVoirUtilisateurs } from '@/utils/roles'
+import { useCompteursMenu } from '@/hooks/useCompteursMenu'   // [NOUVEAU]
 import { useDemandesComptes } from '@/hooks/useDemandesComptes'
 import { APP_NAME, APP_NAME_LONG } from '@/config/app'
 
 type Visible = (roles: string[] | undefined) => boolean
-type CleBadge = 'demandes'
+type CleBadge = 'dossiers' | 'anomalies' | 'demandes'   // [MODIFIÉ] était : 'demandes'
 interface NavFeuille {
   to: string
   label: string
@@ -20,7 +21,10 @@ interface NavParent { label: string; icon: typeof LayoutDashboard; enfants: NavE
 type NavEntree = NavFeuille | NavParent
 const estParent = (entree: NavEntree): entree is NavParent => 'enfants' in entree
 
+// [MODIFIÉ] libellé lu par les lecteurs d'écran, par pastille
 const LIBELLE_BADGE: Record<CleBadge, (n: number) => string> = {
+  dossiers: (n) => `${n} dossier${n > 1 ? 's' : ''} à traiter ou en retard`,
+  anomalies: (n) => `${n} anomalie${n > 1 ? 's' : ''} détectée${n > 1 ? 's' : ''}`,
   demandes: (n) => `${n} demande${n > 1 ? 's' : ''} de compte en attente`,
 }
 
@@ -30,7 +34,7 @@ const NAV_GROUPS: { titre?: string; items: NavEntree[] }[] = [
     { to: '/mon-espace', label: 'Mon Espace', icon: User, visible: isAgent },
   ] },
   { titre: 'Anticipation RH', items: [
-    { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, visible: peutVoirAnticipation },
+    { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, visible: peutVoirAnticipation, badge: 'dossiers' },   // [MODIFIÉ] + badge
     { to: '/anticipation/calendrier', label: 'Calendrier', icon: CalendarDays, visible: peutVoirAnticipation },
     { to: '/anticipation/retraite', label: 'Départs à la retraite', icon: Hourglass, visible: peutVoirAnticipation },
     { label: 'Avancements', icon: TrendingUp, enfants: [
@@ -40,7 +44,7 @@ const NAV_GROUPS: { titre?: string; items: NavEntree[] }[] = [
     ] },
     { to: '/anticipation/fin-contrat', label: 'Fins de contrat', icon: CalendarClock, visible: peutVoirAnticipation },
     { to: '/anticipation/integration', label: 'Intégrations', icon: UserPlus, visible: peutVoirAnticipation },
-    { to: '/anticipation/anomalies', label: 'Anomalies', icon: AlertTriangle, visible: peutVoirAnticipation },
+    { to: '/anticipation/anomalies', label: 'Anomalies', icon: AlertTriangle, visible: peutVoirAnticipation, badge: 'anomalies' },   // [MODIFIÉ] + badge
     { to: '/anticipation/configuration', label: 'Configuration', icon: SlidersHorizontal, visible: isAdmin },
   ] },
   { titre: 'Administration', items: [
@@ -52,10 +56,7 @@ const NAV_GROUPS: { titre?: string; items: NavEntree[] }[] = [
   ] },
 ]
 
-/**
- * Menu parent : le chevron indique qu'il se déroule. Il reste ouvert, avec l'état actif,
- * tant que l'on est sur l'une de ses pages (même règle que NavLink : adresse identique ou sous-adresse).
- */
+/** Menu parent : le chevron indique qu'il se déroule ; il reste ouvert, avec l'état actif, sur l'une de ses pages. */
 function MenuParent({ parent, roles }: { parent: NavParent; roles: string[] | undefined }) {
   const { pathname } = useLocation()
   const enfants = parent.enfants.filter((enfant) => enfant.visible(roles))
@@ -88,7 +89,8 @@ function MenuParent({ parent, roles }: { parent: NavParent; roles: string[] | un
 export function Sidebar() {
   const { user } = useAuth()
   const { count: demandes } = useDemandesComptes()
-  const compteurs: Record<CleBadge, number | null> = { demandes }
+  const { dossiers, anomalies } = useCompteursMenu()   // [NOUVEAU]
+  const compteurs: Record<CleBadge, number | null> = { dossiers, anomalies, demandes }   // [MODIFIÉ]
   const groupes = NAV_GROUPS
     .map((groupe) => ({
       ...groupe,
@@ -118,6 +120,7 @@ export function Sidebar() {
                     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13.5px] font-medium transition-colors ${isActive ? 'bg-ink-light text-white' : 'text-white/65 hover:bg-ink-light hover:text-white'}`
                   }>
                     <item.icon className="h-[17px] w-[17px]" />{item.label}
+                    {/* pastille : masquée quand le compteur est inconnu ou nul */}
                     {item.badge && n != null && n > 0 && <span aria-label={LIBELLE_BADGE[item.badge](n)} className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold leading-none text-white">{n > 99 ? '99+' : n}</span>}
                   </NavLink>
                 )

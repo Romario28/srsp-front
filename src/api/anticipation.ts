@@ -11,6 +11,9 @@ export const anticipationApi = {
     apiClient.get<AlerteAnticipation[]>(`/anticipation/${ECHEANCE_SLUGS[type]}`, { params: filtres, signal }).then((r) => r.data),
   anomalies: (filtres: FiltresAgents = {}, signal?: AbortSignal) =>
     apiClient.get<AlerteAnticipation[]>('/anticipation/anomalies', { params: filtres, signal }).then((r) => r.data),
+  // [NOUVEAU] badge du menu : nombre d'anomalies du périmètre du compte
+  compterAnomalies: (signal?: AbortSignal) =>
+    apiClient.get<number>('/anticipation/anomalies/compteur', { signal }).then((r) => r.data),
   optionsFiltres: (signal?: AbortSignal) =>
     apiClient.get<OptionsFiltres>('/anticipation/filtres', { signal }).then((r) => r.data),
 }
