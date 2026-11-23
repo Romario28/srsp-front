@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Info, RefreshCw, UserCheck, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useFetch } from '@/hooks/useFetch'
@@ -29,13 +29,21 @@ const nomDe = (d: DemandeCompteDTO) => `${d.prenom} ${d.nom}`.trim()
 export function DemandesComptesPage() {
   const { user } = useAuth()
   const admin = isAdmin(user?.roles)
-  const { refresh: rafraichirPastille } = useDemandesComptes()
+  const { refresh: rafraichirPastille, version } = useDemandesComptes()
   const { data, isLoading, error, reload } = useFetch(() => demandesComptesApi.lister())
   const [recherche, setRecherche] = useState('')
   const [decision, setDecision] = useState<Decision | null>(null)
   const [confirmation, setConfirmation] = useState<string | null>(null)
 
   useEffect(() => { rafraichirPastille() }, [rafraichirPastille])
+
+  // une demande arrive ou est traitée ailleurs : la liste se recharge d'elle-même
+  const versionInitiale = useRef(version)
+  useEffect(() => {
+    if (version === versionInitiale.current) return
+    versionInitiale.current = version
+    reload()
+  }, [version, reload])
 
   // Les plus anciennes en premier : ce sont celles qui attendent depuis le plus longtemps
   const demandes = useMemo(() => [...(data ?? [])].sort((a, b) => a.dateDemande.localeCompare(b.dateDemande)), [data])
