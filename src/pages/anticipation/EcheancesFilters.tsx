@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { AlertTriangle, Info, Loader2, RotateCcw, X } from 'lucide-react'
+import { AlertTriangle, Loader2, RotateCcw, X } from 'lucide-react'
+import { BoutonInfo, TexteInfobulle } from '@/components/ui/BoutonInfo'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { formatMois, MAX_MOIS } from '@/utils/anticipation'
 import { datesActives, type EtatFiltres } from './filtres'
@@ -50,14 +51,16 @@ export function EcheancesFilters({ etat, onChange, config, erreur, occupe }: Ech
     <section aria-label="Filtres du calcul" className="flex flex-col gap-2 rounded-xl border border-[#E4E6EB] bg-white px-3 py-2.5">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
         <div className="flex items-center gap-2">
-          <span className={TITRE}>Calculer à partir de</span>
+          <span className={TITRE}><TexteInfobulle texte={EXPLICATIONS[etat.critere]}>Calculer à partir de</TexteInfobulle></span>
           <SegmentedControl
             options={CRITERES} value={etat.critere} onChange={(critere) => onChange({ critere })}
             ariaLabel="Date sur laquelle portent la fenêtre relative et l'intervalle de dates"
           />
         </div>
-        <p className="min-w-0 flex-1 text-[12px] leading-snug text-[#6B7180]">{EXPLICATIONS[etat.critere]}</p>
-        <Loader2 aria-hidden="true" className={`h-4 w-4 flex-shrink-0 animate-spin text-accent ${occupe ? '' : 'invisible'}`} />
+        {dates && <BoutonInfo className="ml-auto" etiquette="Aide : dates et fenêtre" largeur={380}>
+          <p>Les dates remplacent la fenêtre : la tolérance de retard est ignorée.{surPreparation && ' La date de préparation reste calculée avec le délai configuré du type.'}</p>
+        </BoutonInfo>}
+        <Loader2 aria-hidden="true" className={`${dates ? '' : 'ml-auto '}h-4 w-4 flex-shrink-0 animate-spin text-accent ${occupe ? '' : 'invisible'}`} />
         <span role="status" aria-live="polite" className="sr-only">{occupe ? 'Mise à jour des résultats en cours' : ''}</span>
       </div>
 
@@ -95,10 +98,6 @@ export function EcheancesFilters({ etat, onChange, config, erreur, occupe }: Ech
         </fieldset>
       </div>
 
-      {dates && <p className="flex items-start gap-1.5 text-[12px] leading-snug text-accent-dark">
-        <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
-        <span>Les dates remplacent la fenêtre : la tolérance de retard est ignorée.{surPreparation && ' La date de préparation reste calculée avec le délai configuré du type.'}</span>
-      </p>}
       {erreur && <p role="alert" className="flex items-center gap-1.5 text-[12.5px] font-medium text-danger">
         <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />{erreur}
       </p>}

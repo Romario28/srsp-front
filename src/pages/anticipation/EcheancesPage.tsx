@@ -8,6 +8,7 @@ import { anticipationConfigApi } from '@/api/anticipationConfig'
 import { Spinner } from '@/components/ui/Spinner'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Badge } from '@/components/ui/Badge'
+import { BoutonInfo } from '@/components/ui/BoutonInfo'
 import { FiltresAgentsBar } from '@/components/FiltresAgentsBar'
 import { ECHEANCE_SLUGS, TYPE_LABELS } from '@/utils/anticipation'
 import { BoutonExport } from '@/components/BoutonExport'
@@ -19,13 +20,22 @@ import { FILTRES_VIDES, construireFiltres, decrireFenetre, validerFiltres, type 
 import type { FiltresAgents, FiltresEcheances, TypeEcheance } from '@/types/anticipation'
 import type { ConfigurationDelaiDTO } from '@/types/configurationDelai'
 
-const DESCRIPTIONS: Record<TypeEcheance, string> = {
-  DEPART_RETRAITE: "Agents atteignant l'âge légal de départ (date de naissance + âge légal fixé côté serveur).",
-  AVANCEMENT: "Avancement d'échelon : le grade suivant garde les deux premiers caractères du grade actuel. Échéance = date du dernier avancement (à défaut, début de contrat) + durée requise du couple corps/grade. Même calcul pour tous les statuts, ELD compris.",
-  AVANCEMENT_CLASSE: "Avancement de classe : le grade suivant change les deux premiers caractères du code (ex. 2C2E → 1C3E). Même calcul d'échéance qu'un avancement ; sa fenêtre de préparation se règle séparément (1 mois par défaut).",
-  TITULARISATION: "Même calcul qu'un avancement : seul l'intitulé change, pour le grade de stagiaire.",
-  FIN_CONTRAT: 'Agents dont le contrat prend fin. Un contrat sans date de fin (durée indéterminée) n’apparaît jamais.',
-  INTEGRATION: "Contractuels sans date de fin de contrat : intégration (passage au statut de fonctionnaire) 2 ans après la date de début de contrat. Un contractuel sans date de début est signalé en anomalie.",
+const DESCRIPTIONS: Record<TypeEcheance, { court: string; suite?: string }> = {
+  DEPART_RETRAITE: { court: "Agents atteignant l'âge légal de départ (date de naissance + âge légal fixé côté serveur)." },
+  AVANCEMENT: {
+    court: "Avancement d'échelon : le grade suivant garde les deux premiers caractères du grade actuel.",
+    suite: "Échéance = date du dernier avancement (à défaut, début de contrat) + durée requise du couple corps/grade. Même calcul pour tous les statuts, ELD compris.",
+  },
+  AVANCEMENT_CLASSE: {
+    court: "Avancement de classe : le grade suivant change les deux premiers caractères du code (ex. 2C2E → 1C3E).",
+    suite: "Même calcul d'échéance qu'un avancement ; sa fenêtre de préparation se règle séparément (1 mois par défaut).",
+  },
+  TITULARISATION: { court: "Même calcul qu'un avancement : seul l'intitulé change, pour le grade de stagiaire." },
+  FIN_CONTRAT: { court: 'Agents dont le contrat prend fin.', suite: 'Un contrat sans date de fin (durée indéterminée) n’apparaît jamais.' },
+  INTEGRATION: {
+    court: "Contractuels sans date de fin de contrat : intégration (passage au statut de fonctionnaire) 2 ans après la date de début de contrat.",
+    suite: "Un contractuel sans date de début est signalé en anomalie.",
+  },
 }
 
 interface DernierCalcul { filtres: FiltresEcheances; le: Date }
@@ -92,16 +102,19 @@ export function EcheancesPage({ type }: { type: TypeEcheance }) {
   const erreurSaisie = validerFiltres(stable.etat)
   const enAttente = JSON.stringify(filtresEnvoyes(saisie, config)) !== JSON.stringify(filtresEnvoyes(stable, config))
   const occupe = enAttente || calcul.isLoading
+  const description = DESCRIPTIONS[type]
 
   return <div className="flex h-[calc(100vh_-_7.5rem)] min-h-[30rem] flex-col gap-3">
     <header className="flex-shrink-0">
-      <h1 className="font-display text-[20px] font-semibold text-ink">{TYPE_LABELS[type]}</h1>
-      <p className="mt-0.5 text-[13px] text-[#6B7180]">{DESCRIPTIONS[type]}</p>
-      <details className="mt-1 text-[12px] text-[#9CA0AC]">
-        <summary className="w-fit cursor-pointer select-none hover:text-[#6B7180]">Règles communes</summary>
-        <p className="mt-1">Seuls les agents en activité sont pris en compte (situation administrative « 00 » ou non renseignée).</p>
-        <p>Date de préparation = échéance − délai de préparation du type : à partir de cette date, le dossier peut être constitué.</p>
-      </details>
+      <div className="flex items-center gap-2">
+        <h1 className="font-display text-[20px] font-semibold text-ink">{TYPE_LABELS[type]}</h1>
+        <BoutonInfo etiquette={`Aide : ${TYPE_LABELS[type]}`} largeur={460}>
+          {description.suite && <p>{description.suite}</p>}
+          <p>Seuls les agents en activité sont pris en compte (situation administrative « 00 » ou non renseignée).</p>
+          <p>Date de préparation = échéance − délai de préparation du type : à partir de cette date, le dossier peut être constitué.</p>
+        </BoutonInfo>
+      </div>
+      <p className="mt-0.5 text-[13px] text-[#6B7180]">{description.court}</p>
     </header>
     <div className="flex-shrink-0"><FiltresAgentsBar valeur={saisie.agents} onChange={changerAgents} /></div>
     <div className="flex-shrink-0"><EcheancesFilters etat={saisie.etat} config={config} erreur={erreurSaisie} occupe={occupe} onChange={changerEtat} /></div>

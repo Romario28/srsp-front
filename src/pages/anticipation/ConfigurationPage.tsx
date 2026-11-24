@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Info, Pencil, RotateCcw } from 'lucide-react'
+import { Pencil, RotateCcw } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useFetch } from '@/hooks/useFetch'
 import { anticipationConfigApi } from '@/api/anticipationConfig'
@@ -7,6 +7,7 @@ import { extractErrorMessage } from '@/api/client'
 import { isAdmin } from '@/utils/roles'
 import { TYPES_ECHEANCE, TYPE_LABELS, formatMois } from '@/utils/anticipation'
 import { Badge } from '@/components/ui/Badge'
+import { BoutonInfo } from '@/components/ui/BoutonInfo'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Spinner } from '@/components/ui/Spinner'
@@ -35,12 +36,19 @@ export function ConfigurationPage() {
   }
 
   return <div className="flex flex-col gap-5">
-    <div><h1 className="font-display text-[20px] font-semibold text-ink">Configuration des fenêtres</h1><p className="mt-0.5 max-w-3xl text-[13px] text-[#6B7180]">Pour chaque type d'échéance : le délai de préparation (combien de mois avant l'échéance on peut commencer le dossier ; l'alerte apparaît à cette date) et la tolérance (combien de mois après l'échéance elle reste affichée). Date de préparation = échéance − délai de préparation, en mois calendaires.</p></div>
-    <div className="flex items-start gap-2.5 rounded-lg border border-accent/30 bg-accent-light px-4 py-3 text-[13px] text-accent-dark"><Info className="mt-0.5 h-4 w-4 flex-shrink-0" /><div className="flex flex-col gap-1.5">
-      <p>Ces valeurs pré-remplissent les écrans de consultation (modifiables à chaque calcul) et décident, chaque nuit, quelles échéances génèrent une alerte.</p>
-      <p>Une modification joue sur les prochaines recherches et sur le prochain passage de nuit, pas sur les alertes déjà créées : elles restent dans le fil jusqu'à leur acquittement.</p>
-      <p>Un intervalle de dates saisi sur un écran de consultation ignore ces valeurs. Les anomalies n'ont pas de fenêtre : elles sont toujours signalées. La titularisation se calcule comme un avancement, mais sa fenêtre se règle séparément.</p>
-    </div></div>
+    <div>
+      <div className="flex items-center gap-2">
+        <h1 className="font-display text-[20px] font-semibold text-ink">Configuration des fenêtres</h1>
+        <BoutonInfo etiquette="Aide : configuration des fenêtres" largeur={520}>
+          <p>Pour chaque type d'échéance : le délai de préparation (combien de mois avant l'échéance on peut commencer le dossier ; le dossier est créé à cette date) et la tolérance (combien de mois après l'échéance elle reste affichée). Date de préparation = échéance − délai de préparation, en mois calendaires.</p>
+          <p>Ces valeurs pré-remplissent les écrans de consultation (modifiables à chaque calcul). Le délai de préparation décide aussi, au passage planifié, du moment où un dossier est créé ; la tolérance de retard ne joue que sur l'affichage des écrans.</p>
+          <p>Une modification joue sur les prochaines recherches et sur le prochain passage planifié, pas sur les dossiers déjà créés : ils restent suivis jusqu'à leur traitement.</p>
+          <p>Un intervalle de dates saisi sur un écran de consultation ignore ces valeurs. Les anomalies n'ont pas de fenêtre : elles sont toujours signalées. La titularisation se calcule comme un avancement, mais sa fenêtre se règle séparément.</p>
+          <p>Les valeurs par défaut sont fixées côté serveur ; elles s'appliquent tant qu'aucune personnalisation n'existe.</p>
+        </BoutonInfo>
+      </div>
+      <p className="mt-0.5 max-w-3xl text-[13px] text-[#6B7180]">Délai de préparation et tolérance de retard de chaque type d'échéance.</p>
+    </div>
     {error && <ErrorBanner message={error} />}
     {isLoading && !data ? <Spinner label="Chargement de la configuration…" /> : data ? <div className={`overflow-x-auto rounded-xl border border-[#E4E6EB] bg-white transition-opacity ${isLoading ? 'opacity-50' : ''}`}>
       <table className="w-full"><thead className="border-b border-[#EAEBF0] bg-[#FAFAFB]"><tr>
@@ -57,7 +65,6 @@ export function ConfigurationPage() {
         </div></td>}
       </tr>)}</tbody></table>
     </div> : null}
-    <p className="text-[12px] text-[#9CA0AC]">Les valeurs par défaut sont fixées côté serveur ; elles s'appliquent tant qu'aucune personnalisation n'existe.</p>
     <ConfigurationFormModal config={edition} onClose={() => setEdition(null)} onSaved={() => { setEdition(null); reload() }} />
     <ConfirmDialog isOpen={!!aReinitialiser} title="Rétablir les valeurs par défaut" message={erreurReinit ?? (aReinitialiser ? `Rétablir la fenêtre « ${TYPE_LABELS[aReinitialiser.type]} » : préparation ${formatMois(aReinitialiser.prevenanceMoisDefaut)}, retard ${libelleRetard(aReinitialiser.retardMoisDefaut)}. Les alertes déjà créées ne changent pas.` : '')} confirmLabel="Rétablir" danger={false} isLoading={enCours} onConfirm={reinitialiser} onCancel={() => setAReinitialiser(null)} />
   </div>

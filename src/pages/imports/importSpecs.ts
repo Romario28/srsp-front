@@ -18,11 +18,12 @@ export const REGLES_COMMUNES = [
   'Pour les fichiers repérés par leurs en-têtes, une colonne obligatoire absente fait refuser l’import en entier (rien n’est enregistré) ; le message liste toutes les colonnes absentes.',
   'Codes à saisir en texte, zéros initiaux compris (« 00 », « 09 »). Les cellules à formule ne sont pas lues : utilisez des valeurs.',
 ]
-export const ETAPES = [
+export interface EtapeSpec { numero: 1 | 2 | 3; titre: string; description: string; info?: string }
+export const ETAPES: readonly EtapeSpec[] = [
   { numero: 1, titre: 'Référentiels', description: 'À importer en premier, dans l’ordre de votre choix.' },
-  { numero: 2, titre: 'Indices grade × corps', description: 'Nécessite les grades et les corps. Porte la durée requise qui pilote les avancements et titularisations.' },
+  { numero: 2, titre: 'Indices grade × corps', description: 'Nécessite les grades et les corps.', info: 'Porte la durée requise qui pilote les avancements et titularisations.' },
   { numero: 3, titre: 'Agents', description: 'À importer en dernier : chaque agent est rattaché aux références déjà présentes.' },
-] as const
+]
 
 const SANS_INCIDENCE = 'Sans incidence sur les échéances. Pour rattacher des agents déjà importés aux nouveaux codes, réimportez le fichier agents.'
 const REIMPORT_APRES_GRADE_CORPS = 'Sans effet immédiat sur les échéances. Les agents déjà importés ne sont pas rattachés automatiquement aux nouveaux codes : réimportez ensuite les indices grade × corps, puis le fichier agents.'

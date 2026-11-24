@@ -3,6 +3,7 @@ import { RotateCcw } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { BoutonInfo } from '@/components/ui/BoutonInfo'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { anticipationConfigApi } from '@/api/anticipationConfig'
 import { extractErrorMessage } from '@/api/client'
@@ -66,13 +67,17 @@ function Formulaire({ config, onClose, onSaved }: { config: ConfigurationDelaiDT
     {erreur && <ErrorBanner message={erreur} />}
     <div className="grid grid-cols-2 gap-3">
       <Input label="Préparation (mois avant l'échéance)" type="number" min={0} max={MAX_MOIS} step={1} inputMode="numeric" required value={prevenance} onChange={(event) => setPrevenance(event.target.value)} error={erreurMois(prevenance)} hint={`défaut ${config.prevenanceMoisDefaut} mois`} />
-      <Input label="Retard (mois après)" type="number" min={0} max={MAX_MOIS} step={1} inputMode="numeric" required value={retard} onChange={(event) => setRetard(event.target.value)} error={erreurMois(retard)} hint={`défaut ${config.retardMoisDefaut} mois`} />
+      <Input label="Retard (mois après)" type="number" min={0} max={MAX_MOIS} step={1} inputMode="numeric" required value={retard} onChange={(event) => setRetard(event.target.value)} error={erreurMois(retard)} hint={`défaut ${config.retardMoisDefaut} mois`}
+        title="Retard 0 : aucune échéance dépassée n'est affichée (celle du jour reste visible)." />
     </div>
-    <p className="text-[12.5px] text-[#6B7180]">Retard 0 : aucune échéance dépassée n'est affichée (celle du jour reste visible).</p>
-    <Button type="button" variant="ghost" size="sm" className="self-start" icon={<RotateCcw className="h-3.5 w-3.5" />} onClick={() => { setPrevenance(String(config.prevenanceMoisDefaut)); setRetard(String(config.retardMoisDefaut)) }}>Valeurs par défaut ({config.prevenanceMoisDefaut} mois / {config.retardMoisDefaut} mois)</Button>
+    <div className="flex items-center gap-1 self-start">
+      <Button type="button" variant="ghost" size="sm" icon={<RotateCcw className="h-3.5 w-3.5" />} onClick={() => { setPrevenance(String(config.prevenanceMoisDefaut)); setRetard(String(config.retardMoisDefaut)) }}>Valeurs par défaut ({config.prevenanceMoisDefaut} mois / {config.retardMoisDefaut} mois)</Button>
+      {identiqueAuDefaut && !inchange && <BoutonInfo etiquette="Aide : valeurs par défaut" largeur={340}>
+        <p>Ces valeurs sont celles par défaut : la personnalisation sera retirée plutôt que remplacée par une copie.</p>
+      </BoutonInfo>}
+    </div>
     {prev != null && ret != null && <div className="rounded-lg border border-[#E4E6EB] bg-[#FAFAFB] px-4 py-3 text-[12.5px] text-[#4B4F5A]">Seront affichées les échéances {decrireFenetre({ prevenanceMois: prev, retardMois: ret }, null)}.</div>}
     {elargit && <div className="rounded-lg border border-warning/30 bg-warning-light px-4 py-3 text-[12.5px] text-warning">Fenêtre élargie : au prochain passage de nuit, chaque agent désormais inclus reçoit son alerte, d'un seul coup s'ils sont nombreux. Les alertes existantes ne changent pas.</div>}
-    {identiqueAuDefaut && !inchange && <div className="rounded-lg border border-accent/30 bg-accent-light px-4 py-3 text-[12.5px] text-accent-dark">Ces valeurs sont celles par défaut : la personnalisation sera retirée plutôt que remplacée par une copie.</div>}
     <div className="mt-2 flex justify-end gap-2"><Button type="button" variant="secondary" onClick={onClose} disabled={enCours}>Annuler</Button><Button type="submit" isLoading={enCours} disabled={!valide || inchange}>{identiqueAuDefaut ? 'Revenir au défaut' : 'Enregistrer'}</Button></div>
   </form>
 }

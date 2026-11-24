@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { TexteInfobulle } from '@/components/ui/BoutonInfo'
 import { formatDate } from '@/utils/date'
 import { TYPE_LABELS, libelleEcheance, statutAgentLabel, toneDelai } from '@/utils/anticipation'
 import { Age, AgeA } from './DatesCarriere'
@@ -16,7 +17,7 @@ function Ligne({ label, children }: { label: string; children: ReactNode }) {
 }
 function Section({ titre, aide, filet = true, children }: { titre: string; aide?: string; filet?: boolean; children: ReactNode }) {
   return <section className={`flex flex-col gap-2 ${filet ? 'border-t border-[#EAEBF0] pt-3' : ''}`}><div>
-    <h3 className="font-display text-[13.5px] font-semibold text-ink">{titre}</h3>{aide && <p className="mt-0.5 text-[12px] text-[#9CA0AC]">{aide}</p>}
+    <h3 className="font-display text-[13.5px] font-semibold text-ink">{aide ? <TexteInfobulle texte={aide}>{titre}</TexteInfobulle> : titre}</h3>
   </div>{children}</section>
 }
 

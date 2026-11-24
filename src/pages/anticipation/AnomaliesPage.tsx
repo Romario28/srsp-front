@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useAction } from '@/hooks/useAction'
 import { anticipationApi } from '@/api/anticipation'
 import { Badge } from '@/components/ui/Badge'
+import { BoutonInfo } from '@/components/ui/BoutonInfo'
 import { Button } from '@/components/ui/Button'
 import { ErrorBanner } from '@/components/ui/ErrorBanner'
 import { Spinner } from '@/components/ui/Spinner'
@@ -29,8 +30,13 @@ export function AnomaliesPage() {
 
   return <div className="flex h-[calc(100vh_-_7.5rem)] min-h-[30rem] flex-col gap-3">
     <header className="flex-shrink-0">
-      <h1 className="font-display text-[20px] font-semibold text-ink">Anomalies</h1>
-      <p className="mt-0.5 text-[13px] text-[#6B7180]">Agents en activité pour lesquels une échéance ne peut pas être calculée faute de données (date de naissance, grade, corps, dates d'ancrage, durée requise, ou date de début de contrat d'un contractuel sans date de fin). Il n'y a pas de fenêtre de dates : une anomalie n'a pas d'échéance. Corrigez à la source, puis réimportez.</p>
+      <div className="flex items-center gap-2">
+        <h1 className="font-display text-[20px] font-semibold text-ink">Anomalies</h1>
+        <BoutonInfo etiquette="Aide : anomalies" largeur={440}>
+          <p>Il n'y a pas de fenêtre de dates : une anomalie n'a pas d'échéance. Corrigez à la source, puis réimportez.</p>
+        </BoutonInfo>
+      </div>
+      <p className="mt-0.5 text-[13px] text-[#6B7180]">Agents en activité pour lesquels une échéance ne peut pas être calculée faute de données (date de naissance, grade, corps, dates d'ancrage, durée requise, ou date de début de contrat d'un contractuel sans date de fin).</p>
     </header>
     <div className="flex-shrink-0"><FiltresAgentsBar valeur={filtres} onChange={setFiltres} /></div>
     {analyse.error && <div className="flex flex-shrink-0 flex-col items-start gap-2">
