@@ -33,7 +33,9 @@ export function MonEspacePage() {
   )
 
   const { fiche } = data
-  const restriction = restrictionDossier(user, fiche.matricule)
+  // SUPPRIMÉ : const restriction = restrictionDossier(user, fiche.matricule)
+  // [MODIFIÉ] le droit d'agir vient de la réponse du serveur (relue à chaque chargement), pas de la session ouverte à la connexion
+  const restriction = restrictionDossier(user ? { ...user, agirSurSonDossier: data.agirSurSonDossier } : user, fiche.matricule)
   const nom = [fiche.prenoms, fiche.nom].filter(Boolean).join(' ')
   const etatFiche: EtatFiche = { fiche, isLoading: false, error: null, reload }
 
@@ -135,7 +137,8 @@ export function MonEspacePage() {
       </section>
 
       <DossierFormModal dossier={edition?.dossier ?? null} confirmerDemarrage={edition?.confirmer ?? false}
-        fichePrechargee={fiche} onClose={() => setEdition(null)} onChange={() => { setEdition(null); reload() }} />
+        fichePrechargee={fiche} restriction={restriction}   // [MODIFIÉ] + restriction
+        onClose={() => setEdition(null)} onChange={() => { setEdition(null); reload() }} />
     </div>
   )
 }

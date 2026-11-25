@@ -22,13 +22,15 @@ const PROFILS = [
 ] as const
 
 // champs obligatoires, dans l'ordre du formulaire : libellé affiché dans l'aide, identifiant pour y placer le curseur
-type Cle = 'matricule' | 'prenom' | 'nom' | 'email' | 'password' | 'confirmation' | 'departement'
+// [MODIFIÉ] « prenom » et « nom » remplacés par une seule entrée de groupe
+type Cle = 'matricule' | 'nomOuPrenom' | 'email' | 'password' | 'confirmation' | 'departement'
   | 'cin' | 'contact' | 'region' | 'fonction' | 'taches' | 'tachesPrecision'
 const CHAMPS: readonly { cle: Cle; label: string; id: string }[] = [
   { cle: 'matricule', label: 'Matricule', id: 'champ-matricule' },
   { cle: 'cin', label: 'CIN', id: 'champ-cin' },
-  { cle: 'prenom', label: 'Prénom', id: 'champ-prenom' },
-  { cle: 'nom', label: 'Nom', id: 'champ-nom' },
+  // SUPPRIMÉ : { cle: 'prenom', label: 'Prénom', id: 'champ-prenom' },
+  // SUPPRIMÉ : { cle: 'nom', label: 'Nom', id: 'champ-nom' },
+  { cle: 'nomOuPrenom', label: 'Nom ou prénom (au moins un)', id: 'champ-prenom' },   // [NOUVEAU] le curseur se place sur le prénom
   { cle: 'email', label: 'Adresse e-mail', id: 'champ-email' },
   { cle: 'contact', label: 'Contact', id: 'champ-contact' },
   { cle: 'password', label: 'Mot de passe (8 caractères minimum)', id: 'champ-password' },
@@ -101,8 +103,9 @@ export function DemandeComptePage() {
 
   const defauts: Record<Cle, boolean> = {
     matricule: matricule.trim() === '',
-    prenom: prenom.trim() === '',
-    nom: nom.trim() === '',
+    // SUPPRIMÉ : prenom: prenom.trim() === '',
+    // SUPPRIMÉ : nom: nom.trim() === '',
+    nomOuPrenom: prenom.trim() === '' && nom.trim() === '',   // [NOUVEAU] un seul des deux suffit
     email: email.trim() === '',
     password: password.length < 8 || password.length > 72,
     confirmation: confirmation === '' || confirmation !== password,
@@ -221,18 +224,23 @@ export function DemandeComptePage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               {error && <ErrorBanner message={error} />}
 
-              <Bloc titre="Identité" aide="Matricule (IM) : votre numéro d'agent, tel qu'il figure sur votre fiche.">
+              <Bloc titre="Identité" aide="Matricule (IM) : votre numéro d'agent, tel qu'il figure sur votre fiche. Renseignez au moins le nom ou le prénom.">
                 <div className={PAIRE}>
                   <Input id="champ-matricule" label="Matricule (IM)" required value={matricule} onChange={(e) => setMatricule(e.target.value)} maxLength={20}
                     onBlur={() => toucher('matricule')} error={erreurChamp('matricule')} autoComplete="off" />
                   <Input id="champ-cin" label="CIN" required value={cin} onChange={(e) => setCin(e.target.value)} maxLength={20}
                     onBlur={() => toucher('cin')} error={erreurChamp('cin')} autoComplete="off" />
                 </div>
-                <div className={PAIRE}>
-                  <Input id="champ-prenom" label="Prénom" required value={prenom} onChange={(e) => setPrenom(e.target.value)} maxLength={100}
-                    onBlur={() => toucher('prenom')} error={erreurChamp('prenom')} autoComplete="given-name" />
-                  <Input id="champ-nom" label="Nom" required value={nom} onChange={(e) => setNom(e.target.value)} maxLength={100}
-                    onBlur={() => toucher('nom')} error={erreurChamp('nom')} autoComplete="family-name" />
+                {/* [MODIFIÉ] ni astérisque ni « Champ obligatoire » sur chaque champ ; un message pour le groupe, quand le focus le quitte */}
+                <div className="flex flex-col gap-1.5"
+                  onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) toucher('nomOuPrenom') }}>
+                  <div className={PAIRE}>
+                    <Input id="champ-prenom" label="Prénom" value={prenom} onChange={(e) => setPrenom(e.target.value)} maxLength={100}
+                      autoComplete="given-name" />
+                    <Input id="champ-nom" label="Nom" value={nom} onChange={(e) => setNom(e.target.value)} maxLength={100}
+                      autoComplete="family-name" />
+                  </div>
+                  {afficher('nomOuPrenom') && <p role="alert" className="text-[12px] text-danger">Renseignez au moins le nom ou le prénom.</p>}
                 </div>
                 <div className={PAIRE}>
                   <Input id="champ-email" label="Adresse e-mail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} maxLength={150}

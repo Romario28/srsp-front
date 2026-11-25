@@ -9,7 +9,7 @@ import { demandesComptesApi } from '@/api/demandesComptes'
 import { extractErrorCode, extractErrorMessage } from '@/api/client'
 import { formatDateTime } from '@/utils/date'
 import { isAdmin, roleLabel } from '@/utils/roles'
-import { verifierIdentite } from '@/utils/demandesComptes'
+import { champsDeclares, joindre, nomDemandeur, verifierIdentite } from '@/utils/demandesComptes'   // [MODIFIÉ] + champsDeclares, joindre, nomDemandeur
 import { PERIMETRE_VIDE, perimetreVide, type PerimetreDTO } from '@/types/utilisateur'
 import type { DemandeCompteDTO } from '@/types/demandeCompte'
 import { EncartAgentLie } from './EncartAgentLie'
@@ -32,7 +32,8 @@ function EnTete({ demande }: { demande: DemandeCompteDTO }) {
     <div className="flex flex-col gap-2.5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-display text-[16px] font-semibold text-ink">{demande.prenom} {demande.nom}</h3>
+          {/* [MODIFIÉ] était : {demande.prenom} {demande.nom} (affichait un espace en trop, voire le mot « null » côté texte) */}
+          <h3 className="font-display text-[16px] font-semibold text-ink">{nomDemandeur(demande)}</h3>
           <p className="text-[12.5px] text-[#6B7180]">{demande.email}</p>
           <p className="font-mono text-[12px] text-[#6B7180]">Matricule {demande.matricule} · demandée le {formatDateTime(demande.dateDemande)}</p>
         </div>
@@ -51,9 +52,13 @@ function BlocIdentite({ demande }: { demande: DemandeCompteDTO }) {
   const verification = verifierIdentite(demande)
   const a = demande.agentLie
   if (verification === 'CONFIRMEE') {
+    const { nom, prenom } = champsDeclares(demande)
+    const partiel = !nom || !prenom   // [NOUVEAU] un seul champ renseigné : seul celui-là a été comparé
     return <p className="flex items-start gap-2 rounded-lg border border-success/30 bg-success-light px-3 py-2 text-[12.5px] text-success">
       <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-      Le nom et le prénom déclarés correspondent à l'agent du matricule {demande.matricule}.
+      {partiel
+        ? <>Le {nom ? 'nom' : 'prénom'} déclaré correspond à l'agent du matricule {demande.matricule} (le {nom ? 'prénom' : 'nom'} n'a pas été renseigné : contrôle partiel).</>
+        : <>Le nom et le prénom déclarés correspondent à l'agent du matricule {demande.matricule}.</>}
     </p>
   }
   if (verification === 'DIFFERENTE') {
@@ -61,7 +66,8 @@ function BlocIdentite({ demande }: { demande: DemandeCompteDTO }) {
       <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
       <div className="flex flex-col gap-0.5">
         <p className="font-semibold">Identité à vérifier</p>
-        <p>Déclaré : {demande.prenom} {demande.nom}. Agent du matricule {demande.matricule} : {a.prenoms ?? '—'} {a.nom ?? '—'}.</p>
+        {/* [MODIFIÉ] ne montre que les valeurs présentes ; « — » si l'agent n'en a aucune */}
+        <p>Déclaré : {joindre(demande.prenom, demande.nom) || '—'}. Agent du matricule {demande.matricule} : {joindre(a.prenoms, a.nom) || '—'}.</p>
         <p>N'importe qui peut saisir le matricule d'un autre : ne validez que si vous connaissez le demandeur.</p>
       </div>
     </div>

@@ -54,9 +54,10 @@ async function chargerLogo(): Promise<Logo> {
 const dateDuJour = () => new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 const nomFichier = (prefixe: string, matricule: string) => `${prefixe}_${matricule.replace(/[^A-Za-z0-9]/g, '') || 'agent'}.pdf`
 
-// « FALITIANA rakoto » : nom en majuscules, prénom tel que saisi, séparés par un simple espace
+// [MODIFIÉ] « FALITIANA rakoto » : nom en majuscules, prénom tel que saisi, séparés par un simple espace ;
+// si l'un manque, l'autre seul ; jamais « null » ni espace en trop
 function identite(d: DonneesDocuments): string {
-  return `${d.nom.toUpperCase()} ${d.prenom}`.trim()
+  return [d.nom.trim().toUpperCase(), d.prenom.trim()].filter(Boolean).join(' ')
 }
 
 function texteSouligne(doc: jsPDF, texte: string, x: number, y: number, options?: { align?: 'center' }) {

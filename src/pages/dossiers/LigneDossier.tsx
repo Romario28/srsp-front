@@ -67,10 +67,12 @@ export function LigneDossier({ d, afficherNombre, separateur = false, onDemarrer
       </td>
       <td className="table-cell">
         <div className="flex items-center justify-end gap-1.5">
-          {demarrable && (
+          {/* [MODIFIÉ] masqué (et non grisé) quand le compte n'a pas le droit d'agir sur ce dossier ;
+              l'explication reste dans « Détails » */}
+          {demarrable && restriction === null && (
             <Button size="sm" icon={<Play className="h-3.5 w-3.5" />} onClick={onDemarrer}
-              disabled={restriction !== null}
-              title={restriction ?? undefined}
+              // SUPPRIMÉ : disabled={restriction !== null}
+              // SUPPRIMÉ : title={restriction ?? undefined}
               aria-label={`Démarrer le dossier de ${d.nomComplet}`}>Démarrer</Button>
           )}
           <Button size="sm" variant="ghost" onClick={onOuvrir}>Détails</Button>

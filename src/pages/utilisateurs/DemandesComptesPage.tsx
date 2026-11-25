@@ -7,7 +7,7 @@ import { demandesComptesApi } from '@/api/demandesComptes'
 import { formatDateTime } from '@/utils/date'
 import { correspond } from '@/utils/recherche'
 import { isAdmin, roleLabel } from '@/utils/roles'
-import { verifierIdentite, type Verification } from '@/utils/demandesComptes'
+import { nomDemandeur as nomDe, verifierIdentite, type Verification } from '@/utils/demandesComptes'   // [MODIFIÉ] + nomDemandeur
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { ChampRecherche } from '@/components/ui/ChampRecherche'
@@ -20,11 +20,11 @@ import type { DemandeCompteDTO } from '@/types/demandeCompte'
 type Decision = { demande: DemandeCompteDTO; mode: 'APPROBATION' | 'REFUS' }
 
 const IDENTITE: Record<Verification, { tone: 'success' | 'warning' | 'neutral'; label: string; titre: string }> = {
-  CONFIRMEE: { tone: 'success', label: 'Correspond', titre: "Le nom et le prénom déclarés correspondent à l'agent du matricule" },
+  CONFIRMEE: { tone: 'success', label: 'Correspond', titre: "Les champs renseignés (nom, prénom) correspondent à l'agent du matricule" },   // [MODIFIÉ]
   DIFFERENTE: { tone: 'warning', label: 'Différent', titre: "Le nom ou le prénom déclaré diffère de celui de l'agent du matricule" },
   INCONNUE: { tone: 'neutral', label: 'Matricule inconnu', titre: "Aucun agent n'a ce matricule dans la base : comparaison impossible" },
 }
-const nomDe = (d: DemandeCompteDTO) => `${d.prenom} ${d.nom}`.trim()
+// SUPPRIMÉ : const nomDe = (d: DemandeCompteDTO) => `${d.prenom} ${d.nom}`.trim()   (produisait « null Rakoto » si un champ manque ; remplacée par l'import)
 
 export function DemandesComptesPage() {
   const { user } = useAuth()

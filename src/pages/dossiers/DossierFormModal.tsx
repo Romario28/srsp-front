@@ -19,15 +19,17 @@ interface DossierFormModalProps {
   /** Ouvre directement sur « Confirmer le démarrage ? » (bouton Démarrer du tableau). */
   confirmerDemarrage?: boolean
   fichePrechargee?: AgentFiche | null
+  restriction?: string | null   // [NOUVEAU] imposée par l'appelant (Mon Espace) ; absente : calculée depuis la session
   onClose: () => void
   onChange: (maj: DossierDTO) => void
 }
 
-export function DossierFormModal({ dossier, confirmerDemarrage = false, fichePrechargee = null, onClose, onChange }: DossierFormModalProps) {
+export function DossierFormModal({ dossier, confirmerDemarrage = false, fichePrechargee = null, restriction, onClose, onChange }: DossierFormModalProps) {   // [MODIFIÉ] + restriction
   return (
     <Modal isOpen={dossier != null} onClose={onClose} maxWidth="max-w-4xl" dense title="Suivi du dossier">
       {dossier && <FormulaireDossier key={`${dossier.id}-${confirmerDemarrage ? 'c' : 'd'}`} dossier={dossier}
-        confirmerDemarrage={confirmerDemarrage} fichePrechargee={fichePrechargee} onClose={onClose} onChange={onChange} />}
+        confirmerDemarrage={confirmerDemarrage} fichePrechargee={fichePrechargee} restriction={restriction}   // [MODIFIÉ] + restriction
+        onClose={onClose} onChange={onChange} />}
     </Modal>
   )
 }
@@ -36,12 +38,13 @@ interface FormulaireDossierProps {
   dossier: DossierDTO
   confirmerDemarrage?: boolean
   fichePrechargee?: AgentFiche | null
+  restriction?: string | null   // [NOUVEAU]
   onClose: () => void
   onChange: (maj: DossierDTO) => void
   onOuvrirDansDossiers?: () => void
 }
 
-export function FormulaireDossier({ dossier, confirmerDemarrage = false, fichePrechargee = null, onClose, onChange, onOuvrirDansDossiers }: FormulaireDossierProps) {
+export function FormulaireDossier({ dossier, confirmerDemarrage = false, fichePrechargee = null, restriction: restrictionImposee, onClose, onChange, onOuvrirDansDossiers }: FormulaireDossierProps) {   // [MODIFIÉ]
   const fiche = useFicheAgent(dossier.matricule, fichePrechargee)
   const [motif, setMotif] = useState('')
   const [confirmation, setConfirmation] = useState(confirmerDemarrage)
@@ -52,7 +55,8 @@ export function FormulaireDossier({ dossier, confirmerDemarrage = false, fichePr
   const sansSuite = dossier.statut === 'SANS_SUITE'
   const demarrable = dossier.statut === 'EN_ATTENTE_DE_TRAITEMENT'
   const { user } = useAuth()
-  const restriction = restrictionDossier(user, dossier.matricule)
+  // SUPPRIMÉ : const restriction = restrictionDossier(user, dossier.matricule)
+  const restriction = restrictionImposee !== undefined ? restrictionImposee : restrictionDossier(user, dossier.matricule)   // [MODIFIÉ]
   const propre = restriction !== null
 
   const executer = async (action: () => Promise<DossierDTO>, repli: string) => {
