@@ -37,10 +37,10 @@ const NAV_GROUPS: { titre?: string; items: NavEntree[] }[] = [
     { to: '/anticipation/dossiers', label: 'Dossiers', icon: ClipboardList, visible: peutVoirAnticipation, badge: 'dossiers' },   // [MODIFIÉ] + badge
     { to: '/anticipation/calendrier', label: 'Calendrier', icon: CalendarDays, visible: peutVoirAnticipation },
     { to: '/anticipation/retraite', label: 'Départs à la retraite', icon: Hourglass, visible: peutVoirAnticipation },
-    { label: 'Avancements', icon: TrendingUp, enfants: [
-      { to: '/anticipation/avancement', label: "Avancements d'échelon", visible: peutVoirAnticipation },
-      { to: '/anticipation/avancement-classe', label: 'Avancements de classe', visible: peutVoirAnticipation },
-      { to: '/anticipation/titularisation', label: 'Titularisations', visible: peutVoirAnticipation },
+    { label: 'Changements des situations', icon: TrendingUp, enfants: [
+      { to: '/anticipation/avancement', label: "Avancements", visible: peutVoirAnticipation },
+      { to: '/anticipation/avancement-classe', label: 'Avancement de classe', visible: peutVoirAnticipation },
+      { to: '/anticipation/titularisation', label: 'Titularisation', visible: peutVoirAnticipation },
     ] },
     { to: '/anticipation/fin-contrat', label: 'Fins de contrat', icon: CalendarClock, visible: peutVoirAnticipation },
     { to: '/anticipation/integration', label: 'Intégrations', icon: UserPlus, visible: peutVoirAnticipation },
