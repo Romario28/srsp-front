@@ -1,167 +1,4 @@
-﻿/*
-import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { ShieldCheck, ArrowRight, Info } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
-import { extractErrorCode, extractErrorMessage } from '@/api/client'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
-import { ErrorBanner } from '@/components/ui/ErrorBanner'
-import { APP_NAME, APP_NAME_LONG } from '@/config/app'
-import { isAgent } from '@/utils/roles'
-
-const DEMO_ACCOUNTS = [
-  { email: 'admin@entreprise.mg', password: 'Admin123!', label: 'Administrateur' },
-  { email: 'sophie.martin@entreprise.mg', password: 'Chef123!', label: 'Chef — ministère 05' },
-  { email: 'hanta.rabe@entreprise.mg', password: 'Rh123!', label: 'RH — 05 + L01' },
-  { email: 'jean.rakoto@entreprise.mg', password: 'Agent123!', label: 'Agent — lecture seule' },
-]
-
-const SHOW_DEMO_ACCOUNTS = import.meta.env.VITE_SHOW_DEMO_ACCOUNTS === 'true'
-
-export function LoginPage() {
-  const { login, isAuthenticated, isLoading, user } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [attente, setAttente] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  if (!isLoading && isAuthenticated) {
-    const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
-    return <Navigate to={isAgent(user?.roles) ? '/mon-espace' : from} replace />
-  }
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setAttente(null)
-    setIsSubmitting(true)
-    try {
-      await login({ email, password })
-      navigate('/', { replace: true })
-    } catch (err) {
-      if (extractErrorCode(err) === 'COMPTE_EN_ATTENTE') {
-        setAttente(extractErrorMessage(err, "Votre demande de compte est en cours d'examen."))
-      } else {
-        setError(extractErrorMessage(err, 'Email ou mot de passe incorrect'))
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const fillDemo = (acc: (typeof DEMO_ACCOUNTS)[number]) => {
-    setEmail(acc.email)
-    setPassword(acc.password)
-    setError(null)
-    setAttente(null)
-  }
-
-  return (
-    <div className="flex min-h-screen">
-      <div className="relative hidden w-[42%] flex-col justify-between bg-ink p-10 text-white lg:flex">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
-              <ShieldCheck className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-display text-[15px] font-semibold tracking-wide">{APP_NAME}</span>
-          </div>
-          <p className="mt-3 max-w-xs text-[12.5px] leading-snug text-white/60">{APP_NAME_LONG}</p>
-        </div>
-
-        <div className="max-w-sm">
-          <h1 className="font-display text-[28px] font-semibold leading-[1.25]">
-            Anticipation des carrières et gestion des accès.
-          </h1>
-          <p className="mt-3 text-[14px] leading-relaxed text-white/60">
-            Un périmètre précis par ministère, SOA et localité pour chaque gestionnaire, et un accès complet pour les administrateurs.
-          </p>
-        </div>
-
-        <p className="text-[12px] text-white/35">© {new Date().getFullYear()} Entreprise — Usage interne</p>
-
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-          }}
-          aria-hidden="true"
-        />
-      </div>
-
-      <div className="flex flex-1 items-center justify-center bg-canvas px-6 py-12">
-        <div className="w-full max-w-[400px]">
-          <div className="mb-8 lg:hidden">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ink">
-                <ShieldCheck className="h-5 w-5 text-white" />
-              </div>
-              <span className="font-display text-[15px] font-semibold tracking-wide text-ink">{APP_NAME}</span>
-            </div>
-            <p className="mt-2.5 max-w-xs text-[12.5px] leading-snug text-[#6B7180]">{APP_NAME_LONG}</p>
-          </div>
-
-          <h2 className="font-display text-[22px] font-semibold text-ink">Connexion</h2>
-          <p className="mt-1 text-[13.5px] text-[#6B7180]">Accédez à votre espace de gestion.</p>
-
-          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-            {error && <ErrorBanner message={error} />}
-            {attente && (
-              <div role="status" className="flex items-start gap-2.5 rounded-lg border border-accent/30 bg-accent-light px-4 py-3 text-[13px] text-accent-dark">
-                <Info className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                <span>{attente}</span>
-              </div>
-            )}
-            <Input
-              label="Adresse e-mail" type="email" autoComplete="username" required
-              value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="prenom.nom@entreprise.mg"
-            />
-            <Input
-              label="Mot de passe" type="password" autoComplete="current-password" required
-              value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-            <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-              Se connecter{!isSubmitting && <ArrowRight className="h-4 w-4" />}
-            </Button>
-          </form>
-
-          <p className="mt-5 text-center text-[13px] text-[#6B7180]">
-            Pas encore de compte ?{' '}
-            <Link to="/demande-compte" className="font-medium text-accent hover:underline">Demander un compte</Link>
-          </p>
-
-          {SHOW_DEMO_ACCOUNTS && <div className="mt-8 rounded-xl border border-[#E4E6EB] bg-white p-4">
-            <p className="text-[12px] font-medium text-ink">Comptes de démonstration</p>
-            <p className="mt-0.5 text-[11.5px] text-[#6B7180]">
-              Cliquez pour pré-remplir.
-            </p>
-            <div className="mt-3 flex flex-col gap-1.5">
-              {DEMO_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.email} type="button" onClick={() => fillDemo(acc)}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-[#E4E6EB] px-3 py-2 text-left text-[12.5px] hover:border-accent hover:bg-accent-light"
-                >
-                  <span className="truncate font-mono text-[#4B4F5A]">{acc.email}</span>
-                  <span className="flex-shrink-0 text-[11px] font-medium text-accent-dark">{acc.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>}
-        </div>
-      </div>
-    </div>
-  )
-}*/
-
-import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
+﻿import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowRight, ChevronDown, Eye, EyeOff, Info, Lock, Mail, ShieldCheck, type LucideIcon } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -329,7 +166,8 @@ export function LoginPage() {
                         <Logo />
                         <p className="max-w-[17rem] text-[12px] leading-snug text-[#6B7180]">{APP_NAME_LONG}</p>
                     </div>
-                    <p className="text-[11px] text-[#9CA0AC]">© {new Date().getFullYear()} Entreprise — Usage interne</p>
+                    {/*<p className="text-[11px] text-[#9CA0AC]">© {new Date().getFullYear()} Entreprise — Usage interne</p>/*/}
+                    <p className="text-[11px] text-[#9CA0AC]"> </p>
                 </section>
 
                 {/* Droite : formulaire */}
@@ -350,7 +188,7 @@ export function LoginPage() {
 
                         <Champ id="connexion-email" label="Adresse e-mail" icone={Mail}>
                             <input id="connexion-email" type="email" autoComplete="username" required value={email}
-                                   onChange={(e) => setEmail(e.target.value)} placeholder="prenom.nom@entreprise.mg"
+                                   onChange={(e) => setEmail(e.target.value)} placeholder="nom@gmail.com"
                                    className={`${CLASSE_CHAMP} pr-3`} />
                         </Champ>
 
@@ -389,3 +227,166 @@ export function LoginPage() {
         </div>
     )
 }
+
+/*
+import { useState, type FormEvent } from 'react'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { ShieldCheck, ArrowRight, Info } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { extractErrorCode, extractErrorMessage } from '@/api/client'
+import { Input } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
+import { ErrorBanner } from '@/components/ui/ErrorBanner'
+import { APP_NAME, APP_NAME_LONG } from '@/config/app'
+import { isAgent } from '@/utils/roles'
+
+const DEMO_ACCOUNTS = [
+  { email: 'admin@entreprise.mg', password: 'Admin123!', label: 'Administrateur' },
+  { email: 'sophie.martin@entreprise.mg', password: 'Chef123!', label: 'Chef — ministère 05' },
+  { email: 'hanta.rabe@entreprise.mg', password: 'Rh123!', label: 'RH — 05 + L01' },
+  { email: 'jean.rakoto@entreprise.mg', password: 'Agent123!', label: 'Agent — lecture seule' },
+]
+
+const SHOW_DEMO_ACCOUNTS = import.meta.env.VITE_SHOW_DEMO_ACCOUNTS === 'true'
+
+export function LoginPage() {
+  const { login, isAuthenticated, isLoading, user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [attente, setAttente] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  if (!isLoading && isAuthenticated) {
+    const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
+    return <Navigate to={isAgent(user?.roles) ? '/mon-espace' : from} replace />
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setAttente(null)
+    setIsSubmitting(true)
+    try {
+      await login({ email, password })
+      navigate('/', { replace: true })
+    } catch (err) {
+      if (extractErrorCode(err) === 'COMPTE_EN_ATTENTE') {
+        setAttente(extractErrorMessage(err, "Votre demande de compte est en cours d'examen."))
+      } else {
+        setError(extractErrorMessage(err, 'Email ou mot de passe incorrect'))
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const fillDemo = (acc: (typeof DEMO_ACCOUNTS)[number]) => {
+    setEmail(acc.email)
+    setPassword(acc.password)
+    setError(null)
+    setAttente(null)
+  }
+
+  return (
+    <div className="flex min-h-screen">
+      <div className="relative hidden w-[42%] flex-col justify-between bg-ink p-10 text-white lg:flex">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
+              <ShieldCheck className="h-5 w-5 text-white" />
+            </div>
+            <span className="font-display text-[15px] font-semibold tracking-wide">{APP_NAME}</span>
+          </div>
+          <p className="mt-3 max-w-xs text-[12.5px] leading-snug text-white/60">{APP_NAME_LONG}</p>
+        </div>
+
+        <div className="max-w-sm">
+          <h1 className="font-display text-[28px] font-semibold leading-[1.25]">
+            Anticipation des carrières et gestion des accès.
+          </h1>
+          <p className="mt-3 text-[14px] leading-relaxed text-white/60">
+            Un périmètre précis par ministère, SOA et localité pour chaque gestionnaire, et un accès complet pour les administrateurs.
+          </p>
+        </div>
+
+        <p className="text-[12px] text-white/35">© {new Date().getFullYear()} Entreprise — Usage interne</p>
+
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+          aria-hidden="true"
+        />
+      </div>
+
+      <div className="flex flex-1 items-center justify-center bg-canvas px-6 py-12">
+        <div className="w-full max-w-[400px]">
+          <div className="mb-8 lg:hidden">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ink">
+                <ShieldCheck className="h-5 w-5 text-white" />
+              </div>
+              <span className="font-display text-[15px] font-semibold tracking-wide text-ink">{APP_NAME}</span>
+            </div>
+            <p className="mt-2.5 max-w-xs text-[12.5px] leading-snug text-[#6B7180]">{APP_NAME_LONG}</p>
+          </div>
+
+          <h2 className="font-display text-[22px] font-semibold text-ink">Connexion</h2>
+          <p className="mt-1 text-[13.5px] text-[#6B7180]">Accédez à votre espace de gestion.</p>
+
+          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+            {error && <ErrorBanner message={error} />}
+            {attente && (
+              <div role="status" className="flex items-start gap-2.5 rounded-lg border border-accent/30 bg-accent-light px-4 py-3 text-[13px] text-accent-dark">
+                <Info className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                <span>{attente}</span>
+              </div>
+            )}
+            <Input
+              label="Adresse e-mail" type="email" autoComplete="username" required
+              value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="prenom.nom@entreprise.mg"
+            />
+            <Input
+              label="Mot de passe" type="password" autoComplete="current-password" required
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
+            <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
+              Se connecter{!isSubmitting && <ArrowRight className="h-4 w-4" />}
+            </Button>
+          </form>
+
+          <p className="mt-5 text-center text-[13px] text-[#6B7180]">
+            Pas encore de compte ?{' '}
+            <Link to="/demande-compte" className="font-medium text-accent hover:underline">Demander un compte</Link>
+          </p>
+
+          {SHOW_DEMO_ACCOUNTS && <div className="mt-8 rounded-xl border border-[#E4E6EB] bg-white p-4">
+            <p className="text-[12px] font-medium text-ink">Comptes de démonstration</p>
+            <p className="mt-0.5 text-[11.5px] text-[#6B7180]">
+              Cliquez pour pré-remplir.
+            </p>
+            <div className="mt-3 flex flex-col gap-1.5">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.email} type="button" onClick={() => fillDemo(acc)}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-[#E4E6EB] px-3 py-2 text-left text-[12.5px] hover:border-accent hover:bg-accent-light"
+                >
+                  <span className="truncate font-mono text-[#4B4F5A]">{acc.email}</span>
+                  <span className="flex-shrink-0 text-[11px] font-medium text-accent-dark">{acc.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>}
+        </div>
+      </div>
+    </div>
+  )
+}*/
