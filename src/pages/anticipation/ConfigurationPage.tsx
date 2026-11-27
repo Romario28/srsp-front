@@ -20,7 +20,9 @@ export function ConfigurationPage() {
   const { user } = useAuth()
   const peutModifier = isAdmin(user?.roles)
   const { data, isLoading, error, reload } = useFetch(() => anticipationConfigApi.lister())
-  const lignes = useMemo(() => [...(data ?? [])].sort((a, b) => TYPES_ECHEANCE.indexOf(a.type) - TYPES_ECHEANCE.indexOf(b.type)), [data])
+  const lignes = useMemo(() => [...(data ?? [])]
+    .filter((c) => TYPES_ECHEANCE.includes(c.type))
+    .sort((a, b) => TYPES_ECHEANCE.indexOf(a.type) - TYPES_ECHEANCE.indexOf(b.type)), [data])
   const [edition, setEdition] = useState<ConfigurationDelaiDTO | null>(null)
   const [aReinitialiser, setAReinitialiser] = useState<ConfigurationDelaiDTO | null>(null)
   const [erreurReinit, setErreurReinit] = useState<string | null>(null)

@@ -1,3 +1,4 @@
+import { afficherIntegration } from '@/config/app'
 import type { StatutAgent, TypeAnticipation, TypeEcheance } from '@/types/anticipation'
 
 export const TYPE_LABELS: Record<TypeAnticipation, string> = {
@@ -10,9 +11,12 @@ export const TYPE_LABELS: Record<TypeAnticipation, string> = {
   ANOMALIE: 'Anomalie',
 }
 
-export const TYPES_ECHEANCE: readonly TypeEcheance[] = [
+const TOUS_TYPES_ECHEANCE: readonly TypeEcheance[] = [
   'DEPART_RETRAITE', 'AVANCEMENT', 'AVANCEMENT_CLASSE', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION',
 ]
+export const TYPES_ECHEANCE: readonly TypeEcheance[] = afficherIntegration
+  ? TOUS_TYPES_ECHEANCE
+  : TOUS_TYPES_ECHEANCE.filter((type) => type !== 'INTEGRATION')
 
 const STATUT_LABELS: Record<StatutAgent, { singulier: string; pluriel: string }> = {
   FONCTIONNAIRE: { singulier: 'Fonctionnaire', pluriel: 'Fonctionnaires' },

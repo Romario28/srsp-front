@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { isAdmin, isAgent, peutVoirAnticipation, peutVoirUtilisateurs } from '@/utils/roles'
 import { useCompteursMenu } from '@/hooks/useCompteursMenu'   // [NOUVEAU]
 import { useDemandesComptes } from '@/hooks/useDemandesComptes'
-import { APP_NAME, APP_NAME_LONG } from '@/config/app'
+import { APP_NAME, APP_NAME_LONG, afficherIntegration } from '@/config/app'
 
 type Visible = (roles: string[] | undefined) => boolean
 type CleBadge = 'dossiers' | 'anomalies' | 'demandes'   // [MODIFIÉ] était : 'demandes'
@@ -43,7 +43,8 @@ const NAV_GROUPS: { titre?: string; items: NavEntree[] }[] = [
       { to: '/anticipation/titularisation', label: 'Titularisation', visible: peutVoirAnticipation },
     ] },
     { to: '/anticipation/fin-contrat', label: 'Fins de contrat', icon: CalendarClock, visible: peutVoirAnticipation },
-    { to: '/anticipation/integration', label: 'Intégrations', icon: UserPlus, visible: peutVoirAnticipation },
+    { to: '/anticipation/integration', label: 'Intégrations', icon: UserPlus,
+      visible: (roles) => afficherIntegration && peutVoirAnticipation(roles) },
     { to: '/anticipation/anomalies', label: 'Anomalies', icon: AlertTriangle, visible: peutVoirAnticipation, badge: 'anomalies' },   // [MODIFIÉ] + badge
     { to: '/anticipation/configuration', label: 'Configuration', icon: SlidersHorizontal, visible: isAdmin },
   ] },

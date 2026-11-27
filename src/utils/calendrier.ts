@@ -1,7 +1,11 @@
+import { afficherIntegration } from '@/config/app'
 import type { CritereDate } from '@/types/anticipation'
 import type { CalendrierJour, CategorieCalendrier } from '@/types/calendrier'
 
-export const CATEGORIES: readonly CategorieCalendrier[] = ['DEPART_RETRAITE', 'AVANCEMENT', 'AVANCEMENT_CLASSE', 'ELD', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION']
+const TOUTES_CATEGORIES: readonly CategorieCalendrier[] = ['DEPART_RETRAITE', 'AVANCEMENT', 'AVANCEMENT_CLASSE', 'ELD', 'TITULARISATION', 'FIN_CONTRAT', 'INTEGRATION']
+export const CATEGORIES: readonly CategorieCalendrier[] = afficherIntegration
+  ? TOUTES_CATEGORIES
+  : TOUTES_CATEGORIES.filter((c) => c !== 'INTEGRATION')
 
 /**
  * label : forme pluriel, pour la légende et les titres.
